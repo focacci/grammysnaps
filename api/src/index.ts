@@ -1,5 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import fastifyPostgres from '@fastify/postgres';
+
+import imagePlugin from './plugins/image.plugin';
 import imageRoutes from './routes/image.routes';
 
 const server: FastifyInstance = Fastify({ logger: true });
@@ -9,7 +11,10 @@ server.register(fastifyPostgres, {
   connectionString: process.env.DATABASE_URL || 'postgres://grammysnaps:password@localhost:5432/grammysnaps',
 });
 
-// Routes and plugins
+// Utility plugins
+server.register(imagePlugin);
+
+// Routes
 server.register(imageRoutes, { prefix: '/image' });
 
 // Health check
