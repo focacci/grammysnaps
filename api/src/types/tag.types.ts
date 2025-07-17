@@ -1,20 +1,20 @@
 export interface Tag {
-    id: number;
-    name: string;
+  id: number;
+  name: string;
 }
 
 export interface PersonTag extends Tag {
-    type: 'Person';
+  type: "Person";
 }
 
 export interface LocationTag extends Tag {
-    type: 'Location';
+  type: "Location";
 }
 
 export interface EventTag extends Tag {
-    type: 'Event';
+  type: "Event";
 }
 
 export interface TimeTag extends Tag {
-    type: 'Time';
+  type: "Time";
 }

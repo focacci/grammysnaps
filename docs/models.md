@@ -1,6 +1,7 @@
 # Upload and view images
 
 ### Image
+
 ```
 {
     id: UUID;
@@ -11,6 +12,7 @@
 ```
 
 ### Tag
+
 ```
 {
     id: UUID;
