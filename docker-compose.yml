@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:15-alpine
+    image: postgres:16
     ports:
       - "5432:5432"
     environment:
@@ -22,7 +22,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=grammysnaps
     volumes:
-      - pgdata:/pgdata/docker-entrypoint-initdb.d
+      - ./pgdata:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
 volumes:
