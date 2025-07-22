@@ -3,8 +3,7 @@ import fp from "fastify-plugin";
 import { Image } from "../types/image.types";
 
 interface ImageInput {
-  filename?: string;
-  s3_url?: string;
+  filename: string;
 }
 
 declare module "fastify" {
