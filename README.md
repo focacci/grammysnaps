@@ -1,2 +1,5 @@
-# grammysnaps
-Grandma's photo albums all in one place
+# Grammysnaps
+
+### [Models](./docs/models.md)
+
+### [Routes](./docs/routes.md)

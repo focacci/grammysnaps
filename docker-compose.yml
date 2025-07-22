@@ -1,0 +1,29 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./api:/code
+      - /code/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://user:password@db:5432/grammysnaps
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=grammysnaps
+    volumes:
+      - ./pgdata:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  pgdata:
