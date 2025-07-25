@@ -12,9 +12,9 @@ declare module "fastify" {
     tag: {
       create: (input: TagInput) => Promise<Tag>;
       get: () => Promise<Tag[]>;
-      // getById: (id: number) => Promise<Image | null>
-      // update: (id: number, input: ImageInput) => Promise<Image | null>
-      // delete: (id: number) => Promise<boolean>
+      getById: (id: string) => Promise<Tag | null>;
+      update: (id: string, input: TagInput) => Promise<Tag | null>;
+      delete: (id: string) => Promise<void>;
     };
   }
 }
@@ -49,11 +49,43 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async getById(id: number): Promise<Image | null> {},
+    async getById(id: string): Promise<Tag | null> {
+      try {
+        const {
+          rows: [tag],
+        } = await fastify.pg.query<Tag>("SELECT * FROM tags WHERE id = $1", [
+          id,
+        ]);
+        return tag || null;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to fetch tag by ID");
+      }
+    },
 
-    // async update(id: number, input: ImageInput): Promise<Image | null> {},
+    async update(id: string, input: TagInput): Promise<Tag | null> {
+      try {
+        const {
+          rows: [tag],
+        } = await fastify.pg.query<Tag>(
+          "UPDATE tags SET type = $1, name = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
+          [input.type, input.name, id]
+        );
+        return tag || null;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to update tag");
+      }
+    },
 
-    // async delete(id: number): Promise<boolean> {}
+    async delete(id: string): Promise<void> {
+      try {
+        await fastify.pg.query("DELETE FROM tags WHERE id = $1", [id]);
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to delete tag");
+      }
+    },
   });
 };
 
