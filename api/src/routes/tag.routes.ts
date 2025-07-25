@@ -24,6 +24,31 @@ const getTagParamsSchema = {
   },
 };
 
+interface UpdateTagParams {
+  tagId: string;
+}
+const updateTagParamsSchema = {
+  type: "object",
+  required: ["tagId"],
+  properties: {
+    tagId: { type: "string", format: "uuid" },
+  },
+};
+
+const updateTagBodySchema = {
+  type: "object",
+  required: [],
+  properties: {
+    type: {
+      type: "string",
+      enum: ["Person", "Location", "Event", "Time"],
+      minLength: 1,
+    },
+    name: { type: "string", minLength: 1 },
+  },
+  additionalProperties: false, // Prevents extra fields in the body
+};
+
 const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const tags = await fastify.tag.get();
@@ -52,6 +77,25 @@ const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
       const { type, name } = request.body as TagInput;
       const tag = await fastify.tag.create({ type, name });
       return reply.status(200).send({ tag });
+    }
+  );
+
+  fastify.put(
+    "/:tagId",
+    {
+      schema: {
+        params: updateTagParamsSchema,
+        body: createTagRequestBodySchema,
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { tagId } = request.params as UpdateTagParams;
+      const { type, name } = request.body as TagInput;
+      const updatedTag = await fastify.tag.update(tagId, { type, name });
+      if (!updatedTag) {
+        return reply.status(404).send({ message: "Tag not found" });
+      }
+      return reply.status(200).send({ tag: updatedTag });
     }
   );
 };

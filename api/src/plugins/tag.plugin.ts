@@ -13,7 +13,7 @@ declare module "fastify" {
       create: (input: TagInput) => Promise<Tag>;
       get: () => Promise<Tag[]>;
       getById: (id: string) => Promise<Tag | null>;
-      // update: (id: number, input: ImageInput) => Promise<Image | null>
+      update: (id: string, input: TagInput) => Promise<Tag | null>;
       // delete: (id: number) => Promise<boolean>
     };
   }
@@ -63,7 +63,20 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async update(id: number, input: ImageInput): Promise<Image | null> {},
+    async update(id: string, input: TagInput): Promise<Tag | null> {
+      try {
+        const {
+          rows: [tag],
+        } = await fastify.pg.query<Tag>(
+          "UPDATE tags SET type = $1, name = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
+          [input.type, input.name, id]
+        );
+        return tag || null;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to update tag");
+      }
+    },
 
     // async delete(id: number): Promise<boolean> {}
   });
