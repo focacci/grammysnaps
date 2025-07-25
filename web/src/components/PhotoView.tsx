@@ -27,6 +27,12 @@ function PhotoView() {
   const [uploadFilename, setUploadFilename] = useState("");
   const [selectedUploadTags, setSelectedUploadTags] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const [newTagType, setNewTagType] = useState<
+    "Person" | "Location" | "Event" | "Time"
+  >("Person");
+  const [creatingTag, setCreatingTag] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
@@ -133,6 +139,53 @@ function PhotoView() {
     setSelectedUploadTags([]);
   };
 
+  const handleCreateTagSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTagName.trim()) {
+      alert("Please enter a tag name");
+      return;
+    }
+
+    setCreatingTag(true);
+    try {
+      const response = await fetch("/api/tag", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newTagName.trim(),
+          type: newTagType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create tag: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Add the new tag to the list
+      setTags((prev) => [...prev, result.tag]);
+
+      // Reset form and close modal
+      setNewTagName("");
+      setNewTagType("Person");
+      setShowCreateTagModal(false);
+    } catch (err) {
+      console.error("Error creating tag:", err);
+      alert(err instanceof Error ? err.message : "Failed to create tag");
+    } finally {
+      setCreatingTag(false);
+    }
+  };
+
+  const closeCreateTagModal = () => {
+    setShowCreateTagModal(false);
+    setNewTagName("");
+    setNewTagType("Person");
+  };
+
   const toggleSection = (sectionName: string) => {
     setCollapsedSections((prev) => ({
       ...prev,
@@ -192,6 +245,14 @@ function PhotoView() {
         <aside className="filter-sidebar">
           <div className="sidebar-header">
             <h3>Filter by Tags</h3>
+          </div>
+          <div className="create-tag-section">
+            <button
+              className="create-tag-btn"
+              onClick={() => setShowCreateTagModal(true)}
+            >
+              + Create Tag
+            </button>
           </div>
           <div className="filter-sections">
             {Object.entries(groupedTags).map(
@@ -337,6 +398,69 @@ function PhotoView() {
                   className="submit-btn"
                 >
                   {uploading ? "Uploading..." : "Upload Image"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Tag Modal */}
+      {showCreateTagModal && (
+        <div className="modal-overlay" onClick={closeCreateTagModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Tag</h2>
+              <button className="close-btn" onClick={closeCreateTagModal}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleCreateTagSubmit} className="upload-form">
+              <div className="form-group">
+                <label htmlFor="tagName">Tag Name:</label>
+                <input
+                  id="tagName"
+                  type="text"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  placeholder="Enter tag name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tagType">Tag Type:</label>
+                <select
+                  id="tagType"
+                  value={newTagType}
+                  onChange={(e) =>
+                    setNewTagType(
+                      e.target.value as "Person" | "Location" | "Event" | "Time"
+                    )
+                  }
+                  className="tag-type-select"
+                >
+                  <option value="Person">Person</option>
+                  <option value="Location">Location</option>
+                  <option value="Event">Event</option>
+                  <option value="Time">Time</option>
+                </select>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={closeCreateTagModal}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingTag}
+                  className="submit-btn"
+                >
+                  {creatingTag ? "Creating..." : "Create Tag"}
                 </button>
               </div>
             </form>
