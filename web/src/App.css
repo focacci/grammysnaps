@@ -46,6 +46,33 @@ body {
 .navbar-left {
   display: flex;
   align-items: center;
+  gap: 20px;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  color: #4a4a4a;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: rgba(218, 165, 32, 0.1);
+  color: #daa520;
+}
+
+.nav-button.active {
+  background-color: #daa520;
+  color: white;
+}
+
+.nav-button.active:hover {
+  background-color: #b8941c;
 }
 
 .navbar-right {
@@ -266,7 +293,58 @@ body {
   font-size: 0.75rem;
 }
 
-/* Loading and Error States */
+/* Home View Styles */
+.home-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+}
+
+.home-content {
+  text-align: center;
+  max-width: 600px;
+}
+
+.home-content h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  color: #333;
+  background: linear-gradient(135deg, #daa520, #b8941c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-content p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.get-started-btn {
+  background: linear-gradient(135deg, #daa520, #b8941c);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);
+}
+
+.get-started-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(218, 165, 32, 0.4);
+}
+
+.get-started-btn:active {
+  transform: translateY(0);
+}
 .loading-container,
 .error-container {
   display: flex;
