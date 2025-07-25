@@ -450,12 +450,6 @@ function PhotoView() {
   const handleDeleteImage = async () => {
     if (!selectedImage) return;
 
-    if (
-      !confirm(`Are you sure you want to delete "${selectedImage.filename}"?`)
-    ) {
-      return;
-    }
-
     setDeletingImage(true);
     try {
       const response = await fetch(`/api/image/${selectedImage.id}`, {
