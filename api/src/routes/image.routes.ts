@@ -44,7 +44,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
     { schema: { body: createImageRequestBodySchema } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { filename, tags } = request.body as ImageInput;
-      const image = await fastify.image.create({ filename });
+      const image = await fastify.image.create({ filename, tags });
       if (tags) await fastify.image.applyTags(image.id, tags);
       return reply.status(200).send({ image });
     }

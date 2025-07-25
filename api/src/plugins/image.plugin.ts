@@ -23,14 +23,17 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("image", {
     async create(input: ImageInput): Promise<Image> {
-      const { filename } = input;
+      const { filename, tags } = input;
       try {
-        const { rows } = await fastify.pg.query<Image>(
-          "INSERT INTO images (filename) VALUES ($1) RETURNING *",
-          [filename]
+        const {
+          rows: [image],
+        } = await fastify.pg.query<Image>(
+          "INSERT INTO images (filename, tags) VALUES ($1, $2) RETURNING *",
+          [filename, tags ?? []]
         );
         // if tags apply tag relations
-        return rows[0];
+        if (tags) await fastify.image.applyTags(image.id, tags);
+        return image;
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to create image");
