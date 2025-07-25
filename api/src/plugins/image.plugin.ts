@@ -1,16 +1,14 @@
 import { FastifyPluginAsync, FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Image } from "../types/image.types";
-
-interface ImageInput {
-  filename: string;
-}
+import { ImageInput } from "../types/image.types";
 
 declare module "fastify" {
   interface FastifyInstance {
     image: {
       create: (input: ImageInput) => Promise<Image>;
       get: () => Promise<Image[]>;
+      applyTags: (imageId: string, tags: string[]) => Promise<void>;
       // getById: (id: number) => Promise<Image | null>
       // update: (id: number, input: ImageInput) => Promise<Image | null>
       // delete: (id: number) => Promise<boolean>
@@ -31,6 +29,7 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           "INSERT INTO images (filename) VALUES ($1) RETURNING *",
           [filename]
         );
+        // if tags apply tag relations
         return rows[0];
       } catch (err) {
         fastify.log.error(err);
@@ -48,6 +47,20 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
+    async applyTags(imageId: string, tags: string[]): Promise<void> {
+      try {
+        for (const tagId of tags) {
+          fastify.pg.query(
+            "INSERT INTO image_tags (image_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+            [imageId, tagId]
+          );
+        }
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to add tag to image");
+      }
+    },
+
     // async getById(id: number): Promise<Image | null> {},
 
     // async update(id: number, input: ImageInput): Promise<Image | null> {},
@@ -56,4 +69,7 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   });
 };
 
-export default fp(imagePlugin, { name: "image" });
+export default fp(imagePlugin, {
+  name: "image",
+  dependencies: ["@fastify/postgres"],
+});
