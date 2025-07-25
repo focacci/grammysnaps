@@ -110,8 +110,15 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { imageId } = request.params as GetImageParams;
-      await fastify.image.delete(imageId);
-      return reply.status(204).send();
+      try {
+        await fastify.image.delete(imageId);
+        return reply.status(204).send();
+      } catch (err) {
+        fastify.log.error(err);
+        return reply
+          .status(500)
+          .send({ message: "Failed to delete image", error: err });
+      }
     }
   );
 };

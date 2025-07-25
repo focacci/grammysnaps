@@ -10,5 +10,5 @@ export interface Image {
   filename: string;
   created_at: string;
   updated_at: string;
-  tags?: Tag[];
+  tags?: string[];
 }
