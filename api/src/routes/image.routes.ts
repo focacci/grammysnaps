@@ -121,6 +121,16 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
       }
     }
   );
+
+  /* Get images by tag */
+  fastify.get(
+    "/tag/:tagId",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { tagId } = request.params as { tagId: string };
+      const images = await fastify.image.getAllWithTag(tagId);
+      return reply.status(200).send({ images });
+    }
+  );
 };
 
 export default imageRoutes;

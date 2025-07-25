@@ -12,6 +12,7 @@ declare module "fastify" {
       update: (id: string, input: ImageInput) => Promise<Image | null>;
       delete: (id: string) => Promise<void>;
       applyTags: (imageId: string, tags: string[]) => Promise<void>;
+      getAllWithTag: (tagId: string) => Promise<Image[]>;
     };
   }
 }
@@ -111,6 +112,19 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to add tag to image");
+      }
+    },
+
+    async getAllWithTag(tagId: string): Promise<Image[]> {
+      try {
+        const { rows } = await fastify.pg.query<Image>(
+          "SELECT i.* FROM images i INNER JOIN image_tags it ON i.id = it.image_id WHERE it.tag_id = $1",
+          [tagId]
+        );
+        return rows;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to fetch images by tag");
       }
     },
   });
