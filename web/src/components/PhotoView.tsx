@@ -23,6 +23,10 @@ function PhotoView() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFilename, setUploadFilename] = useState("");
+  const [selectedUploadTags, setSelectedUploadTags] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
@@ -74,6 +78,59 @@ function PhotoView() {
         ? prev.filter((t) => t !== tagName)
         : [...prev, tagName]
     );
+  };
+
+  const handleUploadTagToggle = (tagId: string) => {
+    setSelectedUploadTags((prev) =>
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+    );
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFilename.trim()) {
+      alert("Please enter a filename");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const response = await fetch("/api/image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: uploadFilename.trim(),
+          tags: selectedUploadTags,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload image: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Add the new image to the list
+      setImages((prev) => [result.image, ...prev]);
+
+      // Reset form and close modal
+      setUploadFilename("");
+      setSelectedUploadTags([]);
+      setShowUploadModal(false);
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      alert(err instanceof Error ? err.message : "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowUploadModal(false);
+    setUploadFilename("");
+    setSelectedUploadTags([]);
   };
 
   const toggleSection = (sectionName: string) => {
@@ -133,7 +190,9 @@ function PhotoView() {
       <div className="content-layout">
         {/* Filter Sidebar */}
         <aside className="filter-sidebar">
-          <h3>Filter by Tags</h3>
+          <div className="sidebar-header">
+            <h3>Filter by Tags</h3>
+          </div>
           <div className="filter-sections">
             {Object.entries(groupedTags).map(
               ([sectionName, sectionTags]) =>
@@ -175,6 +234,14 @@ function PhotoView() {
 
         {/* Image Grid */}
         <section className="image-grid-container">
+          <div className="upload-section">
+            <button
+              className="upload-btn-main"
+              onClick={() => setShowUploadModal(true)}
+            >
+              + Upload Image
+            </button>
+          </div>
           {filteredImages.length === 0 ? (
             <div className="empty-state">
               <p>
@@ -206,6 +273,76 @@ function PhotoView() {
           )}
         </section>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Upload New Image</h2>
+              <button className="close-btn" onClick={closeModal}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUploadSubmit} className="upload-form">
+              <div className="form-group">
+                <label htmlFor="filename">Filename:</label>
+                <input
+                  id="filename"
+                  type="text"
+                  value={uploadFilename}
+                  onChange={(e) => setUploadFilename(e.target.value)}
+                  placeholder="Enter image filename"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Select Tags:</label>
+                <div className="tag-selection">
+                  {Object.entries(groupedTags).map(
+                    ([sectionName, sectionTags]) =>
+                      sectionTags.length > 0 && (
+                        <div key={sectionName} className="tag-group">
+                          <h4>{sectionName}</h4>
+                          <div className="tag-checkboxes">
+                            {sectionTags.map((tag) => (
+                              <label key={tag.id} className="tag-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedUploadTags.includes(tag.id)}
+                                  onChange={() => handleUploadTagToggle(tag.id)}
+                                />
+                                <span>{tag.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                  )}
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="submit-btn"
+                >
+                  {uploading ? "Uploading..." : "Upload Image"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
