@@ -80,6 +80,13 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
     async delete(id: string): Promise<void> {
       try {
+        // Remove the tag from the tags array in all images that have it
+        await fastify.pg.query(
+          "UPDATE images SET tags = array_remove(tags, $1), updated_at = NOW() WHERE $1 = ANY(tags)",
+          [id]
+        );
+
+        // Delete the tag from the tags table (CASCADE will handle image_tags)
         await fastify.pg.query("DELETE FROM tags WHERE id = $1", [id]);
       } catch (err) {
         fastify.log.error(err);
