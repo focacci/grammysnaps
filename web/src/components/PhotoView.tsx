@@ -34,6 +34,14 @@ function PhotoView() {
     "Person" | "Location" | "Event" | "Time"
   >("Person");
   const [creatingTag, setCreatingTag] = useState(false);
+  const [showEditTagModal, setShowEditTagModal] = useState(false);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [editTagName, setEditTagName] = useState("");
+  const [editTagType, setEditTagType] = useState<
+    "Person" | "Location" | "Event" | "Time"
+  >("Person");
+  const [savingTag, setSavingTag] = useState(false);
+  const [deletingTag, setDeletingTag] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [isEditingImage, setIsEditingImage] = useState(false);
@@ -200,6 +208,98 @@ function PhotoView() {
     setShowCreateTagModal(false);
     setNewTagName("");
     setNewTagType("Person");
+  };
+
+  const handleEditTag = (tag: Tag) => {
+    setEditingTag(tag);
+    setEditTagName(tag.name);
+    setEditTagType(tag.type);
+    setShowEditTagModal(true);
+  };
+
+  const closeEditTagModal = () => {
+    setShowEditTagModal(false);
+    setEditingTag(null);
+    setEditTagName("");
+    setEditTagType("Person");
+  };
+
+  const handleEditTagSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTag || !editTagName.trim()) {
+      alert("Please enter a tag name");
+      return;
+    }
+
+    setSavingTag(true);
+    try {
+      const response = await fetch(`/api/tag/${editingTag.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: editTagName.trim(),
+          type: editTagType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update tag: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Update the tag in the list
+      setTags((prev) =>
+        prev.map((tag) => (tag.id === editingTag.id ? result.tag : tag))
+      );
+
+      closeEditTagModal();
+    } catch (err) {
+      console.error("Error updating tag:", err);
+      alert(err instanceof Error ? err.message : "Failed to update tag");
+    } finally {
+      setSavingTag(false);
+    }
+  };
+
+  const handleDeleteTag = async () => {
+    if (!editingTag) return;
+
+    setDeletingTag(true);
+    try {
+      const response = await fetch(`/api/tag/${editingTag.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete tag: ${response.status}`);
+      }
+
+      // Remove the tag from the list
+      setTags((prev) => prev.filter((tag) => tag.id !== editingTag.id));
+
+      // Remove the tag from selected tags if it was selected
+      setSelectedTags((prev) =>
+        prev.filter((tagName) => tagName !== editingTag.name)
+      );
+
+      // Remove the tag from any images that have it
+      setImages((prev) =>
+        prev.map((image) => ({
+          ...image,
+          tags: image.tags?.filter((tagId) => tagId !== editingTag.id) || [],
+        }))
+      );
+
+      closeEditTagModal();
+    } catch (err) {
+      console.error("Error deleting tag:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete tag");
+    } finally {
+      setDeletingTag(false);
+    }
   };
 
   const handleImageClick = (image: Image) => {
@@ -408,9 +508,25 @@ function PhotoView() {
                             className={`filter-item ${
                               selectedTags.includes(tag.name) ? "selected" : ""
                             }`}
-                            onClick={() => handleTagToggle(tag.name)}
                           >
-                            <span className="filter-label">{tag.name}</span>
+                            <span
+                              className="filter-label"
+                              onClick={() => handleTagToggle(tag.name)}
+                            >
+                              {tag.name}
+                            </span>
+                            <div className="filter-item-actions">
+                              <button
+                                className="edit-tag-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditTag(tag);
+                                }}
+                                title="Edit tag"
+                              >
+                                ✏️
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -774,6 +890,79 @@ function PhotoView() {
                 </form>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Tag Modal */}
+      {showEditTagModal && editingTag && (
+        <div className="modal-overlay" onClick={closeEditTagModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Tag</h2>
+              <button className="close-btn" onClick={closeEditTagModal}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleEditTagSubmit} className="upload-form">
+              <div className="form-group">
+                <label htmlFor="editTagName">Tag Name:</label>
+                <input
+                  id="editTagName"
+                  type="text"
+                  value={editTagName}
+                  onChange={(e) => setEditTagName(e.target.value)}
+                  placeholder="Enter tag name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="editTagType">Tag Type:</label>
+                <select
+                  id="editTagType"
+                  value={editTagType}
+                  onChange={(e) =>
+                    setEditTagType(
+                      e.target.value as "Person" | "Location" | "Event" | "Time"
+                    )
+                  }
+                  className="tag-type-select"
+                >
+                  <option value="Person">Person</option>
+                  <option value="Location">Location</option>
+                  <option value="Event">Event</option>
+                  <option value="Time">Time</option>
+                </select>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={handleDeleteTag}
+                  disabled={deletingTag}
+                  className="delete-btn"
+                >
+                  {deletingTag ? "Deleting..." : "Delete Tag"}
+                </button>
+                <div className="form-actions-right">
+                  <button
+                    type="button"
+                    onClick={closeEditTagModal}
+                    className="cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingTag}
+                    className="submit-btn"
+                  >
+                    {savingTag ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
