@@ -11,11 +11,39 @@ const createTagRequestBodySchema = {
   additionalProperties: false, // Prevents extra fields in the body
 };
 
+interface GetTagParams {
+  tagId: string;
+}
+const getTagParamsSchema = {
+  params: {
+    type: "object",
+    required: ["tagId"],
+    properties: {
+      tagId: { type: "string", format: "uuid" },
+    },
+  },
+};
+
 const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const tags = await fastify.tag.get();
     return reply.status(200).send({ tags });
   });
+
+  fastify.get(
+    "/:tagId",
+    {
+      schema: getTagParamsSchema,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { tagId } = request.params as GetTagParams;
+      const tag = await fastify.tag.getById(tagId);
+      if (!tag) {
+        return reply.status(404).send({ message: "Tag not found" });
+      }
+      return reply.status(200).send({ tag });
+    }
+  );
 
   fastify.post(
     "/",

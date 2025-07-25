@@ -12,7 +12,7 @@ declare module "fastify" {
     tag: {
       create: (input: TagInput) => Promise<Tag>;
       get: () => Promise<Tag[]>;
-      // getById: (id: number) => Promise<Image | null>
+      getById: (id: string) => Promise<Tag | null>;
       // update: (id: number, input: ImageInput) => Promise<Image | null>
       // delete: (id: number) => Promise<boolean>
     };
@@ -49,7 +49,19 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async getById(id: number): Promise<Image | null> {},
+    async getById(id: string): Promise<Tag | null> {
+      try {
+        const {
+          rows: [tag],
+        } = await fastify.pg.query<Tag>("SELECT * FROM tags WHERE id = $1", [
+          id,
+        ]);
+        return tag || null;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to fetch tag by ID");
+      }
+    },
 
     // async update(id: number, input: ImageInput): Promise<Image | null> {},
 
