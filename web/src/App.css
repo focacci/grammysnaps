@@ -68,8 +68,8 @@ body {
 
 /* Profile icon styles */
 .profile-icon {
-  width: 48px;
-  height: 48px;
+  width: 80px;
+  height: 80px;
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
@@ -89,6 +89,126 @@ body {
 
 /* Main content area */
 .main-content {
-  padding: 2rem;
+  padding: 0;
   min-height: calc(100vh - 80px); /* Adjust based on navbar height */
+}
+
+/* Content layout */
+.content-layout {
+  display: flex;
+  height: calc(100vh - 80px);
+}
+
+/* Filter Sidebar */
+.filter-sidebar {
+  width: 250px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.filter-sidebar h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.filter-item:hover {
+  background-color: rgba(205, 127, 50, 0.1);
+}
+
+.filter-item input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.filter-label {
+  font-weight: 500;
+  color: #333;
+}
+
+.filter-type {
+  font-size: 0.85rem;
+  color: #666;
+  margin-left: auto;
+}
+
+/* Image Grid Container */
+.image-grid-container {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-height: 100%;
+}
+
+/* Image Cards */
+.image-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.image-placeholder {
+  height: 200px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #999;
+}
+
+.image-info {
+  padding: 1rem;
+}
+
+.image-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.image-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tag-chip {
+  background-color: #cd7f32;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
