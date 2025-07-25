@@ -10,7 +10,7 @@ declare module "fastify" {
       get: () => Promise<Image[]>;
       applyTags: (imageId: string, tags: string[]) => Promise<void>;
       // getById: (id: number) => Promise<Image | null>
-      // update: (id: number, input: ImageInput) => Promise<Image | null>
+      update: (id: string, input: ImageInput) => Promise<Image | null>;
       // delete: (id: number) => Promise<boolean>
     };
   }
@@ -64,9 +64,24 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async getById(id: number): Promise<Image | null> {},
+    // async getById(id: string): Promise<Image | null> {},
 
-    // async update(id: number, input: ImageInput): Promise<Image | null> {},
+    async update(id: string, input: ImageInput): Promise<Image | null> {
+      const { filename, tags } = input;
+      try {
+        const {
+          rows: [image],
+        } = await fastify.pg.query<Image>(
+          "UPDATE images SET filename = $1, tags = $2, updated_at = $3 WHERE id = $4 RETURNING *",
+          [filename, tags ?? [], new Date().toISOString(), id]
+        );
+        if (tags) await fastify.image.applyTags(image.id, tags);
+        return image;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to update image");
+      }
+    },
 
     // async delete(id: number): Promise<boolean> {}
   });

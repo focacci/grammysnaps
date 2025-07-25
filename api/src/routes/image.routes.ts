@@ -27,9 +27,13 @@ const updateImageParamsSchema = {
 
 const updateImageBodySchema = {
   type: "object",
-  required: ["imageId"],
+  required: [],
   properties: {
     imageId: { type: "string", format: "uuid" },
+    tags: {
+      type: "array",
+      items: { type: "string", format: "uuid" },
+    },
   },
 };
 
@@ -61,8 +65,11 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { imageId } = request.params as UpdateImageParams;
       const { filename, tags } = request.body as ImageInput;
-      if (tags) await fastify.image.applyTags(imageId, tags);
-      return reply.status(204).send();
+      const image = await fastify.image.update(imageId, {
+        filename,
+        tags,
+      });
+      return reply.status(200).send({ image });
     }
   );
 };
