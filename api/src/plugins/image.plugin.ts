@@ -74,7 +74,14 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           "UPDATE images SET filename = $1, tags = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
           [filename, tags ?? [], id]
         );
-        if (tags) await fastify.image.applyTags(image.id, tags);
+        if (tags) {
+          await fastify.pg.query("DELETE FROM image_tags WHERE image_id = $1", [
+            id,
+          ]);
+          if (tags.length > 0) {
+            await fastify.image.applyTags(id, tags);
+          }
+        }
         return image;
       } catch (err) {
         fastify.log.error(err);
