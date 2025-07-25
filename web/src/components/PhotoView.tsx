@@ -34,6 +34,13 @@ function PhotoView() {
     "Person" | "Location" | "Event" | "Time"
   >("Person");
   const [creatingTag, setCreatingTag] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [editFilename, setEditFilename] = useState("");
+  const [editImageTags, setEditImageTags] = useState<string[]>([]);
+  const [savingImage, setSavingImage] = useState(false);
+  const [deletingImage, setDeletingImage] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
@@ -187,6 +194,110 @@ function PhotoView() {
     setNewTagType("Person");
   };
 
+  const handleImageClick = (image: Image) => {
+    setSelectedImage(image);
+    setEditFilename(image.filename);
+    setEditImageTags(image.tags || []);
+    setIsEditingImage(false);
+    setShowImageModal(true);
+  };
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    setSelectedImage(null);
+    setIsEditingImage(false);
+    setEditFilename("");
+    setEditImageTags([]);
+  };
+
+  const handleEditToggle = () => {
+    setIsEditingImage(!isEditingImage);
+    if (selectedImage && !isEditingImage) {
+      setEditFilename(selectedImage.filename);
+      setEditImageTags(selectedImage.tags || []);
+    }
+  };
+
+  const handleEditImageTagToggle = (tagId: string) => {
+    setEditImageTags((prev) =>
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+    );
+  };
+
+  const handleSaveImage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedImage || !editFilename.trim()) {
+      alert("Please enter a filename");
+      return;
+    }
+
+    setSavingImage(true);
+    try {
+      const response = await fetch(`/api/image/${selectedImage.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: editFilename.trim(),
+          tags: editImageTags,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update image: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Update the image in the list
+      setImages((prev) =>
+        prev.map((img) => (img.id === selectedImage.id ? result.image : img))
+      );
+
+      // Update selected image
+      setSelectedImage(result.image);
+      setIsEditingImage(false);
+    } catch (err) {
+      console.error("Error updating image:", err);
+      alert(err instanceof Error ? err.message : "Failed to update image");
+    } finally {
+      setSavingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    if (!selectedImage) return;
+
+    if (
+      !confirm(`Are you sure you want to delete "${selectedImage.filename}"?`)
+    ) {
+      return;
+    }
+
+    setDeletingImage(true);
+    try {
+      const response = await fetch(`/api/image/${selectedImage.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete image: ${response.status}`);
+      }
+
+      // Remove the image from the list
+      setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
+
+      // Close the modal
+      closeImageModal();
+    } catch (err) {
+      console.error("Error deleting image:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete image");
+    } finally {
+      setDeletingImage(false);
+    }
+  };
+
   const toggleSection = (sectionName: string) => {
     setCollapsedSections((prev) => ({
       ...prev,
@@ -314,7 +425,11 @@ function PhotoView() {
           ) : (
             <div className="image-grid">
               {filteredImages.map((image) => (
-                <div key={image.id} className="image-card">
+                <div
+                  key={image.id}
+                  className="image-card"
+                  onClick={() => handleImageClick(image)}
+                >
                   <div className="image-placeholder">
                     <span>📸</span>
                   </div>
@@ -465,6 +580,132 @@ function PhotoView() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showImageModal && selectedImage && (
+        <div className="modal-overlay" onClick={closeImageModal}>
+          <div
+            className="modal-content image-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>{isEditingImage ? "Edit Image" : "Image Preview"}</h2>
+              <div className="modal-header-actions">
+                {!isEditingImage && (
+                  <button
+                    className="edit-btn"
+                    onClick={handleEditToggle}
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                )}
+                <button className="close-btn" onClick={closeImageModal}>
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="image-preview-content">
+              {!isEditingImage ? (
+                <>
+                  <div className="image-preview-placeholder">
+                    <span>📸</span>
+                  </div>
+                  <div className="image-preview-info">
+                    <h3>{selectedImage.filename}</h3>
+                    <div className="image-tags">
+                      {selectedImage.tags?.map((tagId, index) => (
+                        <span key={index} className="tag-chip">
+                          {tags.find((tag) => tag.id === tagId)?.name ||
+                            "*Unnamed Tag*"}
+                        </span>
+                      )) || <span className="no-tags">No tags</span>}
+                    </div>
+                    {selectedImage.created_at && (
+                      <p className="image-date">
+                        Created:{" "}
+                        {new Date(
+                          selectedImage.created_at
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <form onSubmit={handleSaveImage} className="upload-form">
+                  <div className="form-group">
+                    <label htmlFor="editFilename">Filename:</label>
+                    <input
+                      id="editFilename"
+                      type="text"
+                      value={editFilename}
+                      onChange={(e) => setEditFilename(e.target.value)}
+                      placeholder="Enter image filename"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Select Tags:</label>
+                    <div className="tag-selection">
+                      {Object.entries(groupedTags).map(
+                        ([sectionName, sectionTags]) =>
+                          sectionTags.length > 0 && (
+                            <div key={sectionName} className="tag-group">
+                              <h4>{sectionName}</h4>
+                              <div className="tag-checkboxes">
+                                {sectionTags.map((tag) => (
+                                  <label key={tag.id} className="tag-checkbox">
+                                    <input
+                                      type="checkbox"
+                                      checked={editImageTags.includes(tag.id)}
+                                      onChange={() =>
+                                        handleEditImageTagToggle(tag.id)
+                                      }
+                                    />
+                                    <span>{tag.name}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      onClick={handleDeleteImage}
+                      disabled={deletingImage}
+                      className="delete-btn"
+                    >
+                      {deletingImage ? "Deleting..." : "Delete Image"}
+                    </button>
+                    <div className="form-actions-right">
+                      <button
+                        type="button"
+                        onClick={handleEditToggle}
+                        className="cancel-btn"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={savingImage}
+                        className="submit-btn"
+                      >
+                        {savingImage ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}
