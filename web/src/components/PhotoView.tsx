@@ -322,8 +322,8 @@ function PhotoView() {
             .map((tagName) => tags.find((tag) => tag.name === tagName)?.id)
             .filter((tagId): tagId is string => tagId !== undefined);
 
-          // Check if image has any of the selected tag IDs
-          return selectedTagIds.some((tagId) => image.tags?.includes(tagId));
+          // Check if image has ALL of the selected tag IDs (AND logic)
+          return selectedTagIds.every((tagId) => image.tags?.includes(tagId));
         });
 
   if (loading) {
@@ -388,14 +388,15 @@ function PhotoView() {
                     {!collapsedSections[sectionName] && (
                       <div className="filter-list">
                         {sectionTags.map((tag) => (
-                          <label key={tag.id} className="filter-item">
-                            <input
-                              type="checkbox"
-                              checked={selectedTags.includes(tag.name)}
-                              onChange={() => handleTagToggle(tag.name)}
-                            />
+                          <div
+                            key={tag.id}
+                            className={`filter-item ${
+                              selectedTags.includes(tag.name) ? "selected" : ""
+                            }`}
+                            onClick={() => handleTagToggle(tag.name)}
+                          >
                             <span className="filter-label">{tag.name}</span>
-                          </label>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -484,14 +485,17 @@ function PhotoView() {
                           <h4>{sectionName}</h4>
                           <div className="tag-checkboxes">
                             {sectionTags.map((tag) => (
-                              <label key={tag.id} className="tag-checkbox">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedUploadTags.includes(tag.id)}
-                                  onChange={() => handleUploadTagToggle(tag.id)}
-                                />
+                              <div
+                                key={tag.id}
+                                className={`tag-checkbox ${
+                                  selectedUploadTags.includes(tag.id)
+                                    ? "selected"
+                                    : ""
+                                }`}
+                                onClick={() => handleUploadTagToggle(tag.id)}
+                              >
                                 <span>{tag.name}</span>
-                              </label>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -659,16 +663,19 @@ function PhotoView() {
                               <h4>{sectionName}</h4>
                               <div className="tag-checkboxes">
                                 {sectionTags.map((tag) => (
-                                  <label key={tag.id} className="tag-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={editImageTags.includes(tag.id)}
-                                      onChange={() =>
-                                        handleEditImageTagToggle(tag.id)
-                                      }
-                                    />
+                                  <div
+                                    key={tag.id}
+                                    className={`tag-checkbox ${
+                                      editImageTags.includes(tag.id)
+                                        ? "selected"
+                                        : ""
+                                    }`}
+                                    onClick={() =>
+                                      handleEditImageTagToggle(tag.id)
+                                    }
+                                  >
                                     <span>{tag.name}</span>
-                                  </label>
+                                  </div>
                                 ))}
                               </div>
                             </div>

@@ -178,25 +178,35 @@
 .filter-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  padding: 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .filter-item:hover {
   background-color: var(--bg-secondary);
+  border-color: var(--border-light);
 }
 
-.filter-item input[type="checkbox"] {
-  margin: 0;
-  cursor: pointer;
+.filter-item.selected {
+  background-color: var(--primary-orange);
+  color: var(--text-inverse);
+  border-color: var(--primary-orange-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-item.selected:hover {
+  background-color: var(--primary-orange-dark);
+  border-color: var(--primary-orange-dark);
 }
 
 .filter-label {
   font-weight: 500;
-  color: var(--text-primary);
+  color: inherit;
+  flex: 1;
+  text-align: left;
 }
 
 /* Image Grid Container */
@@ -463,27 +473,40 @@
 
 .tag-checkboxes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 8px;
 }
 
 .tag-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 4px;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-primary);
+  text-align: center;
+  font-size: 14px;
 }
 
 .tag-checkbox:hover {
   background-color: var(--bg-secondary);
+  border-color: var(--border-medium);
 }
 
-.tag-checkbox input[type="checkbox"] {
-  margin: 0;
+.tag-checkbox.selected {
+  background-color: var(--secondary-blue);
+  color: var(--text-inverse);
+  border-color: var(--secondary-blue-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.tag-checkbox.selected:hover {
+  background-color: var(--secondary-blue-dark);
+  border-color: var(--secondary-blue-dark);
 }
 
 .form-actions {
