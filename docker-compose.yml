@@ -1,4 +1,14 @@
 services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
   api:
     build:
       context: ./api
@@ -11,6 +21,8 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://user:password@db:5432/grammysnaps
+    depends_on:
+      - db
     restart: unless-stopped
 
   db:

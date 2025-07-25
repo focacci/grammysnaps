@@ -1,0 +1,973 @@
+import { useState, useEffect } from "react";
+import "./PhotoView.css";
+
+// Type definitions
+interface Image {
+  id: string;
+  filename: string;
+  tags?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  type: "Person" | "Location" | "Event" | "Time";
+  created_at?: string;
+  updated_at?: string;
+}
+
+function PhotoView() {
+  const [images, setImages] = useState<Image[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFilename, setUploadFilename] = useState("");
+  const [selectedUploadTags, setSelectedUploadTags] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const [newTagType, setNewTagType] = useState<
+    "Person" | "Location" | "Event" | "Time"
+  >("Person");
+  const [creatingTag, setCreatingTag] = useState(false);
+  const [showEditTagModal, setShowEditTagModal] = useState(false);
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [editTagName, setEditTagName] = useState("");
+  const [editTagType, setEditTagType] = useState<
+    "Person" | "Location" | "Event" | "Time"
+  >("Person");
+  const [savingTag, setSavingTag] = useState(false);
+  const [deletingTag, setDeletingTag] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [editFilename, setEditFilename] = useState("");
+  const [editImageTags, setEditImageTags] = useState<string[]>([]);
+  const [savingImage, setSavingImage] = useState(false);
+  const [deletingImage, setDeletingImage] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<{
+    [key: string]: boolean;
+  }>({
+    People: false,
+    Places: false,
+    Events: false,
+    Time: false,
+  });
+  const [modalCollapsedSections, setModalCollapsedSections] = useState<{
+    [key: string]: boolean;
+  }>({
+    People: false,
+    Places: false,
+    Events: false,
+    Time: false,
+  });
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch images and tags in parallel
+        const [imagesResponse, tagsResponse] = await Promise.all([
+          fetch("/api/image"),
+          fetch("/api/tag"),
+        ]);
+
+        if (!imagesResponse.ok) {
+          throw new Error(`Failed to fetch images: ${imagesResponse.status}`);
+        }
+        if (!tagsResponse.ok) {
+          throw new Error(`Failed to fetch tags: ${tagsResponse.status}`);
+        }
+
+        const imagesData = await imagesResponse.json();
+        const tagsData = await tagsResponse.json();
+
+        setImages(imagesData.images || []);
+        setTags(tagsData.tags || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleTagToggle = (tagName: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagName)
+        ? prev.filter((t) => t !== tagName)
+        : [...prev, tagName]
+    );
+  };
+
+  const handleUploadTagToggle = (tagId: string) => {
+    setSelectedUploadTags((prev) =>
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+    );
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFilename.trim()) {
+      alert("Please enter a filename");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const response = await fetch("/api/image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: uploadFilename.trim(),
+          tags: selectedUploadTags,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload image: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Add the new image to the list
+      setImages((prev) => [result.image, ...prev]);
+
+      // Reset form and close modal
+      setUploadFilename("");
+      setSelectedUploadTags([]);
+      setShowUploadModal(false);
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      alert(err instanceof Error ? err.message : "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowUploadModal(false);
+    setUploadFilename("");
+    setSelectedUploadTags([]);
+  };
+
+  const handleCreateTagSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTagName.trim()) {
+      alert("Please enter a tag name");
+      return;
+    }
+
+    setCreatingTag(true);
+    try {
+      const response = await fetch("/api/tag", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newTagName.trim(),
+          type: newTagType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create tag: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Add the new tag to the list
+      setTags((prev) => [...prev, result.tag]);
+
+      // Reset form and close modal
+      setNewTagName("");
+      setNewTagType("Person");
+      setShowCreateTagModal(false);
+    } catch (err) {
+      console.error("Error creating tag:", err);
+      alert(err instanceof Error ? err.message : "Failed to create tag");
+    } finally {
+      setCreatingTag(false);
+    }
+  };
+
+  const closeCreateTagModal = () => {
+    setShowCreateTagModal(false);
+    setNewTagName("");
+    setNewTagType("Person");
+  };
+
+  const handleEditTag = (tag: Tag) => {
+    setEditingTag(tag);
+    setEditTagName(tag.name);
+    setEditTagType(tag.type);
+    setShowEditTagModal(true);
+  };
+
+  const closeEditTagModal = () => {
+    setShowEditTagModal(false);
+    setEditingTag(null);
+    setEditTagName("");
+    setEditTagType("Person");
+  };
+
+  const handleEditTagSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTag || !editTagName.trim()) {
+      alert("Please enter a tag name");
+      return;
+    }
+
+    setSavingTag(true);
+    try {
+      const response = await fetch(`/api/tag/${editingTag.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: editTagName.trim(),
+          type: editTagType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update tag: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Update the tag in the list
+      setTags((prev) =>
+        prev.map((tag) => (tag.id === editingTag.id ? result.tag : tag))
+      );
+
+      closeEditTagModal();
+    } catch (err) {
+      console.error("Error updating tag:", err);
+      alert(err instanceof Error ? err.message : "Failed to update tag");
+    } finally {
+      setSavingTag(false);
+    }
+  };
+
+  const handleDeleteTag = async () => {
+    if (!editingTag) return;
+
+    setDeletingTag(true);
+    try {
+      const response = await fetch(`/api/tag/${editingTag.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete tag: ${response.status}`);
+      }
+
+      // Remove the tag from the list
+      setTags((prev) => prev.filter((tag) => tag.id !== editingTag.id));
+
+      // Remove the tag from selected tags if it was selected
+      setSelectedTags((prev) =>
+        prev.filter((tagName) => tagName !== editingTag.name)
+      );
+
+      // Remove the tag from any images that have it
+      setImages((prev) =>
+        prev.map((image) => ({
+          ...image,
+          tags: image.tags?.filter((tagId) => tagId !== editingTag.id) || [],
+        }))
+      );
+
+      closeEditTagModal();
+    } catch (err) {
+      console.error("Error deleting tag:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete tag");
+    } finally {
+      setDeletingTag(false);
+    }
+  };
+
+  const handleImageClick = (image: Image) => {
+    setSelectedImage(image);
+    setEditFilename(image.filename);
+    setEditImageTags(image.tags || []);
+    setIsEditingImage(false);
+    setShowImageModal(true);
+  };
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    setSelectedImage(null);
+    setIsEditingImage(false);
+    setEditFilename("");
+    setEditImageTags([]);
+  };
+
+  const handleEditToggle = () => {
+    setIsEditingImage(!isEditingImage);
+    if (selectedImage && !isEditingImage) {
+      setEditFilename(selectedImage.filename);
+      setEditImageTags(selectedImage.tags || []);
+    }
+  };
+
+  const handleEditImageTagToggle = (tagId: string) => {
+    setEditImageTags((prev) =>
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+    );
+  };
+
+  const handleSaveImage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedImage || !editFilename.trim()) {
+      alert("Please enter a filename");
+      return;
+    }
+
+    setSavingImage(true);
+    try {
+      const response = await fetch(`/api/image/${selectedImage.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: editFilename.trim(),
+          tags: editImageTags,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update image: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Update the image in the list
+      setImages((prev) =>
+        prev.map((img) => (img.id === selectedImage.id ? result.image : img))
+      );
+
+      // Update selected image
+      setSelectedImage(result.image);
+      setIsEditingImage(false);
+    } catch (err) {
+      console.error("Error updating image:", err);
+      alert(err instanceof Error ? err.message : "Failed to update image");
+    } finally {
+      setSavingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    if (!selectedImage) return;
+
+    if (
+      !confirm(`Are you sure you want to delete "${selectedImage.filename}"?`)
+    ) {
+      return;
+    }
+
+    setDeletingImage(true);
+    try {
+      const response = await fetch(`/api/image/${selectedImage.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete image: ${response.status}`);
+      }
+
+      // Remove the image from the list
+      setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
+
+      // Close the modal
+      closeImageModal();
+    } catch (err) {
+      console.error("Error deleting image:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete image");
+    } finally {
+      setDeletingImage(false);
+    }
+  };
+
+  const toggleSection = (sectionName: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
+    }));
+  };
+
+  const toggleModalSection = (sectionName: string) => {
+    setModalCollapsedSections((prev) => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
+    }));
+  };
+
+  // Group tags by type
+  const groupedTags = {
+    People: tags.filter((tag) => tag.type === "Person"),
+    Places: tags.filter((tag) => tag.type === "Location"),
+    Events: tags.filter((tag) => tag.type === "Event"),
+    Time: tags.filter((tag) => tag.type === "Time"),
+  };
+
+  const filteredImages =
+    selectedTags.length === 0
+      ? images
+      : images.filter((image) => {
+          // Convert selected tag names to tag IDs
+          const selectedTagIds = selectedTags
+            .map((tagName) => tags.find((tag) => tag.name === tagName)?.id)
+            .filter((tagId): tagId is string => tagId !== undefined);
+
+          // Check if image has ALL of the selected tag IDs (AND logic)
+          return selectedTagIds.every((tagId) => image.tags?.includes(tagId));
+        });
+
+  if (loading) {
+    return (
+      <div className="photo-view">
+        <div className="loading-container">
+          <div className="loading-spinner">Loading photos...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="photo-view">
+        <div className="error-container">
+          <div className="error-message">
+            <h3>Error loading photos</h3>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="photo-view">
+      <div className="content-layout">
+        {/* Filter Sidebar */}
+        <aside className="filter-sidebar">
+          <div className="sidebar-header">
+            <h3>Filter by Tags</h3>
+          </div>
+          <div className="create-tag-section">
+            <button
+              className="create-tag-btn"
+              onClick={() => setShowCreateTagModal(true)}
+            >
+              + Create Tag
+            </button>
+          </div>
+          <div className="filter-sections">
+            {Object.entries(groupedTags).map(
+              ([sectionName, sectionTags]) =>
+                sectionTags.length > 0 && (
+                  <div key={sectionName} className="filter-section">
+                    <button
+                      className="section-header"
+                      onClick={() => toggleSection(sectionName)}
+                      aria-expanded={!collapsedSections[sectionName]}
+                    >
+                      <span
+                        className={`section-caret ${
+                          collapsedSections[sectionName] ? "collapsed" : ""
+                        }`}
+                      >
+                        ▼
+                      </span>
+                      <span className="section-title">{sectionName}</span>
+                    </button>
+                    {!collapsedSections[sectionName] && (
+                      <div className="filter-list">
+                        {sectionTags.map((tag) => (
+                          <div
+                            key={tag.id}
+                            className={`filter-item ${
+                              selectedTags.includes(tag.name) ? "selected" : ""
+                            }`}
+                          >
+                            <span
+                              className="filter-label"
+                              onClick={() => handleTagToggle(tag.name)}
+                            >
+                              {tag.name}
+                            </span>
+                            <div className="filter-item-actions">
+                              <button
+                                className="edit-tag-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditTag(tag);
+                                }}
+                                title="Edit tag"
+                              >
+                                ✏️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+            )}
+          </div>
+        </aside>
+
+        {/* Image Grid */}
+        <section className="image-grid-container">
+          <div className="upload-section">
+            <button
+              className="upload-btn-main"
+              onClick={() => setShowUploadModal(true)}
+            >
+              + Upload Image
+            </button>
+          </div>
+          {filteredImages.length === 0 ? (
+            <div className="empty-state">
+              <p>
+                No images found{" "}
+                {selectedTags.length > 0 ? "with selected tags" : ""}
+              </p>
+            </div>
+          ) : (
+            <div className="image-grid">
+              {filteredImages.map((image) => (
+                <div
+                  key={image.id}
+                  className="image-card"
+                  onClick={() => handleImageClick(image)}
+                >
+                  <div className="image-placeholder">
+                    <span>📸</span>
+                  </div>
+                  <div className="image-info">
+                    <h4>{image.filename}</h4>
+                    <div className="image-tags">
+                      {image.tags?.map((tagId, index) => (
+                        <span key={index} className="tag-chip">
+                          {tags.find((tag) => tag.id === tagId)?.name ||
+                            "*Unnamed Tag*"}
+                        </span>
+                      )) || <span className="no-tags">No tags</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Upload New Image</h2>
+              <button className="close-btn" onClick={closeModal}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUploadSubmit} className="upload-form">
+              <div className="form-group">
+                <label htmlFor="filename">Filename:</label>
+                <input
+                  id="filename"
+                  type="text"
+                  value={uploadFilename}
+                  onChange={(e) => setUploadFilename(e.target.value)}
+                  placeholder="Enter image filename"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Select Tags:</label>
+                <div className="tag-selection">
+                  {Object.entries(groupedTags).map(
+                    ([sectionName, sectionTags]) =>
+                      sectionTags.length > 0 && (
+                        <div key={sectionName} className="filter-section">
+                          <button
+                            type="button"
+                            className="section-header"
+                            onClick={() => toggleModalSection(sectionName)}
+                            aria-expanded={!modalCollapsedSections[sectionName]}
+                          >
+                            <span
+                              className={`section-caret ${
+                                modalCollapsedSections[sectionName]
+                                  ? "collapsed"
+                                  : ""
+                              }`}
+                            >
+                              ▼
+                            </span>
+                            <span className="section-title">{sectionName}</span>
+                          </button>
+                          {!modalCollapsedSections[sectionName] && (
+                            <div className="filter-list">
+                              <div className="tag-checkboxes">
+                                {sectionTags.map((tag) => (
+                                  <div
+                                    key={tag.id}
+                                    className={`tag-checkbox ${
+                                      selectedUploadTags.includes(tag.id)
+                                        ? "selected"
+                                        : ""
+                                    }`}
+                                    onClick={() =>
+                                      handleUploadTagToggle(tag.id)
+                                    }
+                                  >
+                                    <span>{tag.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                  )}
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="submit-btn"
+                >
+                  {uploading ? "Uploading..." : "Upload Image"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Tag Modal */}
+      {showCreateTagModal && (
+        <div className="modal-overlay" onClick={closeCreateTagModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Tag</h2>
+              <button className="close-btn" onClick={closeCreateTagModal}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleCreateTagSubmit} className="upload-form">
+              <div className="form-group">
+                <label htmlFor="tagName">Tag Name:</label>
+                <input
+                  id="tagName"
+                  type="text"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  placeholder="Enter tag name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tagType">Tag Type:</label>
+                <select
+                  id="tagType"
+                  value={newTagType}
+                  onChange={(e) =>
+                    setNewTagType(
+                      e.target.value as "Person" | "Location" | "Event" | "Time"
+                    )
+                  }
+                  className="tag-type-select"
+                >
+                  <option value="Person">Person</option>
+                  <option value="Location">Location</option>
+                  <option value="Event">Event</option>
+                  <option value="Time">Time</option>
+                </select>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={closeCreateTagModal}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingTag}
+                  className="submit-btn"
+                >
+                  {creatingTag ? "Creating..." : "Create Tag"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showImageModal && selectedImage && (
+        <div className="modal-overlay" onClick={closeImageModal}>
+          <div
+            className="modal-content image-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>{isEditingImage ? "Edit Image" : "Image Preview"}</h2>
+              <div className="modal-header-actions">
+                {!isEditingImage && (
+                  <button
+                    className="edit-btn"
+                    onClick={handleEditToggle}
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                )}
+                <button className="close-btn" onClick={closeImageModal}>
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="image-preview-content">
+              {!isEditingImage ? (
+                <>
+                  <div className="image-preview-placeholder">
+                    <span>📸</span>
+                  </div>
+                  <div className="image-preview-info">
+                    <h3>{selectedImage.filename}</h3>
+                    <div className="image-tags">
+                      {selectedImage.tags?.map((tagId, index) => (
+                        <span key={index} className="tag-chip">
+                          {tags.find((tag) => tag.id === tagId)?.name ||
+                            "*Unnamed Tag*"}
+                        </span>
+                      )) || <span className="no-tags">No tags</span>}
+                    </div>
+                    {selectedImage.created_at && (
+                      <p className="image-date">
+                        Created:{" "}
+                        {new Date(
+                          selectedImage.created_at
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <form onSubmit={handleSaveImage} className="upload-form">
+                  <div className="form-group">
+                    <label htmlFor="editFilename">Filename:</label>
+                    <input
+                      id="editFilename"
+                      type="text"
+                      value={editFilename}
+                      onChange={(e) => setEditFilename(e.target.value)}
+                      placeholder="Enter image filename"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Select Tags:</label>
+                    <div className="tag-selection">
+                      {Object.entries(groupedTags).map(
+                        ([sectionName, sectionTags]) =>
+                          sectionTags.length > 0 && (
+                            <div key={sectionName} className="filter-section">
+                              <button
+                                type="button"
+                                className="section-header"
+                                onClick={() => toggleModalSection(sectionName)}
+                                aria-expanded={
+                                  !modalCollapsedSections[sectionName]
+                                }
+                              >
+                                <span
+                                  className={`section-caret ${
+                                    modalCollapsedSections[sectionName]
+                                      ? "collapsed"
+                                      : ""
+                                  }`}
+                                >
+                                  ▼
+                                </span>
+                                <span className="section-title">
+                                  {sectionName}
+                                </span>
+                              </button>
+                              {!modalCollapsedSections[sectionName] && (
+                                <div className="filter-list">
+                                  <div className="tag-checkboxes">
+                                    {sectionTags.map((tag) => (
+                                      <div
+                                        key={tag.id}
+                                        className={`tag-checkbox ${
+                                          editImageTags.includes(tag.id)
+                                            ? "selected"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          handleEditImageTagToggle(tag.id)
+                                        }
+                                      >
+                                        <span>{tag.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      onClick={handleDeleteImage}
+                      disabled={deletingImage}
+                      className="delete-btn"
+                    >
+                      {deletingImage ? "Deleting..." : "Delete Image"}
+                    </button>
+                    <div className="form-actions-right">
+                      <button
+                        type="button"
+                        onClick={handleEditToggle}
+                        className="cancel-btn"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={savingImage}
+                        className="submit-btn"
+                      >
+                        {savingImage ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Tag Modal */}
+      {showEditTagModal && editingTag && (
+        <div className="modal-overlay" onClick={closeEditTagModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Tag</h2>
+              <button className="close-btn" onClick={closeEditTagModal}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleEditTagSubmit} className="upload-form">
+              <div className="form-group">
+                <label htmlFor="editTagName">Tag Name:</label>
+                <input
+                  id="editTagName"
+                  type="text"
+                  value={editTagName}
+                  onChange={(e) => setEditTagName(e.target.value)}
+                  placeholder="Enter tag name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="editTagType">Tag Type:</label>
+                <select
+                  id="editTagType"
+                  value={editTagType}
+                  onChange={(e) =>
+                    setEditTagType(
+                      e.target.value as "Person" | "Location" | "Event" | "Time"
+                    )
+                  }
+                  className="tag-type-select"
+                >
+                  <option value="Person">Person</option>
+                  <option value="Location">Location</option>
+                  <option value="Event">Event</option>
+                  <option value="Time">Time</option>
+                </select>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={handleDeleteTag}
+                  disabled={deletingTag}
+                  className="delete-btn"
+                >
+                  {deletingTag ? "Deleting..." : "Delete Tag"}
+                </button>
+                <div className="form-actions-right">
+                  <button
+                    type="button"
+                    onClick={closeEditTagModal}
+                    className="cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingTag}
+                    className="submit-btn"
+                  >
+                    {savingTag ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default PhotoView;
