@@ -33,8 +33,10 @@ function App() {
       <nav className="navbar">
         <div className="navbar-left">
           <div className="logo" onClick={() => setCurrentView("home")}>
-            Grammy Snaps
+            Grammysnaps
           </div>
+        </div>
+        <div className="navbar-center">
           <button
             className={`nav-button ${currentView === "photos" ? "active" : ""}`}
             onClick={() => setCurrentView("photos")}
@@ -44,7 +46,7 @@ function App() {
         </div>
         <div className="navbar-right">
           <div className="profile-icon">
-            <span>�‍💼</span>
+            <span>👨‍💼</span>
           </div>
         </div>
       </nav>
