@@ -14,6 +14,17 @@ const createImageRequestBodySchema = {
   additionalProperties: false, // Prevents extra fields in the body
 };
 
+interface GetImageParams {
+  imageId: string;
+}
+const getImageParamsSchema = {
+  type: "object",
+  required: ["imageId"],
+  properties: {
+    imageId: { type: "string", format: "uuid" },
+  },
+};
+
 interface UpdateImageParams {
   imageId: string;
 }
@@ -42,6 +53,23 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
     const images = await fastify.image.get();
     return reply.status(200).send({ images });
   });
+
+  fastify.get(
+    "/:imageId",
+    {
+      schema: {
+        params: getImageParamsSchema,
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { imageId } = request.params as GetImageParams;
+      const image = await fastify.image.getById(imageId);
+      if (!image) {
+        return reply.status(404).send({ message: "Image not found" });
+      }
+      return reply.status(200).send({ image });
+    }
+  );
 
   fastify.post(
     "/",

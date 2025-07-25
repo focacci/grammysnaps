@@ -9,7 +9,7 @@ declare module "fastify" {
       create: (input: ImageInput) => Promise<Image>;
       get: () => Promise<Image[]>;
       applyTags: (imageId: string, tags: string[]) => Promise<void>;
-      // getById: (id: number) => Promise<Image | null>
+      getById: (id: string) => Promise<Image | null>;
       update: (id: string, input: ImageInput) => Promise<Image | null>;
       // delete: (id: number) => Promise<boolean>
     };
@@ -64,7 +64,20 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async getById(id: string): Promise<Image | null> {},
+    async getById(id: string): Promise<Image | null> {
+      try {
+        const {
+          rows: [image],
+        } = await fastify.pg.query<Image>(
+          "SELECT * FROM images WHERE id = $1",
+          [id]
+        );
+        return image || null;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to fetch image by ID");
+      }
+    },
 
     async update(id: string, input: ImageInput): Promise<Image | null> {
       const { filename, tags } = input;
