@@ -4,8 +4,10 @@ import "./PhotoView.css";
 // Type definitions
 interface Image {
   id: string;
+  title?: string;
   filename: string;
   tags?: string[];
+  s3_url?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -25,9 +27,11 @@ function PhotoView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [uploadFilename, setUploadFilename] = useState("");
+  const [uploadTitle, setUploadTitle] = useState("");
   const [selectedUploadTags, setSelectedUploadTags] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [newTagType, setNewTagType] = useState<
@@ -45,7 +49,7 @@ function PhotoView() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [isEditingImage, setIsEditingImage] = useState(false);
-  const [editFilename, setEditFilename] = useState("");
+  const [editTitle, setEditTitle] = useState("");
   const [editImageTags, setEditImageTags] = useState<string[]>([]);
   const [savingImage, setSavingImage] = useState(false);
   const [deletingImage, setDeletingImage] = useState(false);
@@ -118,22 +122,43 @@ function PhotoView() {
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!uploadFilename.trim()) {
-      alert("Please enter a filename");
+    if (!uploadFile) {
+      alert("Please select a file to upload");
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(uploadFile.type)) {
+      alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+      return;
+    }
+
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (uploadFile.size > maxSize) {
+      alert("File is too large. Maximum size is 10MB.");
       return;
     }
 
     setUploading(true);
     try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      if (uploadTitle.trim()) {
+        formData.append("title", uploadTitle.trim());
+      }
+      formData.append("tags", JSON.stringify(selectedUploadTags));
+
       const response = await fetch("/api/image", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          filename: uploadFilename.trim(),
-          tags: selectedUploadTags,
-        }),
+        body: formData, // Don't set Content-Type header, let browser handle it
       });
 
       if (!response.ok) {
@@ -146,8 +171,9 @@ function PhotoView() {
       setImages((prev) => [result.image, ...prev]);
 
       // Reset form and close modal
-      setUploadFilename("");
+      setUploadTitle("");
       setSelectedUploadTags([]);
+      setUploadFile(null);
       setShowUploadModal(false);
     } catch (err) {
       console.error("Error uploading image:", err);
@@ -159,8 +185,55 @@ function PhotoView() {
 
   const closeModal = () => {
     setShowUploadModal(false);
-    setUploadFilename("");
+    setUploadTitle("");
     setSelectedUploadTags([]);
+    setUploadFile(null);
+    setDragOver(false);
+  };
+
+  const handleFileSelect = (file: File) => {
+    setUploadFile(file);
+    // Don't auto-populate title with filename
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      // Validate file type
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (allowedTypes.includes(file.type)) {
+        handleFileSelect(file);
+      } else {
+        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+      }
+    }
   };
 
   const handleCreateTagSubmit = async (e: React.FormEvent) => {
@@ -304,7 +377,7 @@ function PhotoView() {
 
   const handleImageClick = (image: Image) => {
     setSelectedImage(image);
-    setEditFilename(image.filename);
+    setEditTitle(image.title || "");
     setEditImageTags(image.tags || []);
     setIsEditingImage(false);
     setShowImageModal(true);
@@ -314,14 +387,14 @@ function PhotoView() {
     setShowImageModal(false);
     setSelectedImage(null);
     setIsEditingImage(false);
-    setEditFilename("");
+    setEditTitle("");
     setEditImageTags([]);
   };
 
   const handleEditToggle = () => {
     setIsEditingImage(!isEditingImage);
     if (selectedImage && !isEditingImage) {
-      setEditFilename(selectedImage.filename);
+      setEditTitle(selectedImage.title || "");
       setEditImageTags(selectedImage.tags || []);
     }
   };
@@ -334,8 +407,8 @@ function PhotoView() {
 
   const handleSaveImage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedImage || !editFilename.trim()) {
-      alert("Please enter a filename");
+    if (!selectedImage) {
+      alert("No image selected");
       return;
     }
 
@@ -347,7 +420,7 @@ function PhotoView() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          filename: editFilename.trim(),
+          title: editTitle.trim() || null,
           tags: editImageTags,
         }),
       });
@@ -403,6 +476,38 @@ function PhotoView() {
       alert(err instanceof Error ? err.message : "Failed to delete image");
     } finally {
       setDeletingImage(false);
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (!selectedImage) return;
+
+    try {
+      const response = await fetch(`/api/image/${selectedImage.id}/download`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to download image: ${response.status}`);
+      }
+
+      // Create a blob from the response
+      const blob = await response.blob();
+
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = selectedImage.filename;
+
+      // Trigger the download
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading image:", err);
+      alert(err instanceof Error ? err.message : "Failed to download image");
     }
   };
 
@@ -562,11 +667,27 @@ function PhotoView() {
                   className="image-card"
                   onClick={() => handleImageClick(image)}
                 >
-                  <div className="image-placeholder">
-                    <span>📸</span>
-                  </div>
+                  {image.s3_url ? (
+                    <div className="image-container">
+                      <img
+                        src={image.s3_url}
+                        alt={image.filename}
+                        className="image-display"
+                        onError={(e) => {
+                          // Fallback to placeholder if image fails to load
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.parentElement!.innerHTML =
+                            '<div class="image-placeholder"><span>📸</span></div>';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="image-placeholder">
+                      <span>📸</span>
+                    </div>
+                  )}
                   <div className="image-info">
-                    <h4>{image.filename}</h4>
+                    <h4>{image.title || image.filename}</h4>
                     <div className="image-tags">
                       {image.tags?.map((tagId, index) => (
                         <span key={index} className="tag-chip">
@@ -595,14 +716,67 @@ function PhotoView() {
             </div>
             <form onSubmit={handleUploadSubmit} className="upload-form">
               <div className="form-group">
-                <label htmlFor="filename">Filename:</label>
+                <label>Select Image File:</label>
+                <div
+                  className={`file-drop-zone ${dragOver ? "drag-over" : ""}`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  {uploadFile ? (
+                    <div className="file-selected">
+                      <span className="file-icon">📁</span>
+                      <span className="file-name">{uploadFile.name}</span>
+                      <span className="file-size">
+                        ({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                      <button
+                        type="button"
+                        className="remove-file-btn"
+                        onClick={() => {
+                          setUploadFile(null);
+                          setUploadTitle("");
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="file-drop-content">
+                      <span className="drop-icon">📤</span>
+                      <p>Drag and drop an image here, or</p>
+                      <button
+                        type="button"
+                        className="browse-btn"
+                        onClick={() =>
+                          document.getElementById("file-input")?.click()
+                        }
+                      >
+                        Browse Files
+                      </button>
+                      <p className="file-info">
+                        Supported: JPEG, PNG, GIF, WebP (Max 10MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
                 <input
-                  id="filename"
+                  id="file-input"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleFileInputChange}
+                  style={{ display: "none" }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="title">Title (optional):</label>
+                <input
+                  id="title"
                   type="text"
-                  value={uploadFilename}
-                  onChange={(e) => setUploadFilename(e.target.value)}
-                  placeholder="Enter image filename"
-                  required
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  placeholder="Enter image title"
                 />
               </div>
 
@@ -667,7 +841,7 @@ function PhotoView() {
                 </button>
                 <button
                   type="submit"
-                  disabled={uploading}
+                  disabled={uploading || !uploadFile}
                   className="submit-btn"
                 >
                   {uploading ? "Uploading..." : "Upload Image"}
@@ -752,13 +926,23 @@ function PhotoView() {
               <h2>{isEditingImage ? "Edit Image" : "Image Preview"}</h2>
               <div className="modal-header-actions">
                 {!isEditingImage && (
-                  <button
-                    className="edit-btn"
-                    onClick={handleEditToggle}
-                    type="button"
-                  >
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      className="download-btn"
+                      onClick={handleDownloadImage}
+                      type="button"
+                      title="Download image"
+                    >
+                      Download
+                    </button>
+                    <button
+                      className="edit-btn"
+                      onClick={handleEditToggle}
+                      type="button"
+                    >
+                      Edit
+                    </button>
+                  </>
                 )}
                 <button className="close-btn" onClick={closeImageModal}>
                   ×
@@ -767,13 +951,36 @@ function PhotoView() {
             </div>
 
             <div className="image-preview-content">
+              {/* Always show image preview */}
+              {selectedImage.s3_url ? (
+                <div className="image-preview-container">
+                  <img
+                    src={selectedImage.s3_url}
+                    alt={selectedImage.filename}
+                    className="image-preview-display"
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement!.innerHTML =
+                        '<div class="image-preview-placeholder"><span>📸</span></div>';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="image-preview-placeholder">
+                  <span>📸</span>
+                </div>
+              )}
+
               {!isEditingImage ? (
                 <>
-                  <div className="image-preview-placeholder">
-                    <span>📸</span>
-                  </div>
                   <div className="image-preview-info">
-                    <h3>{selectedImage.filename}</h3>
+                    <h3>{selectedImage.title || selectedImage.filename}</h3>
+                    {selectedImage.title && (
+                      <p className="image-filename">
+                        File: {selectedImage.filename}
+                      </p>
+                    )}
                     <div className="image-tags">
                       {selectedImage.tags?.map((tagId, index) => (
                         <span key={index} className="tag-chip">
@@ -795,14 +1002,13 @@ function PhotoView() {
               ) : (
                 <form onSubmit={handleSaveImage} className="upload-form">
                   <div className="form-group">
-                    <label htmlFor="editFilename">Filename:</label>
+                    <label htmlFor="editTitle">Title (optional):</label>
                     <input
-                      id="editFilename"
+                      id="editTitle"
                       type="text"
-                      value={editFilename}
-                      onChange={(e) => setEditFilename(e.target.value)}
-                      placeholder="Enter image filename"
-                      required
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Enter image title"
                     />
                   </div>
 

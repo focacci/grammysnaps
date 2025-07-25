@@ -18,9 +18,8 @@ services:
     volumes:
       - ./api:/code
       - /code/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgres://user:password@db:5432/grammysnaps
+    env_file:
+      - ./api/.env
     depends_on:
       - db
     restart: unless-stopped
