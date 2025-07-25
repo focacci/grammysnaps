@@ -100,6 +100,20 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
       return reply.status(200).send({ image });
     }
   );
+
+  fastify.delete(
+    "/:imageId",
+    {
+      schema: {
+        params: getImageParamsSchema,
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { imageId } = request.params as GetImageParams;
+      await fastify.image.delete(imageId);
+      return reply.status(204).send();
+    }
+  );
 };
 
 export default imageRoutes;

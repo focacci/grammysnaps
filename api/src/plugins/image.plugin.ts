@@ -8,10 +8,10 @@ declare module "fastify" {
     image: {
       create: (input: ImageInput) => Promise<Image>;
       get: () => Promise<Image[]>;
-      applyTags: (imageId: string, tags: string[]) => Promise<void>;
       getById: (id: string) => Promise<Image | null>;
       update: (id: string, input: ImageInput) => Promise<Image | null>;
-      // delete: (id: number) => Promise<boolean>
+      delete: (id: string) => Promise<void>;
+      applyTags: (imageId: string, tags: string[]) => Promise<void>;
     };
   }
 }
@@ -50,20 +50,6 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async applyTags(imageId: string, tags: string[]): Promise<void> {
-      try {
-        for (const tagId of tags) {
-          fastify.pg.query(
-            "INSERT INTO image_tags (image_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-            [imageId, tagId]
-          );
-        }
-      } catch (err) {
-        fastify.log.error(err);
-        throw new Error("Failed to add tag to image");
-      }
-    },
-
     async getById(id: string): Promise<Image | null> {
       try {
         const {
@@ -96,7 +82,30 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async delete(id: number): Promise<boolean> {}
+    async delete(id: string): Promise<void> {
+      try {
+        await fastify.pg.query("DELETE FROM images WHERE id = $1", [id]);
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to delete image");
+      }
+    },
+
+    /** Utilities */
+
+    async applyTags(imageId: string, tags: string[]): Promise<void> {
+      try {
+        for (const tagId of tags) {
+          fastify.pg.query(
+            "INSERT INTO image_tags (image_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+            [imageId, tagId]
+          );
+        }
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to add tag to image");
+      }
+    },
   });
 };
 
