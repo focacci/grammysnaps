@@ -14,7 +14,7 @@ declare module "fastify" {
       get: () => Promise<Tag[]>;
       getById: (id: string) => Promise<Tag | null>;
       update: (id: string, input: TagInput) => Promise<Tag | null>;
-      // delete: (id: number) => Promise<boolean>
+      delete: (id: string) => Promise<void>;
     };
   }
 }
@@ -78,7 +78,14 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    // async delete(id: number): Promise<boolean> {}
+    async delete(id: string): Promise<void> {
+      try {
+        await fastify.pg.query("DELETE FROM tags WHERE id = $1", [id]);
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to delete tag");
+      }
+    },
   });
 };
 

@@ -98,6 +98,25 @@ const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
       return reply.status(200).send({ tag: updatedTag });
     }
   );
+
+  fastify.delete(
+    "/:tagId",
+    {
+      schema: getTagParamsSchema,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { tagId } = request.params as GetTagParams;
+      try {
+        await fastify.tag.delete(tagId);
+        return reply.status(204).send();
+      } catch (err) {
+        fastify.log.error(err);
+        return reply
+          .status(500)
+          .send({ message: "Failed to delete tag", error: err });
+      }
+    }
+  );
 };
 
 export default tagRoutes;
