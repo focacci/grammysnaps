@@ -1,9 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import PhotoView from "./components/PhotoView";
 
 function App() {
   const [currentView, setCurrentView] = useState<"home" | "photos">("home");
+  const [darkMode, setDarkMode] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check for system preference and saved preference on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+
+    if (savedTheme) {
+      setDarkMode(savedTheme === "dark");
+    } else {
+      setDarkMode(systemPrefersDark);
+    }
+  }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      darkMode ? "dark" : "light"
+    );
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
+
+  // Handle clicks outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -45,8 +96,27 @@ function App() {
           </button>
         </div>
         <div className="navbar-right">
-          <div className="profile-icon">
-            <span>👨‍💼</span>
+          <div className="profile-dropdown" ref={dropdownRef}>
+            <button
+              className="profile-icon"
+              onClick={toggleDropdown}
+              aria-label="Profile menu"
+            >
+              <span>👤</span>
+            </button>
+            {dropdownOpen && (
+              <div className="dropdown-menu">
+                <button
+                  className="dropdown-item"
+                  onClick={() => console.log("Account clicked")}
+                >
+                  Account
+                </button>
+                <button className="dropdown-item" onClick={toggleDarkMode}>
+                  {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
