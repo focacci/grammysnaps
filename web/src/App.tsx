@@ -24,6 +24,14 @@ function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<{
+    [key: string]: boolean;
+  }>({
+    People: false,
+    Places: false,
+    Events: false,
+    Time: false,
+  });
 
   // Fetch data from API
   useEffect(() => {
@@ -69,12 +77,33 @@ function App() {
     );
   };
 
+  const toggleSection = (sectionName: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
+    }));
+  };
+
+  // Group tags by type
+  const groupedTags = {
+    People: tags.filter((tag) => tag.type === "Person"),
+    Places: tags.filter((tag) => tag.type === "Location"),
+    Events: tags.filter((tag) => tag.type === "Event"),
+    Time: tags.filter((tag) => tag.type === "Time"),
+  };
+
   const filteredImages =
     selectedTags.length === 0
       ? images
-      : images.filter((image) =>
-          selectedTags.some((tag) => image.tags?.includes(tag))
-        );
+      : images.filter((image) => {
+          // Convert selected tag names to tag IDs
+          const selectedTagIds = selectedTags
+            .map(tagName => tags.find(tag => tag.name === tagName)?.id)
+            .filter((tagId): tagId is string => tagId !== undefined); // Type guard to remove undefined
+          
+          // Check if image has any of the selected tag IDs
+          return selectedTagIds.some((tagId) => image.tags?.includes(tagId));
+        });
 
   if (loading) {
     return (
@@ -141,18 +170,42 @@ function App() {
           {/* Filter Sidebar */}
           <aside className="filter-sidebar">
             <h3>Filter by Tags</h3>
-            <div className="filter-list">
-              {tags.map((tag) => (
-                <label key={tag.id} className="filter-item">
-                  <input
-                    type="checkbox"
-                    checked={selectedTags.includes(tag.name)}
-                    onChange={() => handleTagToggle(tag.name)}
-                  />
-                  <span className="filter-label">{tag.name}</span>
-                  <span className="filter-type">({tag.type})</span>
-                </label>
-              ))}
+            <div className="filter-sections">
+              {Object.entries(groupedTags).map(
+                ([sectionName, sectionTags]) =>
+                  sectionTags.length > 0 && (
+                    <div key={sectionName} className="filter-section">
+                      <button
+                        className="section-header"
+                        onClick={() => toggleSection(sectionName)}
+                        aria-expanded={!collapsedSections[sectionName]}
+                      >
+                        <span
+                          className={`section-caret ${
+                            collapsedSections[sectionName] ? "collapsed" : ""
+                          }`}
+                        >
+                          ▼
+                        </span>
+                        <span className="section-title">{sectionName}</span>
+                      </button>
+                      {!collapsedSections[sectionName] && (
+                        <div className="filter-list">
+                          {sectionTags.map((tag) => (
+                            <label key={tag.id} className="filter-item">
+                              <input
+                                type="checkbox"
+                                checked={selectedTags.includes(tag.name)}
+                                onChange={() => handleTagToggle(tag.name)}
+                              />
+                              <span className="filter-label">{tag.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+              )}
             </div>
           </aside>
 
