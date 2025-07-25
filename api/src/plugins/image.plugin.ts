@@ -24,13 +24,13 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("image", {
     async create(input: ImageInput): Promise<Image> {
-      const { filename, tags } = input;
+      const { title, filename, tags, s3Url } = input;
       try {
         const {
           rows: [image],
         } = await fastify.pg.query<Image>(
-          "INSERT INTO images (filename, tags) VALUES ($1, $2) RETURNING *",
-          [filename, tags ?? []]
+          "INSERT INTO images (title, filename, tags, s3_url) VALUES ($1, $2, $3, $4) RETURNING *",
+          [title ?? null, filename, tags ?? [], s3Url ?? null]
         );
         // if tags apply tag relations
         if (tags) await fastify.image.applyTags(image.id, tags);
@@ -67,13 +67,13 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async update(id: string, input: ImageInput): Promise<Image | null> {
-      const { filename, tags } = input;
+      const { title, tags } = input;
       try {
         const {
           rows: [image],
         } = await fastify.pg.query<Image>(
-          "UPDATE images SET filename = $1, tags = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
-          [filename, tags ?? [], id]
+          "UPDATE images SET title = $1, tags = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
+          [title ?? null, tags ?? [], id]
         );
         if (tags) {
           await fastify.pg.query("DELETE FROM image_tags WHERE image_id = $1", [
@@ -104,7 +104,7 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     async applyTags(imageId: string, tags: string[]): Promise<void> {
       try {
         for (const tagId of tags) {
-          fastify.pg.query(
+          await fastify.pg.query(
             "INSERT INTO image_tags (image_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
             [imageId, tagId]
           );
