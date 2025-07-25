@@ -49,6 +49,14 @@ function PhotoView() {
     Events: false,
     Time: false,
   });
+  const [modalCollapsedSections, setModalCollapsedSections] = useState<{
+    [key: string]: boolean;
+  }>({
+    People: false,
+    Places: false,
+    Events: false,
+    Time: false,
+  });
 
   // Fetch data from API
   useEffect(() => {
@@ -305,6 +313,13 @@ function PhotoView() {
     }));
   };
 
+  const toggleModalSection = (sectionName: string) => {
+    setModalCollapsedSections((prev) => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
+    }));
+  };
+
   // Group tags by type
   const groupedTags = {
     People: tags.filter((tag) => tag.type === "Person"),
@@ -481,23 +496,45 @@ function PhotoView() {
                   {Object.entries(groupedTags).map(
                     ([sectionName, sectionTags]) =>
                       sectionTags.length > 0 && (
-                        <div key={sectionName} className="tag-group">
-                          <h4>{sectionName}</h4>
-                          <div className="tag-checkboxes">
-                            {sectionTags.map((tag) => (
-                              <div
-                                key={tag.id}
-                                className={`tag-checkbox ${
-                                  selectedUploadTags.includes(tag.id)
-                                    ? "selected"
-                                    : ""
-                                }`}
-                                onClick={() => handleUploadTagToggle(tag.id)}
-                              >
-                                <span>{tag.name}</span>
+                        <div key={sectionName} className="filter-section">
+                          <button
+                            type="button"
+                            className="section-header"
+                            onClick={() => toggleModalSection(sectionName)}
+                            aria-expanded={!modalCollapsedSections[sectionName]}
+                          >
+                            <span
+                              className={`section-caret ${
+                                modalCollapsedSections[sectionName]
+                                  ? "collapsed"
+                                  : ""
+                              }`}
+                            >
+                              ▼
+                            </span>
+                            <span className="section-title">{sectionName}</span>
+                          </button>
+                          {!modalCollapsedSections[sectionName] && (
+                            <div className="filter-list">
+                              <div className="tag-checkboxes">
+                                {sectionTags.map((tag) => (
+                                  <div
+                                    key={tag.id}
+                                    className={`tag-checkbox ${
+                                      selectedUploadTags.includes(tag.id)
+                                        ? "selected"
+                                        : ""
+                                    }`}
+                                    onClick={() =>
+                                      handleUploadTagToggle(tag.id)
+                                    }
+                                  >
+                                    <span>{tag.name}</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       )
                   )}
@@ -659,25 +696,49 @@ function PhotoView() {
                       {Object.entries(groupedTags).map(
                         ([sectionName, sectionTags]) =>
                           sectionTags.length > 0 && (
-                            <div key={sectionName} className="tag-group">
-                              <h4>{sectionName}</h4>
-                              <div className="tag-checkboxes">
-                                {sectionTags.map((tag) => (
-                                  <div
-                                    key={tag.id}
-                                    className={`tag-checkbox ${
-                                      editImageTags.includes(tag.id)
-                                        ? "selected"
-                                        : ""
-                                    }`}
-                                    onClick={() =>
-                                      handleEditImageTagToggle(tag.id)
-                                    }
-                                  >
-                                    <span>{tag.name}</span>
+                            <div key={sectionName} className="filter-section">
+                              <button
+                                type="button"
+                                className="section-header"
+                                onClick={() => toggleModalSection(sectionName)}
+                                aria-expanded={
+                                  !modalCollapsedSections[sectionName]
+                                }
+                              >
+                                <span
+                                  className={`section-caret ${
+                                    modalCollapsedSections[sectionName]
+                                      ? "collapsed"
+                                      : ""
+                                  }`}
+                                >
+                                  ▼
+                                </span>
+                                <span className="section-title">
+                                  {sectionName}
+                                </span>
+                              </button>
+                              {!modalCollapsedSections[sectionName] && (
+                                <div className="filter-list">
+                                  <div className="tag-checkboxes">
+                                    {sectionTags.map((tag) => (
+                                      <div
+                                        key={tag.id}
+                                        className={`tag-checkbox ${
+                                          editImageTags.includes(tag.id)
+                                            ? "selected"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          handleEditImageTagToggle(tag.id)
+                                        }
+                                      >
+                                        <span>{tag.name}</span>
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
+                                </div>
+                              )}
                             </div>
                           )
                       )}
