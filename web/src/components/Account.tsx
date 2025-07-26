@@ -316,16 +316,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
     }
   };
 
-  const handleRemoveMember = async (memberId: string, memberName: string) => {
+  const handleRemoveMember = async (memberId: string) => {
     if (!selectedFamily) return;
-
-    if (
-      !confirm(
-        `Are you sure you want to remove ${memberName} from this family group?`
-      )
-    ) {
-      return;
-    }
 
     try {
       const response = await fetch(
@@ -667,24 +659,19 @@ function Account({ user, onUserUpdate }: AccountProps) {
                             )}
                           </div>
                           <div className="member-email">{member.email}</div>
-                        </div>
-
-                        <div className="member-birthday">
-                          {member.birthday
-                            ? formatBirthday(member.birthday) || "Not provided"
-                            : "Not provided"}
+                          <div className="member-birthday">
+                            🎂{" "}
+                            {member.birthday
+                              ? formatBirthday(member.birthday) || "Unknown"
+                              : "Unknown"}
+                          </div>
                         </div>
 
                         <div className="member-actions">
                           {member.role !== "owner" && (
                             <button
                               className="remove-btn"
-                              onClick={() =>
-                                handleRemoveMember(
-                                  member.id,
-                                  `${member.first_name} ${member.last_name}`
-                                )
-                              }
+                              onClick={() => handleRemoveMember(member.id)}
                             >
                               Remove
                             </button>
