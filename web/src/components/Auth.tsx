@@ -13,6 +13,16 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
+
+  // Check for password mismatch in real-time
+  const checkPasswordMatch = (password: string, confirmPassword: string) => {
+    if (!isLogin && confirmPassword && password !== confirmPassword) {
+      setPasswordMismatch(true);
+    } else {
+      setPasswordMismatch(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +106,10 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
               type="password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                checkPasswordMatch(e.target.value, confirmPassword);
+              }}
               required
               placeholder="Enter your password"
               minLength={isLogin ? undefined : 6}
@@ -110,17 +123,29 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 type="password"
                 id="confirmPassword"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  checkPasswordMatch(password, e.target.value);
+                }}
                 required
                 placeholder="Confirm your password"
                 minLength={6}
               />
+              {passwordMismatch && (
+                <div className="password-mismatch-error">
+                  Passwords don't match
+                </div>
+              )}
             </div>
           )}
 
           {error && <div className="auth-error">{error}</div>}
 
-          <button type="submit" className="auth-submit" disabled={loading}>
+          <button
+            type="submit"
+            className="auth-submit"
+            disabled={loading || (!isLogin && passwordMismatch)}
+          >
             {loading ? "..." : isLogin ? "Sign In" : "Create Account"}
           </button>
         </form>
@@ -136,6 +161,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 setError("");
                 setPassword("");
                 setConfirmPassword("");
+                setPasswordMismatch(false);
               }}
             >
               {isLogin ? "Sign up" : "Sign in"}
