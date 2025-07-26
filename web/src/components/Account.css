@@ -151,6 +151,17 @@
   text-align: center;
   padding: 2rem;
   color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px dashed var(--border-light);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
 }
 
 .empty-state p {
@@ -159,12 +170,8 @@
 }
 
 .create-family-btn {
-  background: linear-gradient(
-    135deg,
-    var(--success-green),
-    var(--success-green-dark)
-  );
-  color: var(--text-inverse);
+  background: #3b82f6;
+  color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -175,6 +182,7 @@
 }
 
 .create-family-btn:hover {
+  background: #2563eb;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -292,13 +300,15 @@
   margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border-light);
-  text-align: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .join-family-btn {
   background: none;
-  border: 2px dashed var(--border-medium);
-  color: var(--text-secondary);
+  border: 2px dashed #28a745;
+  color: #28a745;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 500;
@@ -307,9 +317,25 @@
 }
 
 .join-family-btn:hover {
-  border-color: var(--primary-orange);
-  color: var(--primary-orange);
-  background-color: rgba(255, 127, 0, 0.05);
+  border-color: #1e7e34;
+  color: #1e7e34;
+  background-color: rgba(40, 167, 69, 0.05);
+}
+
+.create-family-btn-footer {
+  background: #3b82f6;
+  border: 2px solid #3b82f6;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-family-btn-footer:hover {
+  background: #2563eb;
+  border-color: #2563eb;
 }
 
 /* Account Settings */

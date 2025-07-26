@@ -315,6 +315,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
               ) : familyGroups.length === 0 ? (
                 <div className="empty-state">
                   <p>You're not a member of any family groups yet.</p>
+                  <button
+                    className="create-family-btn"
+                    onClick={handleCreateFamily}
+                  >
+                    + Create Family Group
+                  </button>
                 </div>
               ) : (
                 <div className="family-groups-list">
