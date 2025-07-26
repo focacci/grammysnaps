@@ -7,6 +7,8 @@ import imageRoutes from "./routes/image.routes";
 import tagPlugin from "./plugins/tag.plugin";
 import tagRoutes from "./routes/tag.routes";
 import s3Plugin from "./plugins/s3.plugin";
+import userPlugin from "./plugins/user.plugin";
+import userRoutes from "./routes/user.routes";
 
 const server: FastifyInstance = Fastify({ logger: true });
 
@@ -37,10 +39,12 @@ const main = async () => {
   // Utility plugins
   server.register(imagePlugin);
   server.register(tagPlugin);
+  server.register(userPlugin);
 
   // Routes
-  server.register(imageRoutes, { prefix: "/image" });
-  server.register(tagRoutes, { prefix: "/tag" });
+  await server.register(imageRoutes, { prefix: "/image" });
+  await server.register(tagRoutes, { prefix: "/tag" });
+  await server.register(userRoutes, { prefix: "/user" });
 
   // Health check
   server.get("/health", async (request, reply) => {
