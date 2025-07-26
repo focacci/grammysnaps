@@ -98,6 +98,10 @@ function App() {
     setShowAuth(true);
   };
 
+  const handleUserUpdate = (updatedUser: any) => {
+    setUser(updatedUser);
+  };
+
   const renderCurrentView = () => {
     switch (currentView) {
       case "photos":
@@ -113,7 +117,7 @@ function App() {
           setCurrentView("home");
           return null;
         }
-        return <Account user={user} />;
+        return <Account user={user} onUserUpdate={handleUserUpdate} />;
       case "home":
       default:
         return (

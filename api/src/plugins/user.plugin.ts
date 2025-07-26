@@ -27,6 +27,14 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // Helper function to convert User to UserPublic (remove password_hash)
   const toPublicUser = (user: User): UserPublic => {
     const { password_hash, ...publicUser } = user;
+
+    // Ensure birthday is consistently formatted as YYYY-MM-DD
+    if (publicUser.birthday) {
+      publicUser.birthday = new Date(publicUser.birthday)
+        .toISOString()
+        .split("T")[0];
+    }
+
     return publicUser;
   };
 
@@ -66,6 +74,11 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             families ?? [],
           ]
         );
+
+        // Format birthday for consistent frontend display
+        if (user.birthday) {
+          user.birthday = new Date(user.birthday).toISOString().split("T")[0];
+        }
 
         fastify.log.info(
           `Created user: ${user.email} (${user.first_name} ${user.last_name})`
@@ -191,6 +204,11 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [user],
         } = await fastify.pg.query<User>(query, values);
+
+        // Format birthday for consistent frontend display
+        if (user.birthday) {
+          user.birthday = new Date(user.birthday).toISOString().split("T")[0];
+        }
 
         fastify.log.info(`Updated user: ${user.email}`);
         return toPublicUser(user);
