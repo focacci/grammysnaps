@@ -13,6 +13,32 @@ import userRoutes from "./routes/user.routes";
 const server: FastifyInstance = Fastify({ logger: true });
 
 const main = async () => {
+  // Add CORS headers manually
+  server.addHook("preHandler", async (request, reply) => {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:8080",
+      "http://localhost:3000",
+      "http://localhost:4173",
+    ];
+
+    const origin = request.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      reply.header("Access-Control-Allow-Origin", origin);
+    }
+
+    reply.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    reply.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    reply.header("Access-Control-Allow-Credentials", "true");
+
+    if (request.method === "OPTIONS") {
+      reply.code(200).send();
+    }
+  });
+
   // Register multipart for file uploads
   server.register(fastifyMultipart, {
     limits: {
