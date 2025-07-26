@@ -32,7 +32,15 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("user", {
     async create(input: UserInput): Promise<UserPublic> {
-      const { email, password, families } = input;
+      const {
+        email,
+        password,
+        first_name,
+        middle_name,
+        last_name,
+        birthday,
+        families,
+      } = input;
 
       try {
         // Check if email already exists
@@ -47,11 +55,21 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [user],
         } = await fastify.pg.query<User>(
-          "INSERT INTO users (email, password_hash, families) VALUES ($1, $2, $3) RETURNING *",
-          [email, password_hash, families ?? []]
+          "INSERT INTO users (email, password_hash, first_name, middle_name, last_name, birthday, families) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+          [
+            email,
+            password_hash,
+            first_name,
+            middle_name || null,
+            last_name,
+            birthday || null,
+            families ?? [],
+          ]
         );
 
-        fastify.log.info(`Created user: ${user.email}`);
+        fastify.log.info(
+          `Created user: ${user.email} (${user.first_name} ${user.last_name})`
+        );
         return toPublicUser(user);
       } catch (err) {
         fastify.log.error(err);
@@ -101,7 +119,8 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async update(id: string, input: UserUpdate): Promise<UserPublic | null> {
-      const { email, families } = input;
+      const { email, first_name, middle_name, last_name, birthday, families } =
+        input;
 
       try {
         // Check if the user exists
@@ -126,6 +145,30 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         if (email !== undefined) {
           updateFields.push(`email = $${paramCount}`);
           values.push(email);
+          paramCount++;
+        }
+
+        if (first_name !== undefined) {
+          updateFields.push(`first_name = $${paramCount}`);
+          values.push(first_name);
+          paramCount++;
+        }
+
+        if (middle_name !== undefined) {
+          updateFields.push(`middle_name = $${paramCount}`);
+          values.push(middle_name);
+          paramCount++;
+        }
+
+        if (last_name !== undefined) {
+          updateFields.push(`last_name = $${paramCount}`);
+          values.push(last_name);
+          paramCount++;
+        }
+
+        if (birthday !== undefined) {
+          updateFields.push(`birthday = $${paramCount}`);
+          values.push(birthday);
           paramCount++;
         }
 

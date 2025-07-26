@@ -4,6 +4,10 @@ export interface User {
   id: string;
   email: string;
   password_hash: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  birthday?: string; // ISO date string
   families: string[];
   created_at: string;
   updated_at: string;
@@ -12,17 +16,29 @@ export interface User {
 export interface UserInput {
   email: string;
   password: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  birthday?: string;
   families?: string[];
 }
 
 export interface UserUpdate {
   email?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  birthday?: string;
   families?: string[];
 }
 
 export interface UserPublic {
   id: string;
   email: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  birthday?: string;
   families: string[];
   created_at: string;
   updated_at: string;
