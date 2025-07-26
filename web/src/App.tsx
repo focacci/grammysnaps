@@ -72,6 +72,14 @@ function App() {
     setDropdownOpen(!dropdownOpen);
   };
 
+  const getFullName = (user: any) => {
+    if (!user) return "";
+    const parts = [user.first_name, user.middle_name, user.last_name].filter(
+      Boolean
+    );
+    return parts.join(" ");
+  };
+
   const handleLogin = (userData: any) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -105,7 +113,7 @@ function App() {
           setCurrentView("home");
           return null;
         }
-        return <Account />;
+        return <Account user={user} />;
       case "home":
       default:
         return (
@@ -115,7 +123,7 @@ function App() {
               <p>Your family photo management system</p>
               {user ? (
                 <div>
-                  <p>Welcome back, {user.email}!</p>
+                  <p>Welcome back, {getFullName(user)}!</p>
                   <button
                     className="get-started-btn"
                     onClick={() => setCurrentView("photos")}

@@ -4,8 +4,14 @@ import "./Account.css";
 // Type definitions
 interface User {
   id: string;
-  name: string;
   email: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  birthday?: string;
+  families: string[];
+  created_at: string;
+  updated_at: string;
   profilePicture?: string;
 }
 
@@ -17,20 +23,16 @@ interface FamilyGroup {
   created_at: string;
 }
 
-function Account() {
+interface AccountProps {
+  user: User;
+}
+
+function Account({ user }: AccountProps) {
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
     familyGroups: false,
   });
-
-  // Mock data - replace with actual API calls later
-  const user: User = {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    profilePicture: undefined, // Will show default avatar
-  };
 
   const familyGroups: FamilyGroup[] = [
     {
@@ -75,6 +77,25 @@ function Account() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const formatBirthday = (birthday?: string) => {
+    if (!birthday) return null;
+
+    const date = new Date(birthday);
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return date.toLocaleDateString("en-US", options);
+  };
+
+  const getFullName = (user: User) => {
+    const parts = [user.first_name, user.middle_name, user.last_name].filter(
+      Boolean
+    );
+    return parts.join(" ");
+  };
+
   return (
     <div className="account-view">
       <div className="account-container">
@@ -84,7 +105,7 @@ function Account() {
             {user.profilePicture ? (
               <img
                 src={user.profilePicture}
-                alt={`${user.name}'s profile`}
+                alt={`${getFullName(user)}'s profile`}
                 className="profile-picture"
               />
             ) : (
@@ -94,8 +115,13 @@ function Account() {
             )}
           </div>
           <div className="user-info">
-            <h1 className="user-name">{user.name}</h1>
+            <h1 className="user-name">{getFullName(user)}</h1>
             <p className="user-email">{user.email}</p>
+            {user.birthday && (
+              <p className="user-birthday">
+                🎂 Born {formatBirthday(user.birthday)}
+              </p>
+            )}
           </div>
         </div>
 
