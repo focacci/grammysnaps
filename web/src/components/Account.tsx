@@ -25,6 +25,16 @@ interface FamilyGroup {
   updated_at: string;
 }
 
+interface FamilyMember {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  birthday?: string;
+  role: "owner" | "member";
+  joined_at: string;
+}
+
 interface AccountProps {
   user: User;
   onUserUpdate: (updatedUser: User) => void;
@@ -60,6 +70,17 @@ function Account({ user, onUserUpdate }: AccountProps) {
   });
   const [createFamilyLoading, setCreateFamilyLoading] = useState(false);
   const [createFamilyError, setCreateFamilyError] = useState("");
+
+  // Manage Family Modal State
+  const [showManageFamilyModal, setShowManageFamilyModal] = useState(false);
+  const [selectedFamily, setSelectedFamily] = useState<FamilyGroup | null>(
+    null
+  );
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [addMemberEmail, setAddMemberEmail] = useState("");
+  const [addMemberLoading, setAddMemberLoading] = useState(false);
+  const [manageFamilyError, setManageFamilyError] = useState("");
 
   // Load user's families on component mount
   useEffect(() => {
@@ -202,6 +223,141 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setCreateFamilyError("");
   };
 
+  // Manage Family Handlers
+  const handleManageFamily = async (family: FamilyGroup) => {
+    setSelectedFamily(family);
+    setShowManageFamilyModal(true);
+    setManageFamilyError("");
+    setAddMemberEmail("");
+    await loadFamilyMembers(family.id);
+  };
+
+  const loadFamilyMembers = async (familyId: string) => {
+    try {
+      setLoadingMembers(true);
+      const response = await fetch(
+        `http://localhost:3000/family/${familyId}/members`
+      );
+      if (response.ok) {
+        const members = await response.json();
+        // Sort members so owner is always first
+        const sortedMembers = members.sort(
+          (a: FamilyMember, b: FamilyMember) => {
+            if (a.role === "owner") return -1;
+            if (b.role === "owner") return 1;
+            return 0;
+          }
+        );
+        setFamilyMembers(sortedMembers);
+      } else {
+        console.error("Failed to fetch family members");
+        setManageFamilyError("Failed to load family members");
+      }
+    } catch (error) {
+      console.error("Error fetching family members:", error);
+      setManageFamilyError("Failed to load family members");
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFamily || !addMemberEmail.trim()) return;
+
+    setAddMemberLoading(true);
+    setManageFamilyError("");
+
+    try {
+      // First, find the user by email
+      const userResponse = await fetch(
+        `http://localhost:3000/user/email/${encodeURIComponent(
+          addMemberEmail.trim()
+        )}`
+      );
+
+      if (!userResponse.ok) {
+        throw new Error("User not found with that email address");
+      }
+
+      const userData = await userResponse.json();
+
+      // Add the user to the family
+      const addResponse = await fetch(
+        `http://localhost:3000/family/${selectedFamily.id}/members`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userData.id,
+          }),
+        }
+      );
+
+      if (!addResponse.ok) {
+        const errorData = await addResponse.json();
+        throw new Error(errorData.error || "Failed to add member to family");
+      }
+
+      // Reload family members and families list
+      await loadFamilyMembers(selectedFamily.id);
+      await loadUserFamilies();
+
+      // Clear the email input
+      setAddMemberEmail("");
+    } catch (err) {
+      setManageFamilyError(
+        err instanceof Error ? err.message : "Failed to add member"
+      );
+    } finally {
+      setAddMemberLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
+    if (!selectedFamily) return;
+
+    if (
+      !confirm(
+        `Are you sure you want to remove ${memberName} from this family group?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/family/${selectedFamily.id}/members/${memberId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to remove member");
+      }
+
+      // Reload family members and families list
+      await loadFamilyMembers(selectedFamily.id);
+      await loadUserFamilies();
+    } catch (err) {
+      setManageFamilyError(
+        err instanceof Error ? err.message : "Failed to remove member"
+      );
+    }
+  };
+
+  const handleCloseManageFamilyModal = () => {
+    setShowManageFamilyModal(false);
+    setSelectedFamily(null);
+    setFamilyMembers([]);
+    setManageFamilyError("");
+    setAddMemberEmail("");
+  };
+
   // Edit Profile Handlers
   const handleEditProfile = () => {
     setShowEditModal(true);
@@ -338,7 +494,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
                             View Photos
                           </button>
                           {family.user_role === "owner" && (
-                            <button className="action-btn manage-btn">
+                            <button
+                              className="action-btn manage-btn"
+                              onClick={() => handleManageFamily(family)}
+                            >
                               Manage
                             </button>
                           )}
@@ -435,6 +594,108 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 {createFamilyLoading ? "Creating..." : "Create Family Group"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Family Modal */}
+      {showManageFamilyModal && selectedFamily && (
+        <div className="auth-overlay">
+          <div className="auth-modal family-manage-modal">
+            <div className="auth-header">
+              <h2>Manage {selectedFamily.name}</h2>
+              <button
+                className="auth-close"
+                onClick={handleCloseManageFamilyModal}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="family-manage-content">
+              {/* Add Member Section */}
+              <div className="add-member-section">
+                <h3>Add New Member</h3>
+                <form onSubmit={handleAddMember} className="add-member-form">
+                  <div className="form-group">
+                    <input
+                      type="email"
+                      value={addMemberEmail}
+                      onChange={(e) => setAddMemberEmail(e.target.value)}
+                      placeholder="Enter email address to add member"
+                      required
+                      disabled={addMemberLoading}
+                    />
+                    <button
+                      type="submit"
+                      disabled={addMemberLoading || !addMemberEmail.trim()}
+                    >
+                      {addMemberLoading ? "Adding..." : "Add Member"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Members List Section */}
+              <div className="members-section">
+                <h3>Family Members ({familyMembers.length})</h3>
+
+                {manageFamilyError && (
+                  <div className="auth-error">{manageFamilyError}</div>
+                )}
+
+                {loadingMembers ? (
+                  <div className="loading-state">
+                    <p>Loading family members...</p>
+                  </div>
+                ) : (
+                  <div className="members-list">
+                    {familyMembers.map((member) => (
+                      <div key={member.id} className="member-row">
+                        <div className="member-avatar">
+                          <span className="avatar-placeholder">
+                            {member.first_name[0]}
+                            {member.last_name[0]}
+                          </span>
+                        </div>
+
+                        <div className="member-info">
+                          <div className="member-name">
+                            {member.first_name} {member.last_name}
+                            {member.role === "owner" && (
+                              <span className="owner-badge">👑 Owner</span>
+                            )}
+                          </div>
+                          <div className="member-email">{member.email}</div>
+                        </div>
+
+                        <div className="member-birthday">
+                          {member.birthday
+                            ? formatBirthday(member.birthday) || "Not provided"
+                            : "Not provided"}
+                        </div>
+
+                        <div className="member-actions">
+                          {member.role !== "owner" && (
+                            <button
+                              className="remove-btn"
+                              onClick={() =>
+                                handleRemoveMember(
+                                  member.id,
+                                  `${member.first_name} ${member.last_name}`
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
