@@ -572,6 +572,12 @@
   font-weight: 500;
 }
 
+.current-user-badge {
+  font-size: 0.8rem;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
 .member-email {
   color: var(--text-secondary);
   font-size: 0.9rem;

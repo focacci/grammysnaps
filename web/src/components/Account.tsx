@@ -1102,6 +1102,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
                             {member.role === "owner" && (
                               <span className="owner-badge">👑 Owner</span>
                             )}
+                            {member.id === user.id && (
+                              <span className="current-user-badge">👤 You</span>
+                            )}
                           </div>
                           <div className="member-email">{member.email}</div>
                           <div className="member-birthday">
@@ -1247,6 +1250,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
                             {member.first_name} {member.last_name}
                             {member.role === "owner" && (
                               <span className="owner-badge">👑 Owner</span>
+                            )}
+                            {member.id === user.id && (
+                              <span className="current-user-badge">👤 You</span>
                             )}
                           </div>
                           <div className="member-email">{member.email}</div>
