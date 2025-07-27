@@ -104,6 +104,13 @@ function Account({ user, onUserUpdate }: AccountProps) {
   // Copy Feedback State
   const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
 
+  // View Members Modal State
+  const [showViewMembersModal, setShowViewMembersModal] = useState(false);
+  const [viewMembersFamily, setViewMembersFamily] =
+    useState<FamilyGroup | null>(null);
+  const [viewMembersList, setViewMembersList] = useState<FamilyMember[]>([]);
+  const [loadingViewMembers, setLoadingViewMembers] = useState(false);
+
   // Security Modal State
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [securityForm, setSecurityForm] = useState({
@@ -531,6 +538,46 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setAddRelatedFamilyId("");
   };
 
+  // View Members Modal Handlers
+  const handleViewMembers = async (family: FamilyGroup) => {
+    setViewMembersFamily(family);
+    setShowViewMembersModal(true);
+    await loadViewFamilyMembers(family.id);
+  };
+
+  const loadViewFamilyMembers = async (familyId: string) => {
+    try {
+      setLoadingViewMembers(true);
+      const response = await fetch(
+        `http://localhost:3000/family/${familyId}/members`
+      );
+      if (response.ok) {
+        const members = await response.json();
+        // Sort members so owner is always first
+        const sortedMembers = members.sort(
+          (a: FamilyMember, b: FamilyMember) => {
+            if (a.role === "owner") return -1;
+            if (b.role === "owner") return 1;
+            return 0;
+          }
+        );
+        setViewMembersList(sortedMembers);
+      } else {
+        console.error("Failed to fetch family members");
+      }
+    } catch (error) {
+      console.error("Error fetching family members:", error);
+    } finally {
+      setLoadingViewMembers(false);
+    }
+  };
+
+  const handleCloseViewMembersModal = () => {
+    setShowViewMembersModal(false);
+    setViewMembersFamily(null);
+    setViewMembersList([]);
+  };
+
   // Edit Profile Handlers
   const handleEditProfile = () => {
     setShowEditModal(true);
@@ -786,8 +833,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
                           </span>
                         </div>
                         <div className="family-group-actions">
-                          <button className="action-btn view-btn">
-                            View Photos
+                          <button
+                            className="action-btn view-btn"
+                            onClick={() => handleViewMembers(family)}
+                          >
+                            View Members
                           </button>
                           {family.user_role === "owner" && (
                             <button
@@ -1154,6 +1204,65 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 {loading ? "Updating..." : "Update Profile"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Members Modal */}
+      {showViewMembersModal && viewMembersFamily && (
+        <div className="auth-overlay">
+          <div className="auth-modal family-manage-modal">
+            <div className="auth-header">
+              <h2>{viewMembersFamily.name} Members</h2>
+              <button
+                className="auth-close"
+                onClick={handleCloseViewMembersModal}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="family-manage-content">
+              {/* Members List Section */}
+              <div className="members-section">
+                <h3>Family Members ({viewMembersList.length})</h3>
+
+                {loadingViewMembers ? (
+                  <div className="loading-state">
+                    <p>Loading family members...</p>
+                  </div>
+                ) : (
+                  <div className="members-list">
+                    {viewMembersList.map((member) => (
+                      <div key={member.id} className="member-row">
+                        <div className="member-avatar">
+                          <span className="avatar-placeholder">
+                            {member.first_name[0]}
+                            {member.last_name[0]}
+                          </span>
+                        </div>
+
+                        <div className="member-info">
+                          <div className="member-name">
+                            {member.first_name} {member.last_name}
+                            {member.role === "owner" && (
+                              <span className="owner-badge">👑 Owner</span>
+                            )}
+                          </div>
+                          <div className="member-email">{member.email}</div>
+                          <div className="member-birthday">
+                            🎂{" "}
+                            {member.birthday
+                              ? formatBirthday(member.birthday) || "Unknown"
+                              : "Unknown"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
