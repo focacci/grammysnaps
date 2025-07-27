@@ -471,10 +471,20 @@
 
 .add-member-form input {
   flex: 1;
-  padding: 0.75rem;
-  border: 1px solid var(--border-medium);
-  border-radius: 6px;
-  font-size: 0.95rem;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.add-member-form input:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
 }
 
 .add-member-form button {
