@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./api.service";
+
 interface User {
   id: string;
   email: string;
@@ -26,6 +28,7 @@ class AuthService {
   private static readonly ACCESS_TOKEN_KEY = "access_token";
   private static readonly REFRESH_TOKEN_KEY = "refresh_token";
   private static readonly USER_KEY = "user";
+  private static readonly REQUEST_TIMEOUT = 10000; // 10 seconds timeout
   private static instance: AuthService;
 
   private refreshPromise: Promise<boolean> | null = null;
@@ -35,6 +38,103 @@ class AuthService {
       AuthService.instance = new AuthService();
     }
     return AuthService.instance;
+  }
+
+  // Log API calls for debugging
+  private logApiCall(
+    method: string,
+    url: string,
+    success: boolean,
+    duration: number,
+    error?: string
+  ): void {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ${method} ${url} - ${
+      success ? "SUCCESS" : "FAILED"
+    } (${duration}ms)`;
+
+    if (success) {
+      console.debug(logMessage);
+    } else {
+      console.error(`${logMessage} - Error: ${error || "Unknown error"}`);
+    }
+  }
+
+  // Create a fetch wrapper with timeout and retry
+  private async fetchWithTimeout(
+    url: string,
+    options: RequestInit = {},
+    retries: number = 2
+  ): Promise<Response> {
+    const startTime = Date.now();
+    const method = options.method || "GET";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      AuthService.REQUEST_TIMEOUT
+    );
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      const duration = Date.now() - startTime;
+
+      // Don't retry on successful responses or client errors (4xx)
+      if (response.ok || (response.status >= 400 && response.status < 500)) {
+        this.logApiCall(
+          method,
+          url,
+          response.ok,
+          duration,
+          response.ok ? undefined : `HTTP ${response.status}`
+        );
+        return response;
+      }
+
+      // Retry on server errors (5xx) if retries remaining
+      if (retries > 0 && response.status >= 500) {
+        console.warn(
+          `Server error ${response.status}, retrying... (${retries} retries left)`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        return this.fetchWithTimeout(url, options, retries - 1);
+      }
+
+      this.logApiCall(method, url, false, duration, `HTTP ${response.status}`);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      const duration = Date.now() - startTime;
+
+      if (error instanceof Error && error.name === "AbortError") {
+        this.logApiCall(method, url, false, duration, "Request timeout");
+        throw new Error(
+          "Request timeout - please check your network connection"
+        );
+      }
+
+      // Retry on network errors if retries remaining
+      if (retries > 0) {
+        console.warn(
+          `Network error, retrying... (${retries} retries left)`,
+          error
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        return this.fetchWithTimeout(url, options, retries - 1);
+      }
+
+      this.logApiCall(
+        method,
+        url,
+        false,
+        duration,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+      throw error;
+    }
   }
 
   // Store tokens securely
@@ -49,6 +149,22 @@ class AuthService {
 
   private getRefreshToken(): string | null {
     return localStorage.getItem(AuthService.REFRESH_TOKEN_KEY);
+  }
+
+  // Check if token is likely expired (basic JWT parsing)
+  private isTokenLikelyExpired(token: string): boolean {
+    try {
+      const parts = token.split(".");
+      if (parts.length !== 3) return true;
+
+      const payload = JSON.parse(atob(parts[1]));
+      const now = Math.floor(Date.now() / 1000);
+
+      // Check if token expires within next 30 seconds
+      return payload.exp && payload.exp - now < 30;
+    } catch {
+      return true; // If we can't parse it, assume it's expired
+    }
   }
 
   private clearTokens(): void {
@@ -75,7 +191,7 @@ class AuthService {
 
   // Login method
   async login(email: string, password: string): Promise<User> {
-    const response = await fetch("http://localhost:3000/auth/login", {
+    const response = await this.fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -106,7 +222,7 @@ class AuthService {
 
     if (user) {
       try {
-        await fetch("http://localhost:3000/auth/logout", {
+        await this.fetchWithTimeout(`${API_BASE_URL}/auth/logout`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -130,13 +246,16 @@ class AuthService {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/auth/refresh", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/auth/refresh`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refreshToken }),
+        }
+      );
 
       if (!response.ok) {
         this.clearTokens();
@@ -167,13 +286,36 @@ class AuthService {
       return null;
     }
 
+    // Check if token is likely expired before making validation request
+    if (this.isTokenLikelyExpired(accessToken)) {
+      console.debug("Token appears expired, attempting refresh");
+
+      if (this.refreshPromise) {
+        await this.refreshPromise;
+      } else {
+        this.refreshPromise = this.refreshAccessToken();
+        const refreshSuccess = await this.refreshPromise;
+        this.refreshPromise = null;
+
+        if (!refreshSuccess) {
+          return null;
+        }
+      }
+
+      accessToken = this.getAccessToken();
+      return accessToken ? `Bearer ${accessToken}` : null;
+    }
+
     // Try to use current token first
     try {
-      const response = await fetch("http://localhost:3000/auth/validate", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/auth/validate`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (response.ok) {
         return `Bearer ${accessToken}`;
@@ -207,11 +349,14 @@ class AuthService {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/auth/validate", {
-        headers: {
-          Authorization: authHeader,
-        },
-      });
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/auth/validate`,
+        {
+          headers: {
+            Authorization: authHeader,
+          },
+        }
+      );
 
       if (!response.ok) {
         this.clearTokens();
@@ -242,7 +387,7 @@ class AuthService {
       Authorization: authHeader,
     };
 
-    const response = await fetch(url, {
+    const response = await this.fetchWithTimeout(url, {
       ...options,
       headers,
     });
@@ -268,6 +413,47 @@ class AuthService {
   // Check if user is logged in
   isLoggedIn(): boolean {
     return this.getAccessToken() !== null && this.getUser() !== null;
+  }
+
+  // Check API connectivity
+  async checkConnectivity(): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/health`, {
+        method: "GET",
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("API connectivity check failed:", error);
+      return false;
+    }
+  }
+
+  // Get connection status with details
+  async getConnectionStatus(): Promise<{
+    connected: boolean;
+    latency?: number;
+    error?: string;
+  }> {
+    const startTime = Date.now();
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/health`, {
+        method: "GET",
+      });
+      const latency = Date.now() - startTime;
+
+      if (response.ok) {
+        return { connected: true, latency };
+      } else {
+        return { connected: false, error: `HTTP ${response.status}` };
+      }
+    } catch (error) {
+      const latency = Date.now() - startTime;
+      return {
+        connected: false,
+        latency,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   }
 }
 

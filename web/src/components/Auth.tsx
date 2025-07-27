@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Auth.css";
 import authService from "../services/auth.service";
 import { ClientValidationUtils } from "../utils/validation";
@@ -11,6 +11,41 @@ interface AuthProps {
 
 const Auth = ({ onLogin, onCancel }: AuthProps) => {
   const [isLogin, setIsLogin] = useState(true);
+
+  // Lock body scroll when modal is open to prevent background scrolling
+  useEffect(() => {
+    // Store original body overflow style
+    const originalStyle = document.body.style.overflow;
+    // Prevent body scroll
+    document.body.style.overflow = "hidden";
+
+    // Handle Escape key to close modal
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    };
+
+    // Add event listener
+    document.addEventListener("keydown", handleEscapeKey);
+
+    // Focus the first input field when modal opens
+    const firstInput = document.querySelector(
+      ".auth-form input"
+    ) as HTMLInputElement;
+    if (firstInput) {
+      // Small delay to ensure the modal is fully rendered
+      setTimeout(() => {
+        firstInput.focus();
+      }, 100);
+    }
+
+    // Cleanup: restore original overflow style and remove event listener when component unmounts
+    return () => {
+      document.body.style.overflow = originalStyle;
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [onCancel, isLogin]); // Add isLogin to dependencies so focus is set correctly when switching modes
 
   // Basic auth fields
   const [email, setEmail] = useState("");
@@ -283,7 +318,15 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
   };
 
   return (
-    <div className="auth-overlay">
+    <div
+      className="auth-overlay"
+      onClick={(e) => {
+        // Close modal when clicking on the backdrop (overlay itself)
+        if (e.target === e.currentTarget) {
+          onCancel();
+        }
+      }}
+    >
       <div className="auth-modal">
         <div className="auth-header">
           <h2>{isLogin ? "Welcome Back" : "Create Account"}</h2>

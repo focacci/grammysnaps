@@ -9,16 +9,41 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  /* Enable vertical scrolling only, prevent horizontal scrolling */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+  /* Add backdrop */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Improve scroll behavior on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 .auth-modal {
   background: var(--bg-primary);
   border-radius: 12px;
-  width: 90%;
+  width: 100%;
   max-width: 400px;
-  margin: 20px;
+  margin: auto;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-light);
+  /* Ensure modal can shrink and grow as needed */
+  min-height: min-content;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  /* Ensure modal stays within viewport bounds */
+  position: relative;
+  /* Prevent any content from overflowing horizontally */
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Ensure all children respect container bounds */
+.auth-modal * {
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .auth-header {
@@ -27,6 +52,8 @@
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-light);
+  /* Prevent header from shrinking */
+  flex-shrink: 0;
 }
 
 .auth-header h2 {
@@ -59,6 +86,20 @@
 
 .auth-form {
   padding: 24px;
+  /* Allow form to scroll when content overflows */
+  overflow-y: auto;
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  /* Ensure form takes up remaining space */
+  flex: 1;
+  /* Prevent form from shrinking below its minimum content size */
+  min-height: 0;
+  /* Improve touch scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
+  /* Ensure proper box sizing */
+  box-sizing: border-box;
+  /* Smooth scroll behavior */
+  scroll-behavior: smooth;
 }
 
 /* Form Elements - Use Global Styles */
@@ -77,6 +118,20 @@
 .form-group input {
   width: 100%;
   box-sizing: border-box;
+  /* Ensure inputs don't cause zoom on iOS */
+  font-size: 16px;
+}
+
+/* Mobile form optimizations */
+@media (max-width: 480px) {
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
 }
 
 .password-mismatch-error {
@@ -151,6 +206,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Prevent switch section from shrinking */
+  flex-shrink: 0;
 }
 
 .auth-switch p {
@@ -175,10 +232,26 @@
 
 /* Mobile responsiveness */
 @media (max-width: 480px) {
+  .auth-overlay {
+    /* Reduce padding on very small screens */
+    padding: 10px;
+    /* On mobile, align to top when keyboard appears */
+    align-items: flex-start;
+    /* Add top padding to prevent modal from touching the top */
+    padding-top: 20px;
+  }
+
   .auth-modal {
-    margin: 10px;
     border-radius: 8px;
-    width: calc(100% - 20px);
+    /* Use more of the screen width on mobile */
+    width: 100%;
+    max-width: none;
+    /* Adjust max height for mobile with some breathing room */
+    max-height: calc(100vh - 40px);
+    /* Ensure minimum space for mobile keyboards */
+    min-height: auto;
+    /* Ensure modal never exceeds viewport width */
+    max-width: calc(100vw - 20px);
   }
 
   .auth-header,
@@ -189,6 +262,44 @@
   .auth-header h2 {
     font-size: 1.3rem;
   }
+
+  .auth-switch {
+    padding: 12px 16px;
+  }
+}
+
+/* Very small screens (mobile landscape or small phones) */
+@media (max-width: 380px) {
+  .auth-overlay {
+    padding: 5px;
+    padding-top: 10px;
+  }
+
+  .auth-modal {
+    max-height: calc(100vh - 20px);
+    /* Ensure modal never exceeds viewport width on very small screens */
+    max-width: calc(100vw - 10px);
+  }
+
+  .auth-header,
+  .auth-form,
+  .auth-switch {
+    padding: 12px;
+  }
+}
+
+/* Handle mobile keyboard scenarios */
+@media (max-height: 600px) {
+  .auth-overlay {
+    /* When screen height is limited (keyboard open), align to top */
+    align-items: flex-start;
+    padding-top: 10px;
+  }
+
+  .auth-modal {
+    /* Use almost full height when screen is short */
+    max-height: calc(100vh - 20px);
+  }
 }
 
 /* Family Input Styles */
@@ -196,10 +307,19 @@
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
+  /* Ensure container doesn't overflow */
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .family-input-container input {
   flex: 1;
+  /* Ensure consistent font size with other inputs */
+  font-size: 16px;
+  /* Prevent input from overflowing */
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .add-family-btn {
@@ -213,6 +333,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  /* Prevent button from shrinking too much */
+  flex-shrink: 0;
 }
 
 .add-family-btn:hover:not(:disabled) {
@@ -222,6 +344,18 @@
 .add-family-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Mobile family input optimizations */
+@media (max-width: 480px) {
+  .family-input-container {
+    gap: 6px;
+  }
+
+  .add-family-btn {
+    padding: 12px;
+    font-size: 13px;
+  }
 }
 
 .family-list {
