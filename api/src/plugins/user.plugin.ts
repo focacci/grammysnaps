@@ -8,6 +8,7 @@ import {
   UserPublic,
   SecurityUpdateInput,
 } from "../types/user.types";
+import { ValidationUtils } from "../utils/validation";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -61,27 +62,54 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } = input;
 
       try {
+        // Sanitize and validate all inputs
+        const sanitizedEmail = ValidationUtils.sanitizeEmail(email);
+        const sanitizedPassword = ValidationUtils.sanitizePassword(password);
+        const sanitizedFirstName = ValidationUtils.sanitizeText(
+          first_name,
+          "First name",
+          true,
+          50
+        );
+        const sanitizedMiddleName = middle_name
+          ? ValidationUtils.sanitizeText(middle_name, "Middle name", false, 50)
+          : null;
+        const sanitizedLastName = ValidationUtils.sanitizeText(
+          last_name,
+          "Last name",
+          true,
+          50
+        );
+        const sanitizedBirthday = birthday
+          ? ValidationUtils.sanitizeDate(birthday)
+          : null;
+        const sanitizedFamilies = ValidationUtils.sanitizeFamilyIds(
+          families || []
+        );
+
         // Check if email already exists
-        const existingUserByEmail = await fastify.user.getByEmail(email);
+        const existingUserByEmail = await fastify.user.getByEmail(
+          sanitizedEmail
+        );
         if (existingUserByEmail) {
           throw new Error("User with this email already exists");
         }
 
         // Hash the password
-        const password_hash = await argon2.hash(password);
+        const password_hash = await argon2.hash(sanitizedPassword);
 
         const {
           rows: [user],
         } = await fastify.pg.query<User>(
           "INSERT INTO users (email, password_hash, first_name, middle_name, last_name, birthday, families) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
           [
-            email,
+            sanitizedEmail,
             password_hash,
-            first_name,
-            middle_name || null,
-            last_name,
-            birthday || null,
-            families ?? [],
+            sanitizedFirstName,
+            sanitizedMiddleName,
+            sanitizedLastName,
+            sanitizedBirthday,
+            sanitizedFamilies,
           ]
         );
 
@@ -146,15 +174,49 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         input;
 
       try {
+        // Sanitize and validate the ID
+        const sanitizedId = ValidationUtils.sanitizeUUID(id, "User ID");
+
         // Check if the user exists
-        const existingUser = await fastify.user.getById(id);
+        const existingUser = await fastify.user.getById(sanitizedId);
         if (!existingUser) {
           return null;
         }
 
+        // Sanitize and validate inputs
+        const sanitizedEmail = email
+          ? ValidationUtils.sanitizeEmail(email)
+          : undefined;
+        const sanitizedFirstName = first_name
+          ? ValidationUtils.sanitizeText(first_name, "First name", true, 50)
+          : undefined;
+        const sanitizedMiddleName =
+          middle_name !== undefined
+            ? middle_name
+              ? ValidationUtils.sanitizeText(
+                  middle_name,
+                  "Middle name",
+                  false,
+                  50
+                )
+              : null
+            : undefined;
+        const sanitizedLastName = last_name
+          ? ValidationUtils.sanitizeText(last_name, "Last name", true, 50)
+          : undefined;
+        const sanitizedBirthday =
+          birthday !== undefined
+            ? birthday
+              ? ValidationUtils.sanitizeDate(birthday)
+              : null
+            : undefined;
+        const sanitizedFamilies = families
+          ? ValidationUtils.sanitizeFamilyIds(families)
+          : undefined;
+
         // Check for conflicts with other users if updating email
-        if (email && email !== existingUser.email) {
-          const userWithEmail = await fastify.user.getByEmail(email);
+        if (sanitizedEmail && sanitizedEmail !== existingUser.email) {
+          const userWithEmail = await fastify.user.getByEmail(sanitizedEmail);
           if (userWithEmail) {
             throw new Error("Another user with this email already exists");
           }
@@ -165,39 +227,39 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const values: any[] = [];
         let paramCount = 1;
 
-        if (email !== undefined) {
+        if (sanitizedEmail !== undefined) {
           updateFields.push(`email = $${paramCount}`);
-          values.push(email);
+          values.push(sanitizedEmail);
           paramCount++;
         }
 
-        if (first_name !== undefined) {
+        if (sanitizedFirstName !== undefined) {
           updateFields.push(`first_name = $${paramCount}`);
-          values.push(first_name);
+          values.push(sanitizedFirstName);
           paramCount++;
         }
 
-        if (middle_name !== undefined) {
+        if (sanitizedMiddleName !== undefined) {
           updateFields.push(`middle_name = $${paramCount}`);
-          values.push(middle_name);
+          values.push(sanitizedMiddleName);
           paramCount++;
         }
 
-        if (last_name !== undefined) {
+        if (sanitizedLastName !== undefined) {
           updateFields.push(`last_name = $${paramCount}`);
-          values.push(last_name);
+          values.push(sanitizedLastName);
           paramCount++;
         }
 
-        if (birthday !== undefined) {
+        if (sanitizedBirthday !== undefined) {
           updateFields.push(`birthday = $${paramCount}`);
-          values.push(birthday);
+          values.push(sanitizedBirthday);
           paramCount++;
         }
 
-        if (families !== undefined) {
+        if (sanitizedFamilies !== undefined) {
           updateFields.push(`families = $${paramCount}`);
-          values.push(families);
+          values.push(sanitizedFamilies);
           paramCount++;
         }
 
@@ -205,7 +267,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
 
         // Add ID parameter
-        values.push(id);
+        values.push(sanitizedId);
 
         const query = `UPDATE users SET ${updateFields.join(
           ", "

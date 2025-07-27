@@ -158,151 +158,141 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
     }
   );
 
-  fastify.post(
-    "/",
-    {
-      config: {
-        // Increase timeout for file uploads
-        timeout: 60000, // 60 seconds
-      },
-    },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        fastify.log.info("Starting image upload request");
+  fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      fastify.log.info("Starting image upload request");
 
-        // Check if request is multipart
-        if (!request.isMultipart()) {
-          return reply.status(400).send({
-            message: "Request must be multipart/form-data",
-          });
-        }
-
-        // Parse multipart form data - with attachFieldsToBody: true
-        let fileData: MultipartFile | null = null;
-        let tags: string[] = [];
-        let title: string | undefined = undefined;
-
-        try {
-          // With attachFieldsToBody: true, files are in request.body too
-          const body = request.body as any;
-          fastify.log.info(`Request body keys:`, Object.keys(body || {}));
-
-          // Find the file field in the body
-          if (body) {
-            for (const [key, value] of Object.entries(body)) {
-              fastify.log.info(`Body field ${key}:`, typeof value, value);
-
-              // Check if this is a file (has file property)
-              if (value && typeof value === "object" && "file" in value) {
-                fileData = value as MultipartFile;
-                fastify.log.info(
-                  `Found file in ${key}: ${fileData.filename}, mimetype=${fileData.mimetype}`
-                );
-                break;
-              }
-            }
-
-            // Get title from body
-            if (body.title) {
-              const titleValue = body.title.value || body.title;
-              title = titleValue && titleValue !== "" ? titleValue : undefined;
-              fastify.log.info(`Parsed title: ${title}`);
-            }
-
-            // Get tags from body
-            if (body.tags) {
-              try {
-                const tagsValue = body.tags.value || body.tags;
-                fastify.log.info(`Raw tags value: ${tagsValue}`);
-                tags =
-                  tagsValue && tagsValue !== "" ? JSON.parse(tagsValue) : [];
-                fastify.log.info(`Parsed tags: ${JSON.stringify(tags)}`);
-              } catch (err) {
-                fastify.log.warn("Failed to parse tags:", err);
-                tags = [];
-              }
-            }
-          }
-        } catch (error) {
-          fastify.log.error("Error parsing multipart data:", error);
-          return reply.status(400).send({
-            message: "Error processing form data",
-          });
-        }
-
-        if (!fileData) {
-          return reply.status(400).send({
-            message: "No file uploaded. Please provide an image file.",
-          });
-        }
-
-        // Validate file type
-        const allowedTypes = [
-          "image/jpeg",
-          "image/jpg",
-          "image/png",
-          "image/gif",
-          "image/webp",
-        ];
-        if (!allowedTypes.includes(fileData.mimetype)) {
-          return reply.status(400).send({
-            message:
-              "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
-          });
-        }
-
-        // Convert file stream to buffer and check size
-        const buffer = await fileData.toBuffer();
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        if (buffer.length > maxSize) {
-          return reply.status(400).send({
-            message: "File too large. Maximum size is 10MB.",
-          });
-        }
-
-        fastify.log.info(
-          `Uploading file: ${fileData.filename}, size: ${buffer.length} bytes`
-        );
-
-        // Generate S3 key first
-        const s3Key = fastify.s3.createKey(
-          "focacci",
-          uuidv4(),
-          fileData.filename
-        );
-
-        // Upload to S3 first
-        await fastify.s3.upload({
-          key: s3Key,
-          buffer: buffer,
-          contentType: fileData.mimetype,
-          metadata: {
-            originalName: fileData.filename || "unknown",
-            uploadedAt: new Date().toISOString(),
-          },
-        });
-
-        // Get public URL for immediate access
-        const publicUrl = fastify.s3.getPublicUrl(s3Key);
-
-        // Create image record in database with S3 key
-        const image = await fastify.image.create({
-          filename: fileData.filename,
-          title,
-          tags,
-          s3Url: publicUrl, // Store the public S3 url
-        });
-
-        return reply.status(201).send({ image });
-      } catch (error) {
-        fastify.log.error("Error uploading image:", error);
-        return reply.status(500).send({
-          message: "Failed to upload image",
-          error: error instanceof Error ? error.message : "Unknown error",
+      // Check if request is multipart
+      if (!request.isMultipart()) {
+        return reply.status(400).send({
+          message: "Request must be multipart/form-data",
         });
       }
+
+      // Parse multipart form data - with attachFieldsToBody: true
+      let fileData: MultipartFile | null = null;
+      let tags: string[] = [];
+      let title: string | undefined = undefined;
+
+      try {
+        // With attachFieldsToBody: true, files are in request.body too
+        const body = request.body as any;
+        fastify.log.info(`Request body keys:`, Object.keys(body || {}));
+
+        // Find the file field in the body
+        if (body) {
+          for (const [key, value] of Object.entries(body)) {
+            fastify.log.info(`Body field ${key}:`, typeof value, value);
+
+            // Check if this is a file (has file property)
+            if (value && typeof value === "object" && "file" in value) {
+              fileData = value as MultipartFile;
+              fastify.log.info(
+                `Found file in ${key}: ${fileData.filename}, mimetype=${fileData.mimetype}`
+              );
+              break;
+            }
+          }
+
+          // Get title from body
+          if (body.title) {
+            const titleValue = body.title.value || body.title;
+            title = titleValue && titleValue !== "" ? titleValue : undefined;
+            fastify.log.info(`Parsed title: ${title}`);
+          }
+
+          // Get tags from body
+          if (body.tags) {
+            try {
+              const tagsValue = body.tags.value || body.tags;
+              fastify.log.info(`Raw tags value: ${tagsValue}`);
+              tags = tagsValue && tagsValue !== "" ? JSON.parse(tagsValue) : [];
+              fastify.log.info(`Parsed tags: ${JSON.stringify(tags)}`);
+            } catch (err) {
+              fastify.log.warn("Failed to parse tags:", err);
+              tags = [];
+            }
+          }
+        }
+      } catch (error) {
+        fastify.log.error("Error parsing multipart data:", error);
+        return reply.status(400).send({
+          message: "Error processing form data",
+        });
+      }
+
+      if (!fileData) {
+        return reply.status(400).send({
+          message: "No file uploaded. Please provide an image file.",
+        });
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!allowedTypes.includes(fileData.mimetype)) {
+        return reply.status(400).send({
+          message:
+            "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
+        });
+      }
+
+      // Convert file stream to buffer and check size
+      const buffer = await fileData.toBuffer();
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (buffer.length > maxSize) {
+        return reply.status(400).send({
+          message: "File too large. Maximum size is 10MB.",
+        });
+      }
+
+      fastify.log.info(
+        `Uploading file: ${fileData.filename}, size: ${buffer.length} bytes`
+      );
+
+      // Generate S3 key first
+      const s3Key = fastify.s3.createKey(
+        "focacci",
+        uuidv4(),
+        fileData.filename
+      );
+
+      // Upload to S3 first
+      await fastify.s3.upload({
+        key: s3Key,
+        buffer: buffer,
+        contentType: fileData.mimetype,
+        metadata: {
+          originalName: fileData.filename || "unknown",
+          uploadedAt: new Date().toISOString(),
+        },
+      });
+
+      // Get public URL for immediate access
+      const publicUrl = fastify.s3.getPublicUrl(s3Key);
+
+      // Create image record in database with S3 key
+      const image = await fastify.image.create({
+        filename: fileData.filename,
+        title,
+        tags,
+        s3Url: publicUrl, // Store the public S3 url
+      });
+
+      return reply.status(201).send({ image });
+    } catch (error) {
+      fastify.log.error("Error uploading image:", error);
+      return reply.status(500).send({
+        message: "Failed to upload image",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-  );
+  });
 
   fastify.put(
     "/:imageId",

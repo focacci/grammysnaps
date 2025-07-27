@@ -4,6 +4,7 @@ import {
   UserUpdate,
   SecurityUpdateInput,
 } from "../types/user.types";
+import { ValidationUtils } from "../utils/validation";
 
 interface UserParams {
   id: string;
@@ -67,13 +68,20 @@ export default async function userRoutes(fastify: FastifyInstance) {
       reply: FastifyReply
     ) => {
       try {
-        const user = await fastify.user.getById(request.params.id);
+        const sanitizedId = ValidationUtils.sanitizeUUID(
+          request.params.id,
+          "User ID"
+        );
+        const user = await fastify.user.getById(sanitizedId);
         if (!user) {
           return reply.status(404).send({ error: "User not found" });
         }
         return reply.send(user);
       } catch (error) {
         fastify.log.error(error);
+        if (error instanceof Error && error.message.includes("Invalid")) {
+          return reply.status(400).send({ error: error.message });
+        }
         return reply.status(500).send({ error: "Failed to fetch user" });
       }
     }
@@ -87,13 +95,19 @@ export default async function userRoutes(fastify: FastifyInstance) {
       reply: FastifyReply
     ) => {
       try {
-        const user = await fastify.user.getByEmail(request.params.email);
+        const sanitizedEmail = ValidationUtils.sanitizeEmail(
+          request.params.email
+        );
+        const user = await fastify.user.getByEmail(sanitizedEmail);
         if (!user) {
           return reply.status(404).send({ error: "User not found" });
         }
         return reply.send(user);
       } catch (error) {
         fastify.log.error(error);
+        if (error instanceof Error && error.message.includes("Invalid")) {
+          return reply.status(400).send({ error: error.message });
+        }
         return reply.status(500).send({ error: "Failed to fetch user" });
       }
     }

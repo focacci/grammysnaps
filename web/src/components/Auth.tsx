@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./Auth.css";
 import authService from "../services/auth.service";
+import { ClientValidationUtils } from "../utils/validation";
 
 interface AuthProps {
   onLogin: (user: any) => void;
@@ -28,21 +29,102 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
   const [error, setError] = useState("");
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
+  // Field-specific validation errors
+  const [fieldErrors, setFieldErrors] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
+    birthday: "",
+    familyInput: "",
+  });
+
   // Check for password mismatch in real-time
   const checkPasswordMatch = (password: string, confirmPassword: string) => {
-    if (!isLogin && confirmPassword && password !== confirmPassword) {
-      setPasswordMismatch(true);
-    } else {
-      setPasswordMismatch(false);
+    const matchError = ClientValidationUtils.validatePasswordMatch(
+      password,
+      confirmPassword
+    );
+    setPasswordMismatch(!!matchError);
+    setFieldErrors((prev) => ({ ...prev, confirmPassword: matchError || "" }));
+  };
+
+  // Validate email input
+  const handleEmailChange = (value: string) => {
+    // Sanitize input in real-time
+    const sanitized = ClientValidationUtils.sanitizeInput(value);
+    setEmail(sanitized);
+
+    // Validate email format
+    const { error } = ClientValidationUtils.sanitizeEmail(sanitized);
+    setFieldErrors((prev) => ({ ...prev, email: error || "" }));
+  };
+
+  // Validate password input
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+
+    // Only validate password strength for signup
+    if (!isLogin) {
+      const { error } = ClientValidationUtils.validatePassword(value);
+      setFieldErrors((prev) => ({ ...prev, password: error || "" }));
     }
+
+    checkPasswordMatch(value, confirmPassword);
+  };
+
+  // Validate text fields
+  const handleTextFieldChange = (
+    value: string,
+    fieldName: string,
+    setter: (value: string) => void,
+    required: boolean = false
+  ) => {
+    const sanitized = ClientValidationUtils.sanitizeInput(value);
+    setter(sanitized);
+
+    const { error } = ClientValidationUtils.sanitizeText(
+      sanitized,
+      fieldName,
+      required,
+      50
+    );
+    setFieldErrors((prev) => ({
+      ...prev,
+      [fieldName.toLowerCase().replace(/\s+/g, "")]: error || "",
+    }));
+  };
+
+  // Validate birthday
+  const handleBirthdayChange = (value: string) => {
+    setBirthday(value);
+
+    const { error } = ClientValidationUtils.validateDate(value);
+    setFieldErrors((prev) => ({ ...prev, birthday: error || "" }));
   };
 
   // Add family ID to the list
   const addFamily = () => {
-    if (familyInput.trim() && !families.includes(familyInput.trim())) {
-      setFamilies([...families, familyInput.trim()]);
-      setFamilyInput("");
+    const { sanitized, error } =
+      ClientValidationUtils.validateFamilyId(familyInput);
+
+    if (error) {
+      setFieldErrors((prev) => ({ ...prev, familyInput: error }));
+      return;
     }
+
+    if (families.includes(sanitized)) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        familyInput: "Family ID already added",
+      }));
+      return;
+    }
+
+    setFamilies([...families, sanitized]);
+    setFamilyInput("");
+    setFieldErrors((prev) => ({ ...prev, familyInput: "" }));
   };
 
   // Remove family ID from the list
@@ -63,6 +145,15 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
     setFamilyInput("");
     setError("");
     setPasswordMismatch(false);
+    setFieldErrors({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      firstName: "",
+      lastName: "",
+      birthday: "",
+      familyInput: "",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,35 +162,84 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
     setLoading(true);
 
     try {
+      // Client-side validation
+      const emailValidation = ClientValidationUtils.sanitizeEmail(email);
+      if (emailValidation.error) {
+        setError(emailValidation.error);
+        setLoading(false);
+        return;
+      }
+
+      const passwordValidation =
+        ClientValidationUtils.validatePassword(password);
+      if (passwordValidation.error) {
+        setError(passwordValidation.error);
+        setLoading(false);
+        return;
+      }
+
       if (!isLogin) {
-        // Sign up validation
+        // Additional signup validation
         if (password !== confirmPassword) {
           setError("Passwords don't match");
           setLoading(false);
           return;
         }
-        if (password.length < 6) {
-          setError("Password must be at least 6 characters");
+
+        const firstNameValidation = ClientValidationUtils.sanitizeText(
+          firstName,
+          "First name",
+          true,
+          50
+        );
+        if (firstNameValidation.error) {
+          setError(firstNameValidation.error);
           setLoading(false);
           return;
         }
-        if (!firstName.trim()) {
-          setError("First name is required");
+
+        const lastNameValidation = ClientValidationUtils.sanitizeText(
+          lastName,
+          "Last name",
+          true,
+          50
+        );
+        if (lastNameValidation.error) {
+          setError(lastNameValidation.error);
           setLoading(false);
           return;
         }
-        if (!lastName.trim()) {
-          setError("Last name is required");
-          setLoading(false);
-          return;
+
+        if (middleName) {
+          const middleNameValidation = ClientValidationUtils.sanitizeText(
+            middleName,
+            "Middle name",
+            false,
+            50
+          );
+          if (middleNameValidation.error) {
+            setError(middleNameValidation.error);
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (birthday) {
+          const birthdayValidation =
+            ClientValidationUtils.validateDate(birthday);
+          if (birthdayValidation.error) {
+            setError(birthdayValidation.error);
+            setLoading(false);
+            return;
+          }
         }
       }
 
       const endpoint = isLogin ? "/user/login" : "/user";
       const body = isLogin
-        ? { email, password }
+        ? { email: emailValidation.sanitized, password }
         : {
-            email,
+            email: emailValidation.sanitized,
             password,
             first_name: firstName.trim(),
             middle_name: middleName.trim() || undefined,
@@ -110,7 +250,10 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
 
       if (isLogin) {
         // Use auth service for login
-        const user = await authService.login(email, password);
+        const user = await authService.login(
+          emailValidation.sanitized,
+          password
+        );
         onLogin(user);
       } else {
         // For signup, use the regular API
@@ -157,10 +300,20 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                   type="text"
                   id="firstName"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e) =>
+                    handleTextFieldChange(
+                      e.target.value,
+                      "First name",
+                      setFirstName,
+                      true
+                    )
+                  }
                   required
                   placeholder="Enter your first name"
                 />
+                {fieldErrors.firstName && (
+                  <div className="field-error">{fieldErrors.firstName}</div>
+                )}
               </div>
 
               <div className="form-group">
@@ -169,7 +322,14 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                   type="text"
                   id="middleName"
                   value={middleName}
-                  onChange={(e) => setMiddleName(e.target.value)}
+                  onChange={(e) =>
+                    handleTextFieldChange(
+                      e.target.value,
+                      "Middle name",
+                      setMiddleName,
+                      false
+                    )
+                  }
                   placeholder="Enter your middle name (optional)"
                 />
               </div>
@@ -180,10 +340,20 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                   type="text"
                   id="lastName"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(e) =>
+                    handleTextFieldChange(
+                      e.target.value,
+                      "Last name",
+                      setLastName,
+                      true
+                    )
+                  }
                   required
                   placeholder="Enter your last name"
                 />
+                {fieldErrors.lastName && (
+                  <div className="field-error">{fieldErrors.lastName}</div>
+                )}
               </div>
 
               <div className="form-group">
@@ -192,9 +362,12 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                   type="date"
                   id="birthday"
                   value={birthday}
-                  onChange={(e) => setBirthday(e.target.value)}
+                  onChange={(e) => handleBirthdayChange(e.target.value)}
                   placeholder="Select your birthday (optional)"
                 />
+                {fieldErrors.birthday && (
+                  <div className="field-error">{fieldErrors.birthday}</div>
+                )}
               </div>
 
               <div className="form-group">
@@ -204,7 +377,13 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                     type="text"
                     id="familyInput"
                     value={familyInput}
-                    onChange={(e) => setFamilyInput(e.target.value)}
+                    onChange={(e) => {
+                      const sanitized = ClientValidationUtils.sanitizeInput(
+                        e.target.value
+                      );
+                      setFamilyInput(sanitized);
+                      setFieldErrors((prev) => ({ ...prev, familyInput: "" }));
+                    }}
                     placeholder="Enter a family ID"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
@@ -222,6 +401,9 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                     Add
                   </button>
                 </div>
+                {fieldErrors.familyInput && (
+                  <div className="field-error">{fieldErrors.familyInput}</div>
+                )}
                 {families.length > 0 && (
                   <div className="family-list">
                     {families.map((familyId, index) => (
@@ -248,10 +430,13 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
               required
               placeholder="Enter your email"
             />
+            {fieldErrors.email && (
+              <div className="field-error">{fieldErrors.email}</div>
+            )}
           </div>
 
           <div className="form-group">
@@ -260,14 +445,14 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
               type="password"
               id="password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                checkPasswordMatch(e.target.value, confirmPassword);
-              }}
+              onChange={(e) => handlePasswordChange(e.target.value)}
               required
               placeholder="Enter your password"
               minLength={isLogin ? undefined : 6}
             />
+            {!isLogin && fieldErrors.password && (
+              <div className="field-error">{fieldErrors.password}</div>
+            )}
           </div>
 
           {!isLogin && (
@@ -285,10 +470,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 placeholder="Confirm your password"
                 minLength={6}
               />
-              {passwordMismatch && (
-                <div className="password-mismatch-error">
-                  Passwords don't match
-                </div>
+              {fieldErrors.confirmPassword && (
+                <div className="field-error">{fieldErrors.confirmPassword}</div>
               )}
             </div>
           )}

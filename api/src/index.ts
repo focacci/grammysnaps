@@ -1,6 +1,7 @@
 import Fastify, { fastify, FastifyInstance } from "fastify";
 import fastifyPostgres from "@fastify/postgres";
 import fastifyMultipart from "@fastify/multipart";
+import fastifyRateLimit from "@fastify/rate-limit";
 
 import imagePlugin from "./plugins/image.plugin";
 import imageRoutes from "./routes/image.routes";
@@ -41,6 +42,18 @@ const main = async () => {
     if (request.method === "OPTIONS") {
       reply.code(200).send();
     }
+  });
+
+  // Register rate limiting for security
+  server.register(fastifyRateLimit, {
+    max: 100, // Maximum 100 requests per timeWindow
+    timeWindow: "1 minute", // per 1 minute
+    errorResponseBuilder: (req: any, context: any) => {
+      return {
+        error: "Too many requests, please try again later.",
+        expiresIn: Math.round(context.ttl / 1000), // seconds
+      };
+    },
   });
 
   // Register multipart for file uploads
