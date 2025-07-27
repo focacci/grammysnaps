@@ -146,8 +146,11 @@
 
 .auth-switch {
   text-align: center;
-  padding-top: 16px;
+  padding: 16px;
   border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-switch p {
