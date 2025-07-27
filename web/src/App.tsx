@@ -187,12 +187,27 @@ function App() {
                   >
                     Account
                   </button>
-                  <button className="dropdown-item" onClick={toggleDarkMode}>
-                    {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-                  </button>
                   <button className="dropdown-item" onClick={handleLogout}>
-                    Sign Out
+                    Log Out
                   </button>
+                  <div className="dropdown-toggle-container">
+                    <span className="toggle-label">
+                      {darkMode ? "Dark Mode" : "Light Mode"}
+                    </span>
+                    <button
+                      className={`theme-toggle ${darkMode ? "active" : ""}`}
+                      onClick={toggleDarkMode}
+                      aria-label={`Switch to ${
+                        darkMode ? "light" : "dark"
+                      } mode`}
+                    >
+                      <span className="toggle-slider">
+                        <span className="toggle-icon">
+                          {darkMode ? "🌙" : "☀️"}
+                        </span>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
