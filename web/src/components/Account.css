@@ -183,7 +183,6 @@
 
 .create-family-btn:hover {
   background: #2563eb;
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -634,7 +633,6 @@
 .setting-item:hover {
   border-color: var(--border-medium);
   background-color: var(--bg-tertiary);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -800,7 +798,6 @@
 
 .delete-family-btn:hover:not(:disabled) {
   background: #c82333;
-  transform: translateY(-1px);
 }
 
 .delete-family-btn:disabled {

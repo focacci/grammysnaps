@@ -108,7 +108,6 @@
 }
 
 .create-tag-btn:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   background: linear-gradient(135deg, var(--success-green-dark), #2e7d32);
 }
@@ -315,7 +314,6 @@
 }
 
 .upload-btn-main:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
   background: #1976d2;
 }
@@ -410,7 +408,6 @@
 }
 
 .image-card:hover {
-  transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-lg);
 }
 
@@ -487,7 +484,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -745,7 +742,6 @@
 }
 
 .delete-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   background: linear-gradient(135deg, #d32f2f, #b71c1c);
 }
@@ -792,7 +788,6 @@
 }
 
 .submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -833,7 +828,6 @@
 }
 
 .edit-btn:hover {
-  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
   background: linear-gradient(135deg, var(--secondary-blue-dark), #1565c0);
 }
@@ -856,7 +850,6 @@
 }
 
 .download-btn:hover {
-  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
   background: linear-gradient(135deg, var(--success-green-dark), #2e7d32);
 }
@@ -943,7 +936,6 @@
 .file-drop-zone.drag-over {
   border-color: var(--primary-orange);
   background: rgba(255, 152, 0, 0.1);
-  transform: scale(1.02);
 }
 
 .file-drop-content {

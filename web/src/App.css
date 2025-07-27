@@ -94,7 +94,6 @@ button:disabled {
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--primary-orange-dark);
-  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -431,7 +430,6 @@ textarea:focus {
 }
 
 .get-started-btn:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
 
