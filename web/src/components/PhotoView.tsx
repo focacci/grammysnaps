@@ -2,6 +2,30 @@ import { useState, useEffect } from "react";
 import "./PhotoView.css";
 
 // Type definitions
+interface User {
+  id: string;
+  email: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  birthday?: string;
+  families: string[];
+  created_at: string;
+  updated_at: string;
+  profilePicture?: string;
+}
+
+interface FamilyGroup {
+  id: string;
+  name: string;
+  member_count: number;
+  owner_id: string;
+  user_role: "owner" | "member";
+  related_families: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 interface Image {
   id: string;
   title?: string;
@@ -20,7 +44,11 @@ interface Tag {
   updated_at?: string;
 }
 
-function PhotoView() {
+interface PhotoViewProps {
+  user: User;
+}
+
+function PhotoView({ user }: PhotoViewProps) {
   const [images, setImages] = useState<Image[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -53,6 +81,11 @@ function PhotoView() {
   const [editImageTags, setEditImageTags] = useState<string[]>([]);
   const [savingImage, setSavingImage] = useState(false);
   const [deletingImage, setDeletingImage] = useState(false);
+
+  // Family-related state
+  const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
+  const [selectedFamily, setSelectedFamily] = useState<string>("all");
+
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
@@ -70,6 +103,21 @@ function PhotoView() {
     Time: false,
   });
 
+  // Function to load user's family groups
+  const loadUserFamilies = async () => {
+    try {
+      const response = await fetch(`/api/family/user/${user.id}`);
+      if (response.ok) {
+        const families = await response.json();
+        setFamilyGroups(families);
+      } else {
+        console.error("Failed to fetch families");
+      }
+    } catch (error) {
+      console.error("Error fetching families:", error);
+    }
+  };
+
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -77,7 +125,7 @@ function PhotoView() {
         setLoading(true);
         setError(null);
 
-        // Fetch images and tags in parallel
+        // Fetch images, tags, and families in parallel
         const [imagesResponse, tagsResponse] = await Promise.all([
           fetch("/api/image"),
           fetch("/api/tag"),
@@ -95,6 +143,9 @@ function PhotoView() {
 
         setImages(imagesData.images || []);
         setTags(tagsData.tags || []);
+
+        // Load families separately (don't block image loading on family loading)
+        loadUserFamilies();
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching data:", err);
@@ -104,7 +155,7 @@ function PhotoView() {
     };
 
     fetchData();
-  }, []);
+  }, [user.id]);
 
   const handleTagToggle = (tagName: string) => {
     setSelectedTags((prev) =>
@@ -527,18 +578,30 @@ function PhotoView() {
     Time: tags.filter((tag) => tag.type === "Time"),
   };
 
-  const filteredImages =
-    selectedTags.length === 0
-      ? images
-      : images.filter((image) => {
-          // Convert selected tag names to tag IDs
-          const selectedTagIds = selectedTags
-            .map((tagName) => tags.find((tag) => tag.name === tagName)?.id)
-            .filter((tagId): tagId is string => tagId !== undefined);
+  const filteredImages = images.filter((image) => {
+    // Filter by tags first
+    if (selectedTags.length > 0) {
+      // Convert selected tag names to tag IDs
+      const selectedTagIds = selectedTags
+        .map((tagName) => tags.find((tag) => tag.name === tagName)?.id)
+        .filter((tagId): tagId is string => tagId !== undefined);
 
-          // Check if image has ALL of the selected tag IDs (AND logic)
-          return selectedTagIds.every((tagId) => image.tags?.includes(tagId));
-        });
+      // Check if image has ALL of the selected tag IDs (AND logic)
+      const hasAllSelectedTags = selectedTagIds.every((tagId) =>
+        image.tags?.includes(tagId)
+      );
+      if (!hasAllSelectedTags) return false;
+    }
+
+    // Filter by family if not "all"
+    if (selectedFamily !== "all") {
+      // For now, we'll show all images when a family is selected
+      // TODO: Implement family-specific image filtering when family_id is added to images
+      // This would require adding family_id to the Image interface and backend
+    }
+
+    return true;
+  });
 
   if (loading) {
     return (
@@ -639,12 +702,31 @@ function PhotoView() {
         {/* Image Grid */}
         <section className="image-grid-container">
           <div className="upload-section">
-            <button
-              className="upload-btn-main"
-              onClick={() => setShowUploadModal(true)}
-            >
-              + Upload Image
-            </button>
+            <div className="upload-controls">
+              <button
+                className="upload-btn-main"
+                onClick={() => setShowUploadModal(true)}
+              >
+                + Upload Image
+              </button>
+
+              <div className="family-filter">
+                <label htmlFor="family-select">Family:</label>
+                <select
+                  id="family-select"
+                  value={selectedFamily}
+                  onChange={(e) => setSelectedFamily(e.target.value)}
+                  className="family-dropdown"
+                >
+                  <option value="all">All Families</option>
+                  {familyGroups.map((family) => (
+                    <option key={family.id} value={family.id}>
+                      {family.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
           {filteredImages.length === 0 ? (
             <div className="empty-state">

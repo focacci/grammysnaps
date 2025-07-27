@@ -121,7 +121,7 @@ function App() {
           setCurrentView("home");
           return null;
         }
-        return <PhotoView />;
+        return <PhotoView user={user} />;
       case "account":
         if (!user) {
           setShowAuth(true);

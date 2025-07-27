@@ -255,6 +255,13 @@
   border-bottom: 2px solid var(--border-light);
 }
 
+.upload-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
 .upload-btn-main {
   background: #2196f3;
   color: var(--text-inverse);
@@ -277,6 +284,60 @@
 
 .upload-btn-main:active {
   transform: translateY(0);
+}
+
+/* Family Filter */
+.family-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.family-filter label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.family-dropdown {
+  padding: 8px 12px;
+  border: 2px solid var(--border-medium);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.family-dropdown:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
+}
+
+.family-dropdown:hover {
+  border-color: var(--border-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .upload-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .family-filter {
+    justify-content: space-between;
+  }
+
+  .family-dropdown {
+    flex: 1;
+    min-width: auto;
+  }
 }
 
 /* Empty State */
