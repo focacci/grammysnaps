@@ -1,0 +1,51 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main, testing]
+    paths:
+      - "api/**"
+      - ".github/workflows/api-tests.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "api/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./api
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./api
+        run: npm run lint
+
+      - name: Run tests
+        working-directory: ./api
+        run: npm run test:ci
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./api/coverage
+          flags: api
+          name: api-coverage
+          fail_ci_if_error: false
