@@ -90,7 +90,7 @@ const main = async () => {
   await server.register(imageRoutes, { prefix: "/image" });
   await server.register(tagRoutes, { prefix: "/tag" });
   await server.register(userRoutes, { prefix: "/user" });
-  await server.register(familyRoutes);
+  await server.register(familyRoutes, { prefix: "/family" });
   await server.register(authRoutes, { prefix: "/auth" });
 
   // Health check

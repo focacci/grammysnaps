@@ -70,7 +70,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingFamilies(true);
       const response = await fetch(
-        `http://localhost:3000/user/${user.id}/families`
+        `http://localhost:3000/family/user/${user.id}`
       );
       if (response.ok) {
         const families = await response.json();
