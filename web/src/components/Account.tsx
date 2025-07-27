@@ -98,6 +98,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [addRelatedFamilyLoading, setAddRelatedFamilyLoading] = useState(false);
   const [relatedFamilyError, setRelatedFamilyError] = useState("");
 
+  // Delete Family State
+  const [deleteFamilyLoading, setDeleteFamilyLoading] = useState(false);
+
   // Copy Feedback State
   const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
 
@@ -276,6 +279,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
   // Manage Family Handlers
   const handleManageFamily = async (family: FamilyGroup) => {
+    console.log("Managing family:", family);
+    console.log("User role:", family.user_role);
     setSelectedFamily(family);
     setShowManageFamilyModal(true);
     setManageFamilyError("");
@@ -481,6 +486,37 @@ function Account({ user, onUserUpdate }: AccountProps) {
       setManageFamilyError(
         err instanceof Error ? err.message : "Failed to remove member"
       );
+    }
+  };
+
+  const handleDeleteFamily = async () => {
+    if (!selectedFamily) return;
+
+    setDeleteFamilyLoading(true);
+    setManageFamilyError("");
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/family/${selectedFamily.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete family");
+      }
+
+      // Reload families list and close modal
+      await loadUserFamilies();
+      handleCloseManageFamilyModal();
+    } catch (err) {
+      setManageFamilyError(
+        err instanceof Error ? err.message : "Failed to delete family"
+      );
+    } finally {
+      setDeleteFamilyLoading(false);
     }
   };
 
@@ -864,12 +900,25 @@ function Account({ user, onUserUpdate }: AccountProps) {
           <div className="auth-modal family-manage-modal">
             <div className="auth-header">
               <h2>Manage {selectedFamily.name}</h2>
-              <button
-                className="auth-close"
-                onClick={handleCloseManageFamilyModal}
-              >
-                ×
-              </button>
+              <div className="modal-header-actions">
+                {/* Temporarily show button for all users to debug */}
+                {selectedFamily.owner_id === user.id && (
+                  <button
+                    className="delete-family-btn"
+                    onClick={handleDeleteFamily}
+                    disabled={deleteFamilyLoading}
+                    title={`Delete Family (Role: ${selectedFamily.user_role})`}
+                  >
+                    {deleteFamilyLoading ? "Deleting..." : "🗑️ Delete Family"}
+                  </button>
+                )}
+                <button
+                  className="auth-close"
+                  onClick={handleCloseManageFamilyModal}
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             <div className="family-manage-content">

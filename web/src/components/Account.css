@@ -765,3 +765,63 @@
   border-color: rgba(76, 175, 80, 0.4);
   color: #66bb6a;
 }
+
+/* Modal Header Actions */
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Override auth-header for family manage modal */
+.family-manage-modal .auth-header {
+  justify-content: space-between;
+}
+
+.family-manage-modal .auth-header h2 {
+  flex: 1;
+}
+
+/* Delete Family Button */
+.delete-family-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-family-btn:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.delete-family-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delete-family-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments for modal header */
+@media (max-width: 480px) {
+  .modal-header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .delete-family-btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+}
