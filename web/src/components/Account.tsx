@@ -80,6 +80,16 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [createFamilyLoading, setCreateFamilyLoading] = useState(false);
   const [createFamilyError, setCreateFamilyError] = useState("");
 
+  // Join Family Modal State
+  const [showJoinFamilyModal, setShowJoinFamilyModal] = useState(false);
+  const [joinFamilyId, setJoinFamilyId] = useState("");
+  const [joinFamilyInfo, setJoinFamilyInfo] = useState<FamilyGroup | null>(
+    null
+  );
+  const [loadingJoinFamilyInfo, setLoadingJoinFamilyInfo] = useState(false);
+  const [joinFamilyLoading, setJoinFamilyLoading] = useState(false);
+  const [joinFamilyError, setJoinFamilyError] = useState("");
+
   // Manage Family Modal State
   const [showManageFamilyModal, setShowManageFamilyModal] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState<FamilyGroup | null>(
@@ -282,6 +292,90 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const handleCloseCreateFamilyModal = () => {
     setShowCreateFamilyModal(false);
     setCreateFamilyError("");
+  };
+
+  // Join Family Handlers
+  const handleJoinFamily = () => {
+    setShowJoinFamilyModal(true);
+    setJoinFamilyId("");
+    setJoinFamilyInfo(null);
+    setJoinFamilyError("");
+  };
+
+  const handleJoinFamilyIdChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const familyId = e.target.value;
+    setJoinFamilyId(familyId);
+    setJoinFamilyInfo(null);
+    setJoinFamilyError("");
+
+    if (familyId.trim()) {
+      setLoadingJoinFamilyInfo(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3000/family/${familyId.trim()}`
+        );
+        if (response.ok) {
+          const familyData = await response.json();
+          setJoinFamilyInfo(familyData);
+        } else if (response.status === 404) {
+          setJoinFamilyError("Family not found");
+        } else {
+          setJoinFamilyError("Failed to fetch family information");
+        }
+      } catch (error) {
+        setJoinFamilyError("Failed to fetch family information");
+      } finally {
+        setLoadingJoinFamilyInfo(false);
+      }
+    }
+  };
+
+  const handleJoinFamilySubmit = async () => {
+    if (!joinFamilyInfo) return;
+
+    setJoinFamilyLoading(true);
+    setJoinFamilyError("");
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/family/${joinFamilyInfo.id}/members`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to join family");
+      }
+
+      // Reload families to show the new one
+      await loadUserFamilies();
+
+      // Close modal
+      setShowJoinFamilyModal(false);
+    } catch (err) {
+      setJoinFamilyError(
+        err instanceof Error ? err.message : "Failed to join family"
+      );
+    } finally {
+      setJoinFamilyLoading(false);
+    }
+  };
+
+  const handleCloseJoinFamilyModal = () => {
+    setShowJoinFamilyModal(false);
+    setJoinFamilyId("");
+    setJoinFamilyInfo(null);
+    setJoinFamilyError("");
   };
 
   // Manage Family Handlers
@@ -854,7 +948,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 </div>
               )}
               <div className="section-footer">
-                <button className="join-family-btn">+ Join Family Group</button>
+                <button className="join-family-btn" onClick={handleJoinFamily}>
+                  + Join Family Group
+                </button>
                 <button
                   className="create-family-btn-footer"
                   onClick={handleCreateFamily}
@@ -940,6 +1036,76 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 {createFamilyLoading ? "Creating..." : "Create Family Group"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Join Family Modal */}
+      {showJoinFamilyModal && (
+        <div className="auth-overlay">
+          <div className="auth-modal join-family-modal">
+            <div className="auth-header">
+              <h2>Join Family Group</h2>
+              <button
+                className="auth-close"
+                onClick={handleCloseJoinFamilyModal}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="auth-form">
+              <div className="form-group">
+                <label htmlFor="familyId">Family ID *</label>
+                <input
+                  type="text"
+                  id="familyId"
+                  value={joinFamilyId}
+                  onChange={handleJoinFamilyIdChange}
+                  placeholder="Enter the family ID to join"
+                />
+              </div>
+
+              {joinFamilyError && (
+                <div className="auth-error">{joinFamilyError}</div>
+              )}
+
+              {loadingJoinFamilyInfo && (
+                <div className="loading-state">
+                  Loading family information...
+                </div>
+              )}
+
+              {joinFamilyInfo && (
+                <div className="family-preview">
+                  <h3>Family Information</h3>
+                  <div className="family-group-card">
+                    <div className="family-group-header">
+                      <h3 className="family-group-name">
+                        {joinFamilyInfo.name}
+                      </h3>
+                    </div>
+                    <div className="family-group-details">
+                      <div className="family-group-info">
+                        <span className="family-id-container">
+                          <span className="family-id-display">
+                            {joinFamilyInfo.id}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    className="auth-submit"
+                    onClick={handleJoinFamilySubmit}
+                    disabled={joinFamilyLoading}
+                  >
+                    {joinFamilyLoading ? "Joining..." : "Join Family"}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
