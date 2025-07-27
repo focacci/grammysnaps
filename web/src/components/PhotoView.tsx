@@ -95,6 +95,10 @@ function PhotoView({ user }: PhotoViewProps) {
   const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
   const [selectedFamily, setSelectedFamily] = useState<string>("all");
 
+  // Mobile sidebar collapse state
+  const [isSidebarCollapsedMobile, setIsSidebarCollapsedMobile] =
+    useState(false);
+
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
@@ -755,116 +759,144 @@ function PhotoView({ user }: PhotoViewProps) {
     <div className="photo-view">
       <div className="content-layout">
         {/* Filter Sidebar */}
-        <aside className="filter-sidebar">
+        <aside
+          className={`filter-sidebar ${
+            isSidebarCollapsedMobile ? "collapsed-mobile" : ""
+          }`}
+        >
           <div className="sidebar-header">
             <h3>Filter by Tags</h3>
-          </div>
-          <div className="create-tag-section">
             <button
-              className="create-tag-btn"
-              onClick={() => setShowCreateTagModal(true)}
+              className="mobile-sidebar-toggle"
+              onClick={() =>
+                setIsSidebarCollapsedMobile(!isSidebarCollapsedMobile)
+              }
+              aria-label={
+                isSidebarCollapsedMobile ? "Show filters" : "Hide filters"
+              }
+              title={isSidebarCollapsedMobile ? "Show filters" : "Hide filters"}
             >
-              + Create Tag
+              {isSidebarCollapsedMobile ? "🏷️" : "◀"}
             </button>
           </div>
-          <div className="filter-sections">
-            {Object.entries(tagsByFamilyAndType).map(
-              ([familyId, familyData]) => (
-                <div key={familyId} className="filter-section">
-                  <button
-                    className="section-header"
-                    onClick={() => toggleSection(`family-${familyId}`)}
-                    aria-expanded={!collapsedSections[`family-${familyId}`]}
-                  >
-                    <span
-                      className={`section-caret ${
-                        collapsedSections[`family-${familyId}`]
-                          ? "collapsed"
-                          : ""
-                      }`}
+          <div
+            className={`sidebar-content ${
+              isSidebarCollapsedMobile ? "hidden-mobile" : ""
+            }`}
+          >
+            <div className="create-tag-section">
+              <button
+                className="create-tag-btn"
+                onClick={() => setShowCreateTagModal(true)}
+              >
+                + Create Tag
+              </button>
+            </div>
+            <div className="filter-sections">
+              {Object.entries(tagsByFamilyAndType).map(
+                ([familyId, familyData]) => (
+                  <div key={familyId} className="filter-section">
+                    <button
+                      className="section-header"
+                      onClick={() => toggleSection(`family-${familyId}`)}
+                      aria-expanded={!collapsedSections[`family-${familyId}`]}
                     >
-                      ▼
-                    </span>
-                    <span className="section-title">
-                      {familyData.familyName}
-                    </span>
-                  </button>
-                  {!collapsedSections[`family-${familyId}`] && (
-                    <div className="filter-list">
-                      {Object.entries(familyData.tagsByType).map(
-                        ([tagType, typeTags]) =>
-                          typeTags.length > 0 && (
-                            <div
-                              key={`${familyId}-${tagType}`}
-                              className="filter-section"
-                            >
-                              <button
-                                className="section-header"
-                                onClick={() =>
-                                  toggleSection(`${familyId}-${tagType}`)
-                                }
-                                aria-expanded={
-                                  !collapsedSections[`${familyId}-${tagType}`]
-                                }
-                                style={{ paddingLeft: "1rem" }}
+                      <span
+                        className={`section-caret ${
+                          collapsedSections[`family-${familyId}`]
+                            ? "collapsed"
+                            : ""
+                        }`}
+                      >
+                        ▼
+                      </span>
+                      <span className="section-title">
+                        {familyData.familyName}
+                      </span>
+                    </button>
+                    {!collapsedSections[`family-${familyId}`] && (
+                      <div className="filter-list">
+                        {Object.entries(familyData.tagsByType).map(
+                          ([tagType, typeTags]) =>
+                            typeTags.length > 0 && (
+                              <div
+                                key={`${familyId}-${tagType}`}
+                                className="filter-section"
                               >
-                                <span
-                                  className={`section-caret ${
-                                    collapsedSections[`${familyId}-${tagType}`]
-                                      ? "collapsed"
-                                      : ""
-                                  }`}
-                                >
-                                  ▼
-                                </span>
-                                <span className="section-title">{tagType}</span>
-                              </button>
-                              {!collapsedSections[`${familyId}-${tagType}`] && (
-                                <div
-                                  className="filter-list"
+                                <button
+                                  className="section-header"
+                                  onClick={() =>
+                                    toggleSection(`${familyId}-${tagType}`)
+                                  }
+                                  aria-expanded={
+                                    !collapsedSections[`${familyId}-${tagType}`]
+                                  }
                                   style={{ paddingLeft: "1rem" }}
                                 >
-                                  {typeTags.map((tag) => (
-                                    <div
-                                      key={tag.id}
-                                      className={`filter-item ${
-                                        selectedTags.includes(tag.name)
-                                          ? "selected"
-                                          : ""
-                                      }`}
-                                    >
-                                      <span
-                                        className="filter-label"
-                                        onClick={() =>
-                                          handleTagToggle(tag.name)
-                                        }
+                                  <span
+                                    className={`section-caret ${
+                                      collapsedSections[
+                                        `${familyId}-${tagType}`
+                                      ]
+                                        ? "collapsed"
+                                        : ""
+                                    }`}
+                                  >
+                                    ▼
+                                  </span>
+                                  <span className="section-title">
+                                    {tagType}
+                                  </span>
+                                </button>
+                                {!collapsedSections[
+                                  `${familyId}-${tagType}`
+                                ] && (
+                                  <div
+                                    className="filter-list"
+                                    style={{ paddingLeft: "1rem" }}
+                                  >
+                                    {typeTags.map((tag) => (
+                                      <div
+                                        key={tag.id}
+                                        className={`filter-item ${
+                                          selectedTags.includes(tag.name)
+                                            ? "selected"
+                                            : ""
+                                        }`}
                                       >
-                                        {tag.name}
-                                      </span>
-                                      <div className="filter-item-actions">
-                                        <button
-                                          className="edit-tag-btn"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEditTag(tag);
-                                          }}
-                                          title="Edit tag"
+                                        <span
+                                          className="filter-label"
+                                          onClick={() =>
+                                            handleTagToggle(tag.name)
+                                          }
                                         >
-                                          ✏️
-                                        </button>
+                                          {tag.name}
+                                        </span>
+                                        <div className="filter-item-actions">
+                                          <button
+                                            className="edit-tag-btn"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleEditTag(tag);
+                                            }}
+                                            title="Edit tag"
+                                          >
+                                            ✏️
+                                          </button>
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            )}
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </aside>
 

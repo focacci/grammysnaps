@@ -69,6 +69,24 @@
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* Mobile sidebar toggle button */
+.mobile-sidebar-toggle {
+  display: none;
+  background: var(--primary-orange);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-sidebar-toggle:hover {
+  background: var(--primary-orange-dark);
+}
+
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -360,6 +378,51 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  /* Mobile sidebar collapsible functionality */
+  .mobile-sidebar-toggle {
+    display: block;
+  }
+
+  .filter-sidebar {
+    width: 280px;
+    transition: width 0.3s ease, background-color 0.3s ease,
+      border-color 0.3s ease;
+    position: relative;
+  }
+
+  .filter-sidebar.collapsed-mobile {
+    width: 60px;
+    padding: 1rem 0.5rem;
+    /* Add a subtle visual indicator that this is collapsible */
+    border-right-width: 3px;
+    border-right-color: var(--primary-orange);
+  }
+
+  .filter-sidebar.collapsed-mobile .sidebar-header {
+    justify-content: center;
+  }
+
+  .filter-sidebar.collapsed-mobile .sidebar-header h3 {
+    display: none;
+  }
+
+  .filter-sidebar.collapsed-mobile .mobile-sidebar-toggle {
+    width: 100%;
+    padding: 0.75rem 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .sidebar-content {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .sidebar-content.hidden-mobile {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+  }
+
   .upload-controls {
     flex-direction: column;
     align-items: stretch;
