@@ -37,11 +37,7 @@ export interface ImageInfo {
 declare module "fastify" {
   interface FastifyInstance {
     s3: {
-      createKey: (
-        familyId: string,
-        imageId: string,
-        filename: string
-      ) => string;
+      createKey: (type: string, imageId: string, filename: string) => string;
       upload: (options: UploadOptions) => Promise<string>;
       download: (key: string) => Promise<Buffer>;
       delete: (key: string) => Promise<void>;
@@ -80,10 +76,10 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
 
   fastify.decorate("s3", {
     /**
-     * Create a unique S3 key for an image based on familyId and imageId
+     * Create a unique S3 key for an image based on imageId
      */
-    createKey: (familyId: string, imageId: string, filename: string) => {
-      return `grammysnaps/${familyId}/${imageId}/${filename}`;
+    createKey: (type: string, imageId: string, filename: string) => {
+      return `${type}/${imageId}/${filename}`;
     },
 
     /**

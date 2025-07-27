@@ -4,8 +4,10 @@ CREATE TABLE IF NOT EXISTS images (
   filename VARCHAR(255) NOT NULL,
   s3_url VARCHAR(1000),
   tags TEXT[] NOT NULL,
+  family_ids UUID[] NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CHECK (array_length(family_ids, 1) >= 1)
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -66,4 +68,12 @@ CREATE TABLE IF NOT EXISTS image_tags (
   PRIMARY KEY (image_id, tag_id),
   FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
   FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS image_families (
+  image_id UUID NOT NULL,
+  family_id UUID NOT NULL,
+  PRIMARY KEY (image_id, family_id),
+  FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
 );

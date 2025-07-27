@@ -31,6 +31,7 @@ interface Image {
   title?: string;
   filename: string;
   tags?: string[];
+  family_ids?: string[];
   s3_url?: string;
   created_at?: string;
   updated_at?: string;
@@ -58,7 +59,11 @@ function PhotoView({ user }: PhotoViewProps) {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadTitle, setUploadTitle] = useState("");
   const [selectedUploadTags, setSelectedUploadTags] = useState<string[]>([]);
+  const [selectedUploadFamilies, setSelectedUploadFamilies] = useState<
+    string[]
+  >([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
@@ -82,6 +87,7 @@ function PhotoView({ user }: PhotoViewProps) {
   const [isEditingImage, setIsEditingImage] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editImageTags, setEditImageTags] = useState<string[]>([]);
+  const [editImageFamilies, setEditImageFamilies] = useState<string[]>([]);
   const [savingImage, setSavingImage] = useState(false);
   const [deletingImage, setDeletingImage] = useState(false);
 
@@ -183,10 +189,26 @@ function PhotoView({ user }: PhotoViewProps) {
     );
   };
 
+  const handleUploadFamilyToggle = (familyId: string) => {
+    setSelectedUploadFamilies((prev) =>
+      prev.includes(familyId)
+        ? prev.filter((f) => f !== familyId)
+        : [...prev, familyId]
+    );
+  };
+
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploadError(null); // Clear any previous errors
+
     if (!uploadFile) {
-      alert("Please select a file to upload");
+      setUploadError("Please select a file to upload");
+      return;
+    }
+
+    // Validate family selection
+    if (selectedUploadFamilies.length === 0) {
+      setUploadError("Please select at least one family for this image");
       return;
     }
 
@@ -199,14 +221,16 @@ function PhotoView({ user }: PhotoViewProps) {
       "image/webp",
     ];
     if (!allowedTypes.includes(uploadFile.type)) {
-      alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+      setUploadError(
+        "Please select a valid image file (JPEG, PNG, GIF, or WebP)"
+      );
       return;
     }
 
     // Validate file size (10MB max)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (uploadFile.size > maxSize) {
-      alert("File is too large. Maximum size is 10MB.");
+      setUploadError("File is too large. Maximum size is 10MB.");
       return;
     }
 
@@ -218,6 +242,7 @@ function PhotoView({ user }: PhotoViewProps) {
         formData.append("title", uploadTitle.trim());
       }
       formData.append("tags", JSON.stringify(selectedUploadTags));
+      formData.append("family_ids", JSON.stringify(selectedUploadFamilies));
 
       const response = await fetch("/api/image", {
         method: "POST",
@@ -236,11 +261,14 @@ function PhotoView({ user }: PhotoViewProps) {
       // Reset form and close modal
       setUploadTitle("");
       setSelectedUploadTags([]);
+      setSelectedUploadFamilies([]);
       setUploadFile(null);
       setShowUploadModal(false);
     } catch (err) {
       console.error("Error uploading image:", err);
-      alert(err instanceof Error ? err.message : "Failed to upload image");
+      setUploadError(
+        err instanceof Error ? err.message : "Failed to upload image"
+      );
     } finally {
       setUploading(false);
     }
@@ -250,7 +278,9 @@ function PhotoView({ user }: PhotoViewProps) {
     setShowUploadModal(false);
     setUploadTitle("");
     setSelectedUploadTags([]);
+    setSelectedUploadFamilies([]);
     setUploadFile(null);
+    setUploadError(null);
     setDragOver(false);
   };
 
@@ -456,6 +486,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setSelectedImage(image);
     setEditTitle(image.title || "");
     setEditImageTags(image.tags || []);
+    setEditImageFamilies(image.family_ids || []);
     setIsEditingImage(false);
     setShowImageModal(true);
   };
@@ -466,6 +497,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setIsEditingImage(false);
     setEditTitle("");
     setEditImageTags([]);
+    setEditImageFamilies([]);
   };
 
   const handleEditToggle = () => {
@@ -473,6 +505,7 @@ function PhotoView({ user }: PhotoViewProps) {
     if (selectedImage && !isEditingImage) {
       setEditTitle(selectedImage.title || "");
       setEditImageTags(selectedImage.tags || []);
+      setEditImageFamilies(selectedImage.family_ids || []);
     }
   };
 
@@ -482,10 +515,27 @@ function PhotoView({ user }: PhotoViewProps) {
     );
   };
 
+  const handleEditImageFamilyToggle = (familyId: string) => {
+    setEditImageFamilies((prev) => {
+      const newFamilies = prev.includes(familyId)
+        ? prev.filter((f) => f !== familyId)
+        : [...prev, familyId];
+
+      // Ensure at least one family is always selected
+      return newFamilies.length === 0 ? prev : newFamilies;
+    });
+  };
+
   const handleSaveImage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedImage) {
       alert("No image selected");
+      return;
+    }
+
+    // Validate that at least one family is selected
+    if (editImageFamilies.length === 0) {
+      alert("Please select at least one family for this image");
       return;
     }
 
@@ -499,6 +549,7 @@ function PhotoView({ user }: PhotoViewProps) {
         body: JSON.stringify({
           title: editTitle.trim() || null,
           tags: editImageTags,
+          family_ids: editImageFamilies,
         }),
       });
 
@@ -955,6 +1006,38 @@ function PhotoView({ user }: PhotoViewProps) {
               </div>
 
               <div className="form-group">
+                <label>Select Families (required):</label>
+                <div className="family-selection">
+                  {familyGroups.length > 0 ? (
+                    familyGroups.map((family) => (
+                      <div
+                        key={family.id}
+                        className={`family-checkbox ${
+                          selectedUploadFamilies.includes(family.id)
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() => handleUploadFamilyToggle(family.id)}
+                      >
+                        <span>{family.name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-families-message">
+                      <span>
+                        You are not a member of any families. Please join or
+                        create a family to upload photos.
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {uploadError && (
+                <div className="upload-error-message">{uploadError}</div>
+              )}
+
+              <div className="form-group">
                 <label>Select Tags:</label>
                 <div className="tag-selection">
                   {Object.entries(tagsByFamilyAndType).map(
@@ -1071,7 +1154,9 @@ function PhotoView({ user }: PhotoViewProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={uploading || !uploadFile}
+                  disabled={
+                    uploading || !uploadFile || familyGroups.length === 0
+                  }
                   className="submit-btn"
                 >
                   {uploading ? "Uploading..." : "Upload Image"}
@@ -1258,6 +1343,36 @@ function PhotoView({ user }: PhotoViewProps) {
                       onChange={(e) => setEditTitle(e.target.value)}
                       placeholder="Enter image title"
                     />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Select Families:</label>
+                    <div className="family-selection">
+                      {familyGroups.length > 0 ? (
+                        familyGroups.map((family) => (
+                          <div
+                            key={family.id}
+                            className={`family-checkbox ${
+                              editImageFamilies.includes(family.id)
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleEditImageFamilyToggle(family.id)
+                            }
+                          >
+                            <span>{family.name}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="empty-families-message">
+                          <span>
+                            You must be a member of at least one family to edit
+                            images.
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="form-group">

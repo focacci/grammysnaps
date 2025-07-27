@@ -655,6 +655,67 @@
   border-color: var(--secondary-blue-dark);
 }
 
+.family-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.family-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-primary);
+  text-align: center;
+  font-size: 14px;
+}
+
+.family-checkbox:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-medium);
+}
+
+.family-checkbox.selected {
+  background-color: #ff8c00;
+  color: white;
+  border-color: #e67e00;
+  box-shadow: var(--shadow-sm);
+}
+
+.family-checkbox.selected:hover {
+  background-color: #e67e00;
+  border-color: #cc7000;
+}
+
+.empty-families-message {
+  width: 100%;
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.upload-error-message {
+  padding: 12px;
+  margin-top: 8px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  font-size: 14px;
+}
+
 .form-actions {
   display: flex;
   justify-content: space-between;

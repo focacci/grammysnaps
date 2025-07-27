@@ -5,6 +5,7 @@ export interface ImageInput {
   title?: string;
   filename?: string;
   tags?: string[];
+  family_ids?: string[];
   s3Url?: string;
 }
 
@@ -15,5 +16,6 @@ export interface Image {
   created_at: string;
   updated_at: string;
   tags?: string[];
+  family_ids?: string[];
   s3_url?: string;
 }

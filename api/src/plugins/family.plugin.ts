@@ -220,6 +220,35 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           throw new Error("Family not found");
         }
 
+        // Find images that only belong to this family and delete them
+        const orphanedImages = await fastify.image.getOrphanedByFamily(id);
+
+        // Delete orphaned images from S3 and database
+        for (const image of orphanedImages) {
+          try {
+            // Delete from S3 if s3_url exists
+            if (image.s3_url) {
+              // Extract S3 key from the public URL
+              const url = new URL(image.s3_url);
+              const s3Key = url.pathname.substring(1); // Remove leading slash
+              await fastify.s3.delete(s3Key);
+            }
+
+            // Delete from database (will cascade delete image_tags and image_families)
+            await fastify.pg.query("DELETE FROM images WHERE id = $1", [
+              image.id,
+            ]);
+            fastify.log.info(`Deleted orphaned image: ${image.id}`);
+          } catch (imageErr) {
+            fastify.log.error(`Failed to delete image ${image.id}:`, imageErr);
+            // Continue with other images even if one fails
+          }
+        }
+
+        fastify.log.info(
+          `Deleted ${orphanedImages.length} orphaned images for family: ${family.name}`
+        );
+
         // Remove family from all users' families arrays
         for (const memberId of family.members) {
           await fastify.user.removeFromFamily(memberId, id);
