@@ -100,6 +100,23 @@ function Account({ user, onUserUpdate }: AccountProps) {
   // Copy Feedback State
   const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
 
+  // Security Modal State
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [securityForm, setSecurityForm] = useState({
+    email: user.email,
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [securityError, setSecurityError] = useState("");
+  const [securitySuccess, setSecuritySuccess] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
   // Load user's families on component mount
   useEffect(() => {
     loadUserFamilies();
@@ -534,6 +551,118 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setError("");
   };
 
+  // Security Settings Handlers
+  const handleSecuritySettings = () => {
+    setShowSecurityModal(true);
+    setSecurityForm({
+      email: user.email,
+      current_password: "",
+      new_password: "",
+      confirm_password: "",
+    });
+    setSecurityError("");
+    setSecuritySuccess(false);
+    setShowPasswords({
+      current: false,
+      new: false,
+      confirm: false,
+    });
+  };
+
+  const handleSecurityFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityError("");
+    setSecurityLoading(true);
+
+    try {
+      // Validate passwords match if changing password
+      if (securityForm.new_password) {
+        if (securityForm.new_password !== securityForm.confirm_password) {
+          throw new Error("New passwords do not match");
+        }
+        if (securityForm.new_password.length < 6) {
+          throw new Error("New password must be at least 6 characters long");
+        }
+        if (!securityForm.current_password) {
+          throw new Error("Current password is required to change password");
+        }
+      }
+
+      // Prepare the request body
+      const requestBody: any = {};
+
+      // Only include email if it changed
+      if (securityForm.email !== user.email) {
+        requestBody.email = securityForm.email;
+      }
+
+      // Only include password fields if changing password
+      if (securityForm.new_password) {
+        requestBody.current_password = securityForm.current_password;
+        requestBody.new_password = securityForm.new_password;
+      }
+
+      // Don't make the request if nothing changed
+      if (Object.keys(requestBody).length === 0) {
+        setShowSecurityModal(false);
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:3000/user/${user.id}/security`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update security settings");
+      }
+
+      // Update local storage
+      localStorage.setItem("user", JSON.stringify(data));
+
+      // Update parent component's user data
+      onUserUpdate(data);
+
+      // Show success message
+      setSecuritySuccess(true);
+
+      // Close modal after showing success for 2 seconds
+      setTimeout(() => {
+        setShowSecurityModal(false);
+        setSecuritySuccess(false);
+      }, 2000);
+    } catch (err) {
+      setSecurityError(
+        err instanceof Error
+          ? err.message
+          : "Failed to update security settings"
+      );
+    } finally {
+      setSecurityLoading(false);
+    }
+  };
+
+  const handleCloseSecurityModal = () => {
+    setShowSecurityModal(false);
+    setSecurityError("");
+    setSecuritySuccess(false);
+  };
+
+  const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
   return (
     <div className="account-view">
       <div className="account-container">
@@ -660,9 +789,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 <span className="setting-label">Edit Profile</span>
                 <span className="setting-arrow">→</span>
               </button>
-              <button className="setting-item">
+              <button className="setting-item" onClick={handleSecuritySettings}>
                 <span className="setting-icon">🔒</span>
-                <span className="setting-label">Privacy Settings</span>
+                <span className="setting-label">Security & Privacy</span>
                 <span className="setting-arrow">→</span>
               </button>
               <button className="setting-item">
@@ -973,6 +1102,141 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
               <button type="submit" className="auth-submit" disabled={loading}>
                 {loading ? "Updating..." : "Update Profile"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Security Settings Modal */}
+      {showSecurityModal && (
+        <div className="auth-overlay">
+          <div className="auth-modal">
+            <div className="auth-header">
+              <h2>Security & Privacy Settings</h2>
+              <button className="auth-close" onClick={handleCloseSecurityModal}>
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSecurityFormSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="securityEmail">Email Address *</label>
+                <input
+                  type="email"
+                  id="securityEmail"
+                  value={securityForm.email}
+                  onChange={(e) =>
+                    setSecurityForm({ ...securityForm, email: e.target.value })
+                  }
+                  required
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div className="form-divider">
+                <span>Change Password</span>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="currentPassword">Current Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showPasswords.current ? "text" : "password"}
+                    id="currentPassword"
+                    value={securityForm.current_password}
+                    onChange={(e) =>
+                      setSecurityForm({
+                        ...securityForm,
+                        current_password: e.target.value,
+                      })
+                    }
+                    placeholder="Enter your current password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility("current")}
+                    tabIndex={-1}
+                  >
+                    {showPasswords.current ? "👁️" : "👁️‍🗨️"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="newPassword">New Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showPasswords.new ? "text" : "password"}
+                    id="newPassword"
+                    value={securityForm.new_password}
+                    onChange={(e) =>
+                      setSecurityForm({
+                        ...securityForm,
+                        new_password: e.target.value,
+                      })
+                    }
+                    placeholder="Enter your new password (minimum 6 characters)"
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility("new")}
+                    tabIndex={-1}
+                  >
+                    {showPasswords.new ? "👁️" : "👁️‍🗨️"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Confirm New Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showPasswords.confirm ? "text" : "password"}
+                    id="confirmPassword"
+                    value={securityForm.confirm_password}
+                    onChange={(e) =>
+                      setSecurityForm({
+                        ...securityForm,
+                        confirm_password: e.target.value,
+                      })
+                    }
+                    placeholder="Confirm your new password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility("confirm")}
+                    tabIndex={-1}
+                  >
+                    {showPasswords.confirm ? "👁️" : "👁️‍🗨️"}
+                  </button>
+                </div>
+              </div>
+
+              {securityError && (
+                <div className="auth-error">{securityError}</div>
+              )}
+
+              {securitySuccess && (
+                <div className="auth-success">
+                  Security settings updated successfully! 🎉
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="auth-submit"
+                disabled={securityLoading || securitySuccess}
+              >
+                {securityLoading
+                  ? "Updating..."
+                  : securitySuccess
+                  ? "Success!"
+                  : "Update Security Settings"}
               </button>
             </form>
           </div>

@@ -1,5 +1,10 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { UserInput, UserUpdate, LoginInput } from "../types/user.types";
+import {
+  UserInput,
+  UserUpdate,
+  LoginInput,
+  SecurityUpdateInput,
+} from "../types/user.types";
 
 interface UserParams {
   id: string;
@@ -117,6 +122,45 @@ export default async function userRoutes(fastify: FastifyInstance) {
           return reply.status(409).send({ error: error.message });
         }
         return reply.status(500).send({ error: "Failed to update user" });
+      }
+    }
+  );
+
+  // Update user security (email/password)
+  fastify.put<{ Params: UserParams; Body: SecurityUpdateInput }>(
+    "/:id/security",
+    async (
+      request: FastifyRequest<{
+        Params: UserParams;
+        Body: SecurityUpdateInput;
+      }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const user = await fastify.user.updateSecurity(
+          request.params.id,
+          request.body
+        );
+        if (!user) {
+          return reply.status(404).send({ error: "User not found" });
+        }
+        return reply.send(user);
+      } catch (error) {
+        fastify.log.error(error);
+        if (error instanceof Error) {
+          if (error.message.includes("already exists")) {
+            return reply.status(409).send({ error: error.message });
+          }
+          if (error.message.includes("Current password is incorrect")) {
+            return reply.status(401).send({ error: error.message });
+          }
+          if (error.message.includes("Current password is required")) {
+            return reply.status(400).send({ error: error.message });
+          }
+        }
+        return reply
+          .status(500)
+          .send({ error: "Failed to update security settings" });
       }
     }
   );

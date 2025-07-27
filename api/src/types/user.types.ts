@@ -49,6 +49,17 @@ export interface LoginInput {
   password: string;
 }
 
+export interface PasswordChangeInput {
+  current_password: string;
+  new_password: string;
+}
+
+export interface SecurityUpdateInput {
+  email?: string;
+  current_password?: string;
+  new_password?: string;
+}
+
 export interface LoginResponse {
   user: UserPublic;
   token?: string;

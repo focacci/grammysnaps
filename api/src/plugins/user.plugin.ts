@@ -1,7 +1,13 @@
 import { FastifyPluginAsync, FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import argon2 from "argon2";
-import { User, UserInput, UserUpdate, UserPublic } from "../types/user.types";
+import {
+  User,
+  UserInput,
+  UserUpdate,
+  UserPublic,
+  SecurityUpdateInput,
+} from "../types/user.types";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -11,6 +17,10 @@ declare module "fastify" {
       getById: (id: string) => Promise<UserPublic | null>;
       getByEmail: (email: string) => Promise<User | null>;
       update: (id: string, input: UserUpdate) => Promise<UserPublic | null>;
+      updateSecurity: (
+        id: string,
+        input: SecurityUpdateInput
+      ) => Promise<UserPublic | null>;
       delete: (id: string) => Promise<void>;
       validatePassword: (user: User, password: string) => Promise<boolean>;
       addToFamily: (userId: string, familyId: string) => Promise<void>;
@@ -245,6 +255,93 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to validate password");
+      }
+    },
+
+    async updateSecurity(
+      id: string,
+      input: SecurityUpdateInput
+    ): Promise<UserPublic | null> {
+      try {
+        // Get the existing user with password hash for validation
+        const {
+          rows: [existingUser],
+        } = await fastify.pg.query<User>("SELECT * FROM users WHERE id = $1", [
+          id,
+        ]);
+
+        if (!existingUser) {
+          throw new Error("User not found");
+        }
+
+        // If changing password, validate current password
+        if (input.new_password) {
+          if (!input.current_password) {
+            throw new Error("Current password is required to change password");
+          }
+
+          const isCurrentPasswordValid = await fastify.user.validatePassword(
+            existingUser,
+            input.current_password
+          );
+          if (!isCurrentPasswordValid) {
+            throw new Error("Current password is incorrect");
+          }
+        }
+
+        // Check if email is being changed and if it conflicts
+        if (input.email && input.email !== existingUser.email) {
+          const userWithEmail = await fastify.user.getByEmail(input.email);
+          if (userWithEmail) {
+            throw new Error("Another user with this email already exists");
+          }
+        }
+
+        // Build dynamic update query
+        const updateFields: string[] = [];
+        const values: any[] = [];
+        let paramCount = 1;
+
+        if (input.email !== undefined) {
+          updateFields.push(`email = $${paramCount}`);
+          values.push(input.email);
+          paramCount++;
+        }
+
+        if (input.new_password !== undefined) {
+          // Hash the new password
+          const password_hash = await argon2.hash(input.new_password);
+          updateFields.push(`password_hash = $${paramCount}`);
+          values.push(password_hash);
+          paramCount++;
+        }
+
+        // Add updated_at timestamp
+        updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+
+        // Add ID parameter
+        values.push(id);
+
+        const query = `UPDATE users SET ${updateFields.join(
+          ", "
+        )} WHERE id = $${paramCount} RETURNING *`;
+
+        const {
+          rows: [user],
+        } = await fastify.pg.query<User>(query, values);
+
+        if (user.birthday) {
+          user.birthday = new Date(user.birthday).toISOString().split("T")[0];
+        }
+
+        fastify.log.info(`Updated security settings for user: ${user.email}`);
+        return toPublicUser(user);
+      } catch (err) {
+        fastify.log.error(err);
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error("Failed to update security settings");
       }
     },
 
