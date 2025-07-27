@@ -335,6 +335,7 @@
   white-space: nowrap;
   /* Prevent button from shrinking too much */
   flex-shrink: 0;
+  min-height: 44px; /* iOS touch target */
 }
 
 .add-family-btn:hover:not(:disabled) {
@@ -353,8 +354,9 @@
   }
 
   .add-family-btn {
-    padding: 12px;
-    font-size: 13px;
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 48px;
   }
 }
 
@@ -398,4 +400,35 @@
 
 .remove-family-btn:hover {
   background: #b71c1c;
+}
+
+/* Mobile touch improvements for Auth component */
+@media (max-width: 768px) {
+  /* Improve all form elements */
+  .auth-form input,
+  .auth-form select {
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 48px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .auth-form button {
+    min-height: 48px;
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+
+  .family-item {
+    padding: 8px 12px;
+    font-size: 16px;
+    min-height: 36px;
+  }
+
+  .remove-family-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
 }

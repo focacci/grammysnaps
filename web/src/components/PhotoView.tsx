@@ -198,6 +198,23 @@ function PhotoView({ user }: PhotoViewProps) {
     fetchData();
   }, [user.id]);
 
+  // Initialize mobile sidebar state based on screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobile = window.innerWidth <= 768;
+      setIsSidebarCollapsedMobile(isMobile);
+    };
+
+    // Check on mount
+    checkMobile();
+
+    // Add listener for window resize
+    window.addEventListener("resize", checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const handleTagToggle = (tagName: string) => {
     setSelectedTags((prev) =>
       prev.includes(tagName)
@@ -758,6 +775,14 @@ function PhotoView({ user }: PhotoViewProps) {
   return (
     <div className="photo-view">
       <div className="content-layout">
+        {/* Mobile backdrop for sidebar overlay */}
+        <div
+          className={`sidebar-backdrop ${
+            !isSidebarCollapsedMobile ? "visible" : ""
+          }`}
+          onClick={() => setIsSidebarCollapsedMobile(true)}
+        />
+
         {/* Filter Sidebar */}
         <aside
           className={`filter-sidebar ${
@@ -776,14 +801,10 @@ function PhotoView({ user }: PhotoViewProps) {
               }
               title={isSidebarCollapsedMobile ? "Show filters" : "Hide filters"}
             >
-              {isSidebarCollapsedMobile ? "🏷️" : "◀"}
+              {isSidebarCollapsedMobile ? "🏷️" : "✕"}
             </button>
           </div>
-          <div
-            className={`sidebar-content ${
-              isSidebarCollapsedMobile ? "hidden-mobile" : ""
-            }`}
-          >
+          <div className="sidebar-content">
             <div className="create-tag-section">
               <button
                 className="create-tag-btn"
@@ -904,6 +925,19 @@ function PhotoView({ user }: PhotoViewProps) {
         <section className="image-grid-container">
           <div className="upload-section">
             <div className="upload-controls">
+              {/* Mobile filter toggle button */}
+              <button
+                className="mobile-sidebar-toggle"
+                onClick={() => setIsSidebarCollapsedMobile(false)}
+                aria-label="Show filters"
+                title="Show filters"
+                style={{
+                  display: isSidebarCollapsedMobile ? "block" : "none",
+                }}
+              >
+                🏷️
+              </button>
+
               <button
                 className="upload-btn-main"
                 onClick={() => setShowUploadModal(true)}

@@ -57,6 +57,15 @@
   display: flex;
   height: calc(100vh - 80px);
   width: 100%;
+  position: relative;
+}
+
+/* Mobile content layout adjustments */
+@media (max-width: 768px) {
+  .content-layout {
+    height: calc(100vh - 56px);
+    flex-direction: row; /* Keep side-by-side layout */
+  }
 }
 
 /* Filter Sidebar */
@@ -69,24 +78,74 @@
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Mobile sidebar toggle button */
+/* Mobile sidebar optimizations */
+@media (max-width: 768px) {
+  .filter-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    z-index: 50;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease, background-color 0.3s ease,
+      border-color 0.3s ease;
+  }
+
+  .filter-sidebar:not(.collapsed-mobile) {
+    transform: translateX(0);
+  }
+
+  .filter-sidebar.collapsed-mobile {
+    transform: translateX(-100%);
+  }
+} /* Mobile sidebar toggle button */
 .mobile-sidebar-toggle {
   display: none;
   background: var(--primary-orange);
   color: var(--text-inverse);
   border: none;
   border-radius: 4px;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   line-height: 1;
   transition: background-color 0.2s ease;
+  width: 100%;
+  min-height: 44px; /* iOS touch target */
 }
 
 .mobile-sidebar-toggle:hover {
   background: var(--primary-orange-dark);
 }
 
+/* Mobile sidebar toggle display */
+@media (max-width: 768px) {
+  /* Toggle button in sidebar header */
+  .filter-sidebar .mobile-sidebar-toggle {
+    display: block;
+    position: relative;
+    width: auto;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: auto;
+    box-shadow: none;
+  }
+
+  /* Toggle button in upload controls (inline) */
+  .image-grid-container .mobile-sidebar-toggle {
+    display: block;
+    position: static;
+    width: auto;
+    min-width: 48px;
+    padding: 12px;
+    border-radius: 8px;
+    z-index: auto;
+    box-shadow: var(--shadow-sm);
+  }
+}
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -123,6 +182,7 @@
   transition: all 0.3s ease;
   box-shadow: var(--shadow-sm);
   width: 100%;
+  min-height: 44px; /* iOS touch target */
 }
 
 .create-tag-btn:hover {
@@ -132,6 +192,15 @@
 
 .create-tag-btn:active {
   transform: translateY(0);
+}
+
+/* Mobile create-tag-btn adjustments */
+@media (max-width: 768px) {
+  .create-tag-btn {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 48px;
+  }
 }
 
 /* Filter Sections */
@@ -231,12 +300,13 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem;
   border-radius: 6px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
   position: relative;
   justify-content: space-between;
+  min-height: 44px; /* iOS touch target */
 }
 
 .filter-item:hover {
@@ -249,6 +319,19 @@
   color: var(--text-inverse);
   border-color: var(--primary-orange-dark);
   box-shadow: var(--shadow-sm);
+}
+
+/* Mobile filter item adjustments */
+@media (max-width: 768px) {
+  .filter-item {
+    padding: 1rem 0.75rem;
+    min-height: 48px; /* Larger touch target for mobile */
+  }
+
+  .filter-label {
+    font-size: 1rem;
+    font-weight: 500;
+  }
 }
 
 .filter-item.selected:hover {
@@ -303,6 +386,22 @@
   transition: background-color 0.3s ease;
 }
 
+/* Mobile image grid container adjustments */
+@media (max-width: 768px) {
+  .image-grid-container {
+    width: 100%;
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-grid-container {
+    padding: 0.75rem;
+  }
+}
+
 /* Upload Section */
 .upload-section {
   margin-bottom: 2rem;
@@ -329,6 +428,7 @@
   transition: all 0.3s ease;
   box-shadow: var(--shadow-md);
   min-width: 200px;
+  min-height: 44px; /* iOS touch target */
 }
 
 .upload-btn-main:hover {
@@ -338,6 +438,87 @@
 
 .upload-btn-main:active {
   transform: translateY(0);
+}
+
+/* Mobile upload section adjustments */
+@media (max-width: 768px) {
+  .upload-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .upload-controls {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .upload-btn-main {
+    flex: 1;
+    min-width: 150px;
+    padding: 18px 24px;
+    font-size: 18px;
+    min-height: 48px;
+  }
+
+  /* Mobile filter toggle button in upload controls */
+  .image-grid-container .mobile-sidebar-toggle {
+    position: static;
+    flex-shrink: 0;
+    min-width: 48px;
+    padding: 18px 12px;
+    margin: 0;
+    order: -1; /* Put it before the upload button */
+  }
+}
+
+/* Extra small mobile adjustments - only for very narrow screens */
+@media (max-width: 380px) {
+  .upload-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .upload-btn-main {
+    width: 100%;
+    order: 0; /* Reset order for vertical layout */
+  }
+
+  .image-grid-container .mobile-sidebar-toggle {
+    width: 100%;
+    order: -1; /* Keep it above upload button */
+    text-align: center;
+  }
+
+  .family-filter {
+    width: 100%;
+    order: 1; /* Put family filter last */
+  }
+}
+
+/* Medium mobile portrait adjustments - keep horizontal layout */
+@media (max-width: 480px) and (min-width: 381px) {
+  .upload-controls {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .image-grid-container .mobile-sidebar-toggle {
+    order: -1; /* Keep toggle before upload button */
+    flex-shrink: 0;
+  }
+
+  .upload-btn-main {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .family-filter {
+    width: 100%;
+    order: 1; /* Put family filter on new line */
+  }
 }
 
 /* Family Filter */
@@ -364,6 +545,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 150px;
+  min-height: 44px; /* iOS touch target */
 }
 
 .family-dropdown:focus {
@@ -376,66 +558,66 @@
   border-color: var(--border-dark);
 }
 
-/* Responsive adjustments */
+/* Mobile family filter adjustments */
 @media (max-width: 768px) {
-  /* Mobile sidebar collapsible functionality */
-  .mobile-sidebar-toggle {
-    display: block;
-  }
-
-  .filter-sidebar {
-    width: 280px;
-    transition: width 0.3s ease, background-color 0.3s ease,
-      border-color 0.3s ease;
-    position: relative;
-  }
-
-  .filter-sidebar.collapsed-mobile {
-    width: 60px;
-    padding: 1rem 0.5rem;
-    /* Add a subtle visual indicator that this is collapsible */
-    border-right-width: 3px;
-    border-right-color: var(--primary-orange);
-  }
-
-  .filter-sidebar.collapsed-mobile .sidebar-header {
-    justify-content: center;
-  }
-
-  .filter-sidebar.collapsed-mobile .sidebar-header h3 {
-    display: none;
-  }
-
-  .filter-sidebar.collapsed-mobile .mobile-sidebar-toggle {
-    width: 100%;
-    padding: 0.75rem 0.5rem;
-    font-size: 1.2rem;
-  }
-
-  .sidebar-content {
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-  }
-
-  .sidebar-content.hidden-mobile {
-    opacity: 0;
-    visibility: hidden;
-    height: 0;
-    overflow: hidden;
-  }
-
-  .upload-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
   .family-filter {
     justify-content: space-between;
+    width: 100%;
+  }
+
+  .family-filter label {
+    font-size: 1rem;
+    flex-shrink: 0;
   }
 
   .family-dropdown {
     flex: 1;
     min-width: auto;
+    font-size: 1rem;
+    padding: 12px;
+    min-height: 48px;
+  }
+}
+
+/* Mobile backdrop for sidebar overlay */
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .sidebar-backdrop.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Responsive adjustments - Updated mobile styles */
+@media (max-width: 768px) {
+  /* Sidebar content no longer needs hiding since we use transform */
+  .sidebar-content {
+    transition: none;
+    overflow: visible;
+  }
+
+  .sidebar-content.hidden-mobile {
+    opacity: 1;
+    visibility: visible;
+    max-height: none;
+    padding: inherit;
   }
 }
 
@@ -456,6 +638,29 @@
   gap: 1.5rem;
   max-height: 100%;
   justify-content: start;
+}
+
+/* Mobile image grid adjustments */
+@media (max-width: 768px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .image-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
 }
 
 /* Image Cards */
@@ -1082,4 +1287,225 @@
 
 .remove-file-btn:hover {
   background: #b71c1c;
+}
+
+/* ================================
+   COMPREHENSIVE MOBILE OPTIMIZATIONS
+   ================================ */
+
+/* Mobile touch improvements for all buttons */
+@media (max-width: 768px) {
+  /* General button touch targets */
+  .edit-tag-btn,
+  .close-btn,
+  .delete-btn,
+  .cancel-btn,
+  .submit-btn,
+  .edit-btn,
+  .download-btn,
+  .browse-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  /* Specific button adjustments */
+  .remove-file-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+  }
+
+  /* Modal improvements for mobile */
+  .modal-header {
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+  }
+
+  .modal-content {
+    padding: 16px 20px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  /* Form improvements */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 48px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  /* Image modal improvements */
+  .image-modal .modal-content {
+    padding: 12px;
+  }
+
+  .image-details {
+    padding: 12px 16px;
+  }
+
+  .image-display-large {
+    max-height: 60vh;
+    object-fit: contain;
+  }
+
+  /* Tag selection improvements */
+  .tag-list {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .tag-item {
+    padding: 12px 16px;
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  /* Better spacing for mobile */
+  .section-header {
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .filter-list {
+    padding: 8px 12px 12px 12px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  /* Even larger touch targets for small devices */
+  .filter-item {
+    padding: 16px 12px;
+    min-height: 52px;
+  }
+
+  .mobile-sidebar-toggle {
+    padding: 16px;
+    font-size: 18px;
+    min-height: 52px;
+  }
+
+  /* Reduce padding on very small screens */
+  .modal-header,
+  .modal-content {
+    padding: 12px 16px;
+  }
+
+  /* Stack modal actions vertically */
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+    order: 2;
+  }
+
+  .modal-actions .cancel-btn {
+    order: 1;
+  }
+}
+
+/* Very small screens - optimize for one-handed use */
+@media (max-width: 360px) {
+  /* Larger touch targets */
+  .filter-item {
+    min-height: 56px;
+    padding: 18px 12px;
+  }
+
+  .create-tag-btn,
+  .upload-btn-main {
+    min-height: 52px;
+    padding: 16px;
+    font-size: 17px;
+  }
+
+  /* Ensure important buttons are easily reachable */
+  .navbar-right {
+    gap: 8px;
+  }
+
+  .profile-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .content-layout {
+    flex-direction: row;
+  }
+
+  .filter-sidebar {
+    width: 260px;
+    max-height: none;
+    border-right: 1px solid var(--border-light);
+    border-bottom: none;
+  }
+
+  .filter-sidebar.collapsed-mobile {
+    width: 50px;
+  }
+
+  .image-grid-container {
+    padding: 1rem;
+  }
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+  .filter-item.selected {
+    border: 2px solid var(--text-inverse);
+  }
+
+  .create-tag-btn,
+  .upload-btn-main {
+    border: 1px solid var(--text-inverse);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Focus improvements for keyboard navigation */
+@media (max-width: 768px) {
+  button:focus,
+  .filter-item:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 3px solid var(--primary-orange);
+    outline-offset: 2px;
+  }
 }

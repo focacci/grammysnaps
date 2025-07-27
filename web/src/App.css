@@ -78,6 +78,8 @@ button {
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  /* Prevent zoom on iOS */
+  font-size: 16px;
 }
 
 button:disabled {
@@ -94,6 +96,15 @@ button:disabled {
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--primary-orange-dark);
+}
+
+/* Mobile button adjustments */
+@media (max-width: 768px) {
+  .btn-primary {
+    padding: 14px 20px;
+    font-size: 16px;
+    min-height: 44px; /* iOS recommended touch target size */
+  }
 }
 
 .btn-secondary {
@@ -118,6 +129,9 @@ textarea {
   color: var(--text-primary);
   font-family: inherit;
   transition: border-color 0.2s ease;
+  /* Prevent zoom on iOS */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 input:focus,
@@ -125,6 +139,16 @@ textarea:focus {
   outline: none;
   border-color: var(--primary-orange);
   box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
+}
+
+/* Mobile input adjustments */
+@media (max-width: 768px) {
+  input,
+  textarea {
+    padding: 14px 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+    min-height: 44px; /* iOS recommended touch target size */
+  }
 }
 
 /* Navbar styles */
@@ -149,10 +173,29 @@ textarea:focus {
   height: var(--navbar-height);
 }
 
+/* Mobile navbar adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+    height: 56px;
+  }
+
+  :root {
+    --navbar-height: 56px;
+  }
+}
+
 .navbar-left {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+/* Mobile navbar-left adjustments */
+@media (max-width: 768px) {
+  .navbar-left {
+    gap: 12px;
+  }
 }
 
 .navbar-center {
@@ -181,6 +224,23 @@ textarea:focus {
   justify-content: center;
   min-width: 120px;
   position: relative;
+}
+
+/* Mobile nav-button adjustments */
+@media (max-width: 768px) {
+  .nav-button {
+    font-size: 16px;
+    padding: 0 16px;
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-button {
+    font-size: 14px;
+    padding: 0 12px;
+    min-width: 60px;
+  }
 }
 
 .nav-button::before {
@@ -234,6 +294,19 @@ textarea:focus {
   transform: scale(1.05);
 }
 
+/* Mobile logo adjustments */
+@media (max-width: 768px) {
+  .logo {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.1rem;
+  }
+}
+
 /* Profile dropdown styles */
 .profile-dropdown {
   position: relative;
@@ -260,6 +333,18 @@ textarea:focus {
 
 .profile-icon span {
   font-size: 1rem;
+}
+
+/* Mobile profile icon adjustments */
+@media (max-width: 768px) {
+  .profile-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .profile-icon span {
+    font-size: 0.9rem;
+  }
 }
 
 .dropdown-menu {
@@ -435,4 +520,40 @@ textarea:focus {
 
 .get-started-btn:active {
   transform: translateY(0);
+}
+
+/* Mobile home view adjustments */
+@media (max-width: 768px) {
+  .home-view {
+    padding: 20px 16px;
+    min-height: 50vh;
+  }
+
+  .home-content h1 {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+
+  .home-content p {
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+  }
+
+  .get-started-btn {
+    padding: 16px 32px;
+    font-size: 18px;
+    min-height: 44px;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .home-content p {
+    font-size: 1rem;
+  }
 }
