@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./Auth.css";
 import authService from "../services/auth.service";
 import { ClientValidationUtils } from "../utils/validation";
+import { API_BASE_URL } from "../services/api.service";
 
 interface AuthProps {
   onLogin: (user: any) => void;
@@ -257,7 +258,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
         onLogin(user);
       } else {
         // For signup, use the regular API
-        const response = await fetch(`http://localhost:3000${endpoint}`, {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

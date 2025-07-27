@@ -25,10 +25,21 @@ const main = async () => {
       "http://localhost:8080",
       "http://localhost:3000",
       "http://localhost:4173",
+      "http://192.168.1.156:8080",
+      "http://192.168.1.156:5173",
+      "http://192.168.1.156:3000",
     ];
 
     const origin = request.headers.origin;
-    if (origin && allowedOrigins.includes(origin)) {
+
+    // Allow origins from localhost or the 192.168.1.x network
+    const isLocalhost = origin && origin.includes("localhost");
+    const isLocalNetwork = origin && origin.includes("192.168.1.");
+
+    if (
+      origin &&
+      (allowedOrigins.includes(origin) || isLocalhost || isLocalNetwork)
+    ) {
       reply.header("Access-Control-Allow-Origin", origin);
     }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Account.css";
 import authService from "../services/auth.service";
+import { API_BASE_URL } from "../services/api.service";
 
 // Type definitions
 interface User {
@@ -151,9 +152,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const loadUserFamilies = async () => {
     try {
       setLoadingFamilies(true);
-      const response = await fetch(
-        `http://localhost:3000/family/user/${user.id}`
-      );
+      const response = await fetch(`${API_BASE_URL}/family/user/${user.id}`);
       if (response.ok) {
         const families = await response.json();
         setFamilyGroups(families);
@@ -263,7 +262,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setCreateFamilyLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/family", {
+      const response = await fetch(`${API_BASE_URL}/family`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -319,7 +318,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       setLoadingJoinFamilyInfo(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/family/${familyId.trim()}`
+          `${API_BASE_URL}/family/${familyId.trim()}`
         );
         if (response.ok) {
           const familyData = await response.json();
@@ -345,7 +344,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/family/${joinFamilyInfo.id}/members`,
+        `${API_BASE_URL}/family/${joinFamilyInfo.id}/members`,
         {
           method: "POST",
           headers: {
@@ -401,7 +400,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingMembers(true);
       const response = await fetch(
-        `http://localhost:3000/family/${familyId}/members`
+        `${API_BASE_URL}/family/${familyId}/members`
       );
       if (response.ok) {
         const members = await response.json();
@@ -430,7 +429,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingRelatedFamilies(true);
       const response = await fetch(
-        `http://localhost:3000/family/${familyId}/related`
+        `${API_BASE_URL}/family/${familyId}/related`
       );
       if (response.ok) {
         const relatedFams = await response.json();
@@ -456,7 +455,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/family/${selectedFamily.id}/related`,
+        `${API_BASE_URL}/family/${selectedFamily.id}/related`,
         {
           method: "POST",
           headers: {
@@ -493,7 +492,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/family/${selectedFamily.id}/related/${relatedFamilyId}`,
+        `${API_BASE_URL}/family/${selectedFamily.id}/related/${relatedFamilyId}`,
         {
           method: "DELETE",
         }
@@ -524,7 +523,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       // First, find the user by email
       const userResponse = await fetch(
-        `http://localhost:3000/user/email/${encodeURIComponent(
+        `${API_BASE_URL}/user/email/${encodeURIComponent(
           addMemberEmail.trim()
         )}`
       );
@@ -537,7 +536,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       // Add the user to the family
       const addResponse = await fetch(
-        `http://localhost:3000/family/${selectedFamily.id}/members`,
+        `${API_BASE_URL}/family/${selectedFamily.id}/members`,
         {
           method: "POST",
           headers: {
@@ -574,7 +573,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/family/${selectedFamily.id}/members/${memberId}`,
+        `${API_BASE_URL}/family/${selectedFamily.id}/members/${memberId}`,
         {
           method: "DELETE",
         }
@@ -603,7 +602,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/family/${selectedFamily.id}`,
+        `${API_BASE_URL}/family/${selectedFamily.id}`,
         {
           method: "DELETE",
         }
@@ -648,7 +647,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingViewMembers(true);
       const response = await fetch(
-        `http://localhost:3000/family/${familyId}/members`
+        `${API_BASE_URL}/family/${familyId}/members`
       );
       if (response.ok) {
         const members = await response.json();
@@ -683,7 +682,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       setLeaveFamilyLoading(familyId);
 
       const response = await fetch(
-        `http://localhost:3000/family/${familyId}/members/${user.id}`,
+        `${API_BASE_URL}/family/${familyId}/members/${user.id}`,
         {
           method: "DELETE",
         }
@@ -721,7 +720,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:3000/user/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/user/${user.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -817,16 +816,13 @@ function Account({ user, onUserUpdate }: AccountProps) {
         return;
       }
 
-      const response = await fetch(
-        `http://localhost:3000/user/${user.id}/security`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/user/${user.id}/security`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       const data = await response.json();
 

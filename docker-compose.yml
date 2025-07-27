@@ -4,7 +4,7 @@ services:
       context: ./web
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "0.0.0.0:8080:80"
     depends_on:
       - api
     restart: unless-stopped
@@ -14,7 +14,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "0.0.0.0:3000:3000"
     volumes:
       - ./api:/code
       - /code/node_modules

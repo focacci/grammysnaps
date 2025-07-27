@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "start": "tsc && node dist/index.js",
+    "start": "tsc && node dist/src/index.js",
     "lint": "npx tslint --project tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
