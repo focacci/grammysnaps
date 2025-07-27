@@ -97,6 +97,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [addRelatedFamilyLoading, setAddRelatedFamilyLoading] = useState(false);
   const [relatedFamilyError, setRelatedFamilyError] = useState("");
 
+  // Copy Feedback State
+  const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
+
   // Load user's families on component mount
   useEffect(() => {
     loadUserFamilies();
@@ -187,6 +190,21 @@ function Account({ user, onUserUpdate }: AccountProps) {
       Boolean
     );
     return parts.join(" ");
+  };
+
+  // Copy Family ID to Clipboard
+  const handleCopyFamilyId = async (familyId: string) => {
+    try {
+      await navigator.clipboard.writeText(familyId);
+      setCopiedFamilyId(familyId);
+
+      // Clear the feedback after 3 seconds
+      setTimeout(() => {
+        setCopiedFamilyId(null);
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to copy family ID:", error);
+    }
   };
 
   // Create Family Handlers
@@ -586,8 +604,19 @@ function Account({ user, onUserUpdate }: AccountProps) {
                           <span className="member-count">
                             👥 {family.member_count} members
                           </span>
-                          <span className="created-date">
-                            📅 Created {formatDate(family.created_at)}
+                          <span className="family-id-container">
+                            <button
+                              className="copy-id-btn"
+                              onClick={() => handleCopyFamilyId(family.id)}
+                              title="Click to copy family ID"
+                            >
+                              {family.id}
+                            </button>
+                            {copiedFamilyId === family.id && (
+                              <span className="copy-feedback">
+                                Family ID copied to clipboard
+                              </span>
+                            )}
                           </span>
                         </div>
                         <div className="family-group-actions">
