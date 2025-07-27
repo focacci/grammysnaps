@@ -138,13 +138,32 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         // Fetch images and tags for all user's families in parallel
-        const imagePromise = fetch("/api/image");
+        // Use the new family-specific endpoint to ensure users only see images from their families
+        const familyIds = familiesData.map((family: FamilyGroup) => family.id);
+
+        let imagesResponse;
+        if (familyIds.length > 0) {
+          imagesResponse = await fetch("/api/image/families", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ family_ids: familyIds }),
+          });
+        } else {
+          // If user has no families, set empty images
+          setImages([]);
+          setTags([]);
+          setLoading(false);
+          return;
+        }
+
         const tagPromises = familiesData.map((family: FamilyGroup) =>
           fetch(`/api/tag/family/${family.id}`)
         );
 
-        const [imagesResponse, ...tagResponses] = await Promise.all([
-          imagePromise,
+        const [, ...tagResponses] = await Promise.all([
+          Promise.resolve(), // Placeholder since we already awaited imagesResponse
           ...tagPromises,
         ]);
 
@@ -699,9 +718,10 @@ function PhotoView({ user }: PhotoViewProps) {
 
     // Filter by family if not "all"
     if (selectedFamily !== "all") {
-      // For now, we'll show all images when a family is selected
-      // TODO: Implement family-specific image filtering when family_id is added to images
-      // This would require adding family_id to the Image interface and backend
+      // Check if image belongs to the selected family
+      if (!image.family_ids || !image.family_ids.includes(selectedFamily)) {
+        return false;
+      }
     }
 
     return true;
@@ -881,7 +901,16 @@ function PhotoView({ user }: PhotoViewProps) {
             <div className="empty-state">
               <p>
                 No images found{" "}
-                {selectedTags.length > 0 ? "with selected tags" : ""}
+                {selectedTags.length > 0 && selectedFamily !== "all"
+                  ? "with selected tags and family"
+                  : selectedTags.length > 0
+                  ? "with selected tags"
+                  : selectedFamily !== "all"
+                  ? `in ${
+                      familyGroups.find((f) => f.id === selectedFamily)?.name ||
+                      "selected family"
+                    }`
+                  : ""}
               </p>
             </div>
           ) : (

@@ -442,6 +442,39 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
       return reply.status(200).send({ images });
     }
   );
+
+  /* Get images by multiple families */
+  fastify.post(
+    "/families",
+    {
+      schema: {
+        body: {
+          type: "object",
+          required: ["family_ids"],
+          properties: {
+            family_ids: {
+              type: "array",
+              items: { type: "string", format: "uuid" },
+              minItems: 1,
+            },
+          },
+        },
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { family_ids } = request.body as { family_ids: string[] };
+      try {
+        const images = await fastify.image.getByFamilies(family_ids);
+        return reply.status(200).send({ images });
+      } catch (error) {
+        fastify.log.error("Error getting images by families:", error);
+        return reply.status(500).send({
+          message: "Failed to get images for families",
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }
+  );
 };
 
 export default imageRoutes;

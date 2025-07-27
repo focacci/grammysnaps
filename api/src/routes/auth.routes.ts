@@ -12,7 +12,8 @@ interface LogoutBody {
 }
 
 export default async function authRoutes(fastify: FastifyInstance) {
-  // Add stricter rate limiting for auth endpoints
+  // Add stricter rate limiting for auth endpoints - TEMPORARILY DISABLED
+  /*
   await fastify.register(fastifyRateLimit, {
     max: 5, // Maximum 5 login attempts per timeWindow
     timeWindow: "15 minutes", // per 15 minutes
@@ -24,6 +25,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
       };
     },
   });
+  */
 
   // Login endpoint
   fastify.post<{ Body: LoginInput }>(

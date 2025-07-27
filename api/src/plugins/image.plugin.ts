@@ -14,6 +14,7 @@ declare module "fastify" {
       applyFamilies: (imageId: string, familyIds: string[]) => Promise<void>;
       getAllWithTag: (tagId: string) => Promise<Image[]>;
       getByFamily: (familyId: string) => Promise<Image[]>;
+      getByFamilies: (familyIds: string[]) => Promise<Image[]>;
       getOrphanedByFamily: (familyId: string) => Promise<Image[]>;
     };
   }
@@ -192,6 +193,31 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to get images by family");
+      }
+    },
+
+    async getByFamilies(familyIds: string[]): Promise<Image[]> {
+      try {
+        if (familyIds.length === 0) {
+          return [];
+        }
+
+        // Create placeholders for the IN clause
+        const placeholders = familyIds
+          .map((_, index) => `$${index + 1}`)
+          .join(", ");
+
+        const { rows } = await fastify.pg.query<Image>(
+          `SELECT DISTINCT i.* FROM images i 
+           JOIN image_families if ON i.id = if.image_id 
+           WHERE if.family_id IN (${placeholders})
+           ORDER BY i.created_at DESC`,
+          familyIds
+        );
+        return rows;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to get images by families");
       }
     },
 

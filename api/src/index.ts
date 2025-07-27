@@ -44,7 +44,8 @@ const main = async () => {
     }
   });
 
-  // Register rate limiting for security
+  // Register rate limiting for security - TEMPORARILY DISABLED
+  /*
   server.register(fastifyRateLimit, {
     max: 100, // Maximum 100 requests per timeWindow
     timeWindow: "1 minute", // per 1 minute
@@ -55,6 +56,7 @@ const main = async () => {
       };
     },
   });
+  */
 
   // Register multipart for file uploads
   server.register(fastifyMultipart, {
