@@ -34,6 +34,8 @@ function App() {
         const sessionUser = await authService.validateSession();
         if (sessionUser) {
           setUser(sessionUser);
+          // If user is logged in, go directly to photos
+          setCurrentView("photos");
         } else {
           setUser(null);
         }
@@ -80,14 +82,6 @@ function App() {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const getFullName = (user: any) => {
-    if (!user) return "";
-    const parts = [user.first_name, user.middle_name, user.last_name].filter(
-      Boolean
-    );
-    return parts.join(" ");
-  };
-
   const handleLogin = (userData: any) => {
     setUser(userData);
     setShowAuth(false);
@@ -131,26 +125,19 @@ function App() {
         return <Account user={user} onUserUpdate={handleUserUpdate} />;
       case "home":
       default:
+        // If user is logged in and somehow on home, redirect to photos
+        if (user) {
+          setCurrentView("photos");
+          return <PhotoView user={user} />;
+        }
         return (
           <div className="home-view">
             <div className="home-content">
               <h1>Welcome to Grammysnaps</h1>
               <p>Your family photo management system</p>
-              {user ? (
-                <div>
-                  <p>Welcome back, {getFullName(user)}!</p>
-                  <button
-                    className="get-started-btn"
-                    onClick={() => setCurrentView("photos")}
-                  >
-                    View Photos
-                  </button>
-                </div>
-              ) : (
-                <button className="get-started-btn" onClick={handleGetStarted}>
-                  Get Started
-                </button>
-              )}
+              <button className="get-started-btn" onClick={handleGetStarted}>
+                Get Started
+              </button>
             </div>
           </div>
         );
@@ -161,21 +148,15 @@ function App() {
     <div className="app">
       <nav className="navbar">
         <div className="navbar-left">
-          <div className="logo" onClick={() => setCurrentView("home")}>
+          <div
+            className="logo"
+            onClick={() => setCurrentView(user ? "photos" : "home")}
+          >
             Grammysnaps
           </div>
         </div>
         <div className="navbar-center">
-          {user && (
-            <button
-              className={`nav-button ${
-                currentView === "photos" ? "active" : ""
-              }`}
-              onClick={() => setCurrentView("photos")}
-            >
-              Photos
-            </button>
-          )}
+          {/* Photos tab removed - users go directly to photos when logged in */}
         </div>
         <div className="navbar-right">
           {user ? (
