@@ -6,6 +6,7 @@ import {
   FamilyUpdate,
   FamilyPublic,
   FamilyMember,
+  RelatedFamily,
 } from "../types/family.types";
 
 declare module "fastify" {
@@ -16,6 +17,15 @@ declare module "fastify" {
       getById: (id: string) => Promise<Family | null>;
       getUserFamilies: (userId: string) => Promise<FamilyPublic[]>;
       getMembers: (familyId: string) => Promise<FamilyMember[]>;
+      getRelatedFamilies: (familyId: string) => Promise<RelatedFamily[]>;
+      addRelatedFamily: (
+        familyId: string,
+        relatedFamilyId: string
+      ) => Promise<void>;
+      removeRelatedFamily: (
+        familyId: string,
+        relatedFamilyId: string
+      ) => Promise<void>;
       update: (id: string, input: FamilyUpdate) => Promise<Family | null>;
       delete: (id: string) => Promise<void>;
       addMember: (familyId: string, userId: string) => Promise<void>;
@@ -42,6 +52,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       member_count: family.members.length,
       owner_id: family.owner_id,
       user_role: userRole,
+      related_families: family.related_families || [],
       created_at: family.created_at,
       updated_at: family.updated_at,
     };
@@ -49,15 +60,15 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("family", {
     async create(input: FamilyInput, ownerId: string): Promise<FamilyPublic> {
-      const { name } = input;
+      const { name, related_families } = input;
 
       try {
         // Create the family
         const {
           rows: [family],
         } = await fastify.pg.query<Family>(
-          "INSERT INTO families (name, members, owner_id) VALUES ($1, $2, $3) RETURNING *",
-          [name, [ownerId], ownerId]
+          "INSERT INTO families (name, members, owner_id, related_families) VALUES ($1, $2, $3, $4) RETURNING *",
+          [name, [ownerId], ownerId, related_families || []]
         );
 
         // Add the owner to the family_members junction table
@@ -299,6 +310,143 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           throw err;
         }
         throw new Error("Failed to remove member from family");
+      }
+    },
+
+    async getRelatedFamilies(familyId: string): Promise<RelatedFamily[]> {
+      try {
+        const { rows } = await fastify.pg.query<RelatedFamily>(
+          `SELECT f.id, f.name, array_length(f.members, 1) as member_count, f.created_at
+           FROM families f
+           JOIN family_relations fr ON (f.id = fr.family_id_1 OR f.id = fr.family_id_2)
+           WHERE (fr.family_id_1 = $1 OR fr.family_id_2 = $1) AND f.id != $1
+           ORDER BY f.name`,
+          [familyId]
+        );
+
+        return rows;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to fetch related families");
+      }
+    },
+
+    async addRelatedFamily(
+      familyId: string,
+      relatedFamilyId: string
+    ): Promise<void> {
+      try {
+        // Check if both families exist
+        const family1 = await fastify.family.getById(familyId);
+        const family2 = await fastify.family.getById(relatedFamilyId);
+
+        if (!family1) {
+          throw new Error("Source family not found");
+        }
+        if (!family2) {
+          throw new Error("Target family not found");
+        }
+
+        if (familyId === relatedFamilyId) {
+          throw new Error("Cannot relate family to itself");
+        }
+
+        // Check if relation already exists
+        const { rows: existing } = await fastify.pg.query(
+          `SELECT 1 FROM family_relations 
+           WHERE (family_id_1 = $1 AND family_id_2 = $2) 
+              OR (family_id_1 = $2 AND family_id_2 = $1)`,
+          [familyId, relatedFamilyId]
+        );
+
+        if (existing.length > 0) {
+          throw new Error("Families are already related");
+        }
+
+        // Add bidirectional relation in family_relations table
+        await fastify.pg.query(
+          "INSERT INTO family_relations (family_id_1, family_id_2) VALUES ($1, $2)",
+          [familyId, relatedFamilyId]
+        );
+
+        // Update both families' related_families arrays
+        const family1Relations = family1.related_families || [];
+        const family2Relations = family2.related_families || [];
+
+        if (!family1Relations.includes(relatedFamilyId)) {
+          family1Relations.push(relatedFamilyId);
+          await fastify.pg.query(
+            "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+            [family1Relations, familyId]
+          );
+        }
+
+        if (!family2Relations.includes(familyId)) {
+          family2Relations.push(familyId);
+          await fastify.pg.query(
+            "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+            [family2Relations, relatedFamilyId]
+          );
+        }
+
+        fastify.log.info(
+          `Added relation between families ${familyId} and ${relatedFamilyId}`
+        );
+      } catch (err) {
+        fastify.log.error(err);
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error("Failed to add family relation");
+      }
+    },
+
+    async removeRelatedFamily(
+      familyId: string,
+      relatedFamilyId: string
+    ): Promise<void> {
+      try {
+        // Remove from family_relations table
+        await fastify.pg.query(
+          `DELETE FROM family_relations 
+           WHERE (family_id_1 = $1 AND family_id_2 = $2) 
+              OR (family_id_1 = $2 AND family_id_2 = $1)`,
+          [familyId, relatedFamilyId]
+        );
+
+        // Update both families' related_families arrays
+        const family1 = await fastify.family.getById(familyId);
+        const family2 = await fastify.family.getById(relatedFamilyId);
+
+        if (family1 && family1.related_families) {
+          const updatedRelations1 = family1.related_families.filter(
+            (id) => id !== relatedFamilyId
+          );
+          await fastify.pg.query(
+            "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+            [updatedRelations1, familyId]
+          );
+        }
+
+        if (family2 && family2.related_families) {
+          const updatedRelations2 = family2.related_families.filter(
+            (id) => id !== familyId
+          );
+          await fastify.pg.query(
+            "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+            [updatedRelations2, relatedFamilyId]
+          );
+        }
+
+        fastify.log.info(
+          `Removed relation between families ${familyId} and ${relatedFamilyId}`
+        );
+      } catch (err) {
+        fastify.log.error(err);
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error("Failed to remove family relation");
       }
     },
   });

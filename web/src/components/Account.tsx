@@ -21,6 +21,7 @@ interface FamilyGroup {
   member_count: number;
   owner_id: string;
   user_role: "owner" | "member";
+  related_families: string[];
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,13 @@ interface FamilyMember {
   birthday?: string;
   role: "owner" | "member";
   joined_at: string;
+}
+
+interface RelatedFamily {
+  id: string;
+  name: string;
+  member_count: number;
+  created_at: string;
 }
 
 interface AccountProps {
@@ -81,6 +89,13 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [addMemberEmail, setAddMemberEmail] = useState("");
   const [addMemberLoading, setAddMemberLoading] = useState(false);
   const [manageFamilyError, setManageFamilyError] = useState("");
+
+  // Related Families State
+  const [relatedFamilies, setRelatedFamilies] = useState<RelatedFamily[]>([]);
+  const [loadingRelatedFamilies, setLoadingRelatedFamilies] = useState(false);
+  const [addRelatedFamilyId, setAddRelatedFamilyId] = useState("");
+  const [addRelatedFamilyLoading, setAddRelatedFamilyLoading] = useState(false);
+  const [relatedFamilyError, setRelatedFamilyError] = useState("");
 
   // Load user's families on component mount
   useEffect(() => {
@@ -228,8 +243,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setSelectedFamily(family);
     setShowManageFamilyModal(true);
     setManageFamilyError("");
+    setRelatedFamilyError("");
     setAddMemberEmail("");
+    setAddRelatedFamilyId("");
     await loadFamilyMembers(family.id);
+    await loadRelatedFamilies(family.id);
   };
 
   const loadFamilyMembers = async (familyId: string) => {
@@ -258,6 +276,94 @@ function Account({ user, onUserUpdate }: AccountProps) {
       setManageFamilyError("Failed to load family members");
     } finally {
       setLoadingMembers(false);
+    }
+  };
+
+  const loadRelatedFamilies = async (familyId: string) => {
+    try {
+      setLoadingRelatedFamilies(true);
+      const response = await fetch(
+        `http://localhost:3000/family/${familyId}/related`
+      );
+      if (response.ok) {
+        const relatedFams = await response.json();
+        setRelatedFamilies(relatedFams);
+      } else {
+        console.error("Failed to fetch related families");
+        setRelatedFamilyError("Failed to load related families");
+      }
+    } catch (error) {
+      console.error("Error fetching related families:", error);
+      setRelatedFamilyError("Failed to load related families");
+    } finally {
+      setLoadingRelatedFamilies(false);
+    }
+  };
+
+  const handleAddRelatedFamily = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFamily || !addRelatedFamilyId.trim()) return;
+
+    setAddRelatedFamilyLoading(true);
+    setRelatedFamilyError("");
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/family/${selectedFamily.id}/related`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            family_id: addRelatedFamilyId.trim(),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add related family");
+      }
+
+      // Reload related families and families list
+      await loadRelatedFamilies(selectedFamily.id);
+      await loadUserFamilies();
+
+      // Clear the input
+      setAddRelatedFamilyId("");
+    } catch (err) {
+      setRelatedFamilyError(
+        err instanceof Error ? err.message : "Failed to add related family"
+      );
+    } finally {
+      setAddRelatedFamilyLoading(false);
+    }
+  };
+
+  const handleRemoveRelatedFamily = async (relatedFamilyId: string) => {
+    if (!selectedFamily) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/family/${selectedFamily.id}/related/${relatedFamilyId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to remove related family");
+      }
+
+      // Reload related families and families list
+      await loadRelatedFamilies(selectedFamily.id);
+      await loadUserFamilies();
+    } catch (err) {
+      setRelatedFamilyError(
+        err instanceof Error ? err.message : "Failed to remove related family"
+      );
     }
   };
 
@@ -346,8 +452,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setShowManageFamilyModal(false);
     setSelectedFamily(null);
     setFamilyMembers([]);
+    setRelatedFamilies([]);
     setManageFamilyError("");
+    setRelatedFamilyError("");
     setAddMemberEmail("");
+    setAddRelatedFamilyId("");
   };
 
   // Edit Profile Handlers
@@ -605,6 +714,84 @@ function Account({ user, onUserUpdate }: AccountProps) {
             </div>
 
             <div className="family-manage-content">
+              {/* Related Families Section */}
+              <div className="add-member-section">
+                <h3>Related Families</h3>
+
+                {relatedFamilyError && (
+                  <div className="auth-error">{relatedFamilyError}</div>
+                )}
+
+                {/* Add Related Family Form */}
+                <form
+                  onSubmit={handleAddRelatedFamily}
+                  className="add-member-form"
+                >
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      value={addRelatedFamilyId}
+                      onChange={(e) => setAddRelatedFamilyId(e.target.value)}
+                      placeholder="Enter family ID to add relation"
+                      required
+                      disabled={addRelatedFamilyLoading}
+                    />
+                    <button
+                      type="submit"
+                      disabled={
+                        addRelatedFamilyLoading || !addRelatedFamilyId.trim()
+                      }
+                    >
+                      {addRelatedFamilyLoading ? "Adding..." : "Add Relation"}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Related Families List */}
+                {loadingRelatedFamilies ? (
+                  <div className="loading-state">
+                    <p>Loading related families...</p>
+                  </div>
+                ) : relatedFamilies.length > 0 ? (
+                  <div className="members-list" style={{ marginTop: "1rem" }}>
+                    {relatedFamilies.map((relatedFamily) => (
+                      <div key={relatedFamily.id} className="member-row">
+                        <div className="member-avatar">
+                          <span className="avatar-placeholder">👨‍👩‍👧‍👦</span>
+                        </div>
+                        <div className="member-info">
+                          <div className="member-name">
+                            {relatedFamily.name}
+                          </div>
+                          <div className="member-email">
+                            👥 {relatedFamily.member_count} members
+                          </div>
+                          <div className="member-birthday">
+                            📅 Created {formatDate(relatedFamily.created_at)}
+                          </div>
+                        </div>
+                        <div className="member-actions">
+                          <button
+                            className="remove-btn"
+                            onClick={() =>
+                              handleRemoveRelatedFamily(relatedFamily.id)
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p
+                    style={{ margin: "1rem 0", color: "var(--text-secondary)" }}
+                  >
+                    No related families yet.
+                  </p>
+                )}
+              </div>
+
               {/* Add Member Section */}
               <div className="add-member-section">
                 <h3>Add New Member</h3>

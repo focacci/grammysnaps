@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS families (
   name VARCHAR(255) NOT NULL,
   members TEXT[] NOT NULL,
   owner_id UUID NOT NULL,
+  related_families UUID[] NOT NULL,
   FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -53,4 +54,14 @@ CREATE TABLE IF NOT EXISTS family_members (
   PRIMARY KEY (family_id, user_id),
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS family_relations (
+  family_id_1 UUID NOT NULL,
+  family_id_2 UUID NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (family_id_1, family_id_2),
+  FOREIGN KEY (family_id_1) REFERENCES families(id) ON DELETE CASCADE,
+  FOREIGN KEY (family_id_2) REFERENCES families(id) ON DELETE CASCADE,
+  CHECK (family_id_1 != family_id_2)
 );

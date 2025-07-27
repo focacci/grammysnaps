@@ -151,6 +151,64 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       });
     }
   });
+
+  // Get related families
+  fastify.get("/family/:id/related", async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const relatedFamilies = await fastify.family.getRelatedFamilies(id);
+      return relatedFamilies;
+    } catch (error) {
+      fastify.log.error(error);
+      reply.code(500).send({
+        error: "Failed to fetch related families",
+      });
+    }
+  });
+
+  // Add related family
+  fastify.post("/family/:id/related", async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const { family_id } = request.body as { family_id: string };
+
+      if (!family_id) {
+        return reply.code(400).send({ error: "family_id is required" });
+      }
+
+      await fastify.family.addRelatedFamily(id, family_id);
+      reply.code(201).send({ message: "Related family added successfully" });
+    } catch (error) {
+      fastify.log.error(error);
+      reply.code(500).send({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to add related family",
+      });
+    }
+  });
+
+  // Remove related family
+  fastify.delete("/family/:id/related/:relatedId", async (request, reply) => {
+    try {
+      const { id, relatedId } = request.params as {
+        id: string;
+        relatedId: string;
+      };
+
+      await fastify.family.removeRelatedFamily(id, relatedId);
+      reply.code(200).send({ message: "Related family removed successfully" });
+    } catch (error) {
+      fastify.log.error(error);
+      reply.code(500).send({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to remove related family",
+      });
+    }
+  });
 };
 
 export default familyRoutes;
