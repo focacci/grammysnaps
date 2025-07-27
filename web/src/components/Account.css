@@ -391,10 +391,26 @@
 .manage-btn {
   background-color: var(--border-medium);
   color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
 }
 
 .manage-btn:hover {
   background-color: var(--border-dark);
+}
+
+.leave-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.leave-btn:hover {
+  background-color: #c82333;
+}
+
+.leave-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
 
 .section-footer {

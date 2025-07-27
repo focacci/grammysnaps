@@ -114,6 +114,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
   // Copy Feedback State
   const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
 
+  // Leave Family State
+  const [leaveFamilyLoading, setLeaveFamilyLoading] = useState<string | null>(
+    null
+  );
+
   // View Members Modal State
   const [showViewMembersModal, setShowViewMembersModal] = useState(false);
   const [viewMembersFamily, setViewMembersFamily] =
@@ -672,6 +677,32 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setViewMembersList([]);
   };
 
+  // Leave Family Handler
+  const handleLeaveFamily = async (familyId: string) => {
+    try {
+      setLeaveFamilyLoading(familyId);
+
+      const response = await fetch(
+        `http://localhost:3000/family/${familyId}/members/${user.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to leave family");
+      }
+
+      // Refresh the family list
+      await loadUserFamilies();
+    } catch (error) {
+      console.error("Error leaving family:", error);
+      alert("Failed to leave family. Please try again.");
+    } finally {
+      setLeaveFamilyLoading(null);
+    }
+  };
+
   // Edit Profile Handlers
   const handleEditProfile = () => {
     setShowEditModal(true);
@@ -939,6 +970,17 @@ function Account({ user, onUserUpdate }: AccountProps) {
                               onClick={() => handleManageFamily(family)}
                             >
                               Manage
+                            </button>
+                          )}
+                          {family.user_role === "member" && (
+                            <button
+                              className="action-btn leave-btn"
+                              onClick={() => handleLeaveFamily(family.id)}
+                              disabled={leaveFamilyLoading === family.id}
+                            >
+                              {leaveFamilyLoading === family.id
+                                ? "Leaving..."
+                                : "Leave"}
                             </button>
                           )}
                         </div>
