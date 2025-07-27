@@ -334,6 +334,14 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           user.birthday = new Date(user.birthday).toISOString().split("T")[0];
         }
 
+        // If password was changed, revoke all existing tokens to log user out everywhere
+        if (input.new_password) {
+          await fastify.auth.revokeUserTokens(user.id);
+          fastify.log.info(
+            `Revoked all tokens for user after password change: ${user.email}`
+          );
+        }
+
         fastify.log.info(`Updated security settings for user: ${user.email}`);
         return toPublicUser(user);
       } catch (err) {

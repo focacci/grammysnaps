@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Account.css";
+import authService from "../services/auth.service";
 
 // Type definitions
 interface User {
@@ -531,8 +532,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
         throw new Error(data.error || "Failed to update profile");
       }
 
-      // Update local storage
-      localStorage.setItem("user", JSON.stringify(data));
+      // Update user data in auth service
+      authService.setUser(data);
 
       // Update parent component's user data
       onUserUpdate(data);
@@ -625,8 +626,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
         throw new Error(data.error || "Failed to update security settings");
       }
 
-      // Update local storage
-      localStorage.setItem("user", JSON.stringify(data));
+      // Update user data in auth service
+      authService.setUser(data);
 
       // Update parent component's user data
       onUserUpdate(data);

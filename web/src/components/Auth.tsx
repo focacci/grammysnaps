@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Auth.css";
+import authService from "../services/auth.service";
 
 interface AuthProps {
   onLogin: (user: any) => void;
@@ -107,24 +108,26 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
             families,
           };
 
-      const response = await fetch(`http://localhost:3000${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Authentication failed");
-      }
-
-      // Handle successful authentication
       if (isLogin) {
-        onLogin(data.user);
+        // Use auth service for login
+        const user = await authService.login(email, password);
+        onLogin(user);
       } else {
+        // For signup, use the regular API
+        const response = await fetch(`http://localhost:3000${endpoint}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Authentication failed");
+        }
+
         // For signup, we get the user directly
         onLogin(data);
       }

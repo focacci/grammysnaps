@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   UserInput,
   UserUpdate,
-  LoginInput,
   SecurityUpdateInput,
 } from "../types/user.types";
 
@@ -173,6 +172,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
       reply: FastifyReply
     ) => {
       try {
+        // Revoke all tokens for this user before deletion
+        await fastify.auth.revokeUserTokens(request.params.id);
+
         await fastify.user.delete(request.params.id);
         return reply.status(204).send();
       } catch (error) {
@@ -181,41 +183,6 @@ export default async function userRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: error.message });
         }
         return reply.status(500).send({ error: "Failed to delete user" });
-      }
-    }
-  );
-
-  // Login endpoint
-  fastify.post<{ Body: LoginInput }>(
-    "/login",
-    async (
-      request: FastifyRequest<{ Body: LoginInput }>,
-      reply: FastifyReply
-    ) => {
-      try {
-        const { email, password } = request.body;
-
-        // Find user by email
-        const user = await fastify.user.getByEmail(email);
-
-        if (!user) {
-          return reply.status(401).send({ error: "Invalid credentials" });
-        }
-
-        const isValid = await fastify.user.validatePassword(user, password);
-        if (!isValid) {
-          return reply.status(401).send({ error: "Invalid credentials" });
-        }
-
-        // Remove password from response
-        const { password_hash: _, ...userPublic } = user;
-        return reply.send({
-          message: "Login successful",
-          user: userPublic,
-        });
-      } catch (error) {
-        fastify.log.error(error);
-        return reply.status(500).send({ error: "Login failed" });
       }
     }
   );

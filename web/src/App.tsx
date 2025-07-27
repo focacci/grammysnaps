@@ -3,6 +3,7 @@ import "./App.css";
 import PhotoView from "./components/PhotoView";
 import Account from "./components/Account";
 import Auth from "./components/Auth";
+import authService from "./services/auth.service";
 
 function App() {
   const [currentView, setCurrentView] = useState<"home" | "photos" | "account">(
@@ -27,15 +28,22 @@ function App() {
       setDarkMode(systemPrefersDark);
     }
 
-    // Check for saved user
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
+    // Validate current session
+    const validateSession = async () => {
       try {
-        setUser(JSON.parse(savedUser));
+        const sessionUser = await authService.validateSession();
+        if (sessionUser) {
+          setUser(sessionUser);
+        } else {
+          setUser(null);
+        }
       } catch (error) {
-        localStorage.removeItem("user");
+        console.error("Session validation failed:", error);
+        setUser(null);
       }
-    }
+    };
+
+    validateSession();
   }, []);
 
   // Apply theme to document
@@ -82,14 +90,17 @@ function App() {
 
   const handleLogin = (userData: any) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
     setShowAuth(false);
     setCurrentView("photos");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
     setUser(null);
-    localStorage.removeItem("user");
     setCurrentView("home");
     setDropdownOpen(false);
   };

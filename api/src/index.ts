@@ -11,6 +11,8 @@ import userPlugin from "./plugins/user.plugin";
 import userRoutes from "./routes/user.routes";
 import familyPlugin from "./plugins/family.plugin";
 import familyRoutes from "./routes/family.routes";
+import authPlugin from "./plugins/auth.plugin";
+import authRoutes from "./routes/auth.routes";
 
 const server: FastifyInstance = Fastify({ logger: true });
 
@@ -69,12 +71,14 @@ const main = async () => {
   server.register(tagPlugin);
   server.register(userPlugin);
   server.register(familyPlugin);
+  server.register(authPlugin);
 
   // Routes
   await server.register(imageRoutes, { prefix: "/image" });
   await server.register(tagRoutes, { prefix: "/tag" });
   await server.register(userRoutes, { prefix: "/user" });
   await server.register(familyRoutes);
+  await server.register(authRoutes, { prefix: "/auth" });
 
   // Health check
   server.get("/health", async (request, reply) => {
