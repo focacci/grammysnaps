@@ -3,10 +3,11 @@ import { TagInput } from "../plugins/tag.plugin";
 
 const createTagRequestBodySchema = {
   type: "object",
-  required: ["type", "name"],
+  required: ["type", "name", "family_id"],
   properties: {
     type: { type: "string", minLength: 1 },
     name: { type: "string", minLength: 1 },
+    family_id: { type: "string", format: "uuid" },
   },
   additionalProperties: false, // Prevents extra fields in the body
 };
@@ -45,6 +46,7 @@ const updateTagBodySchema = {
       minLength: 1,
     },
     name: { type: "string", minLength: 1 },
+    family_id: { type: "string", format: "uuid" },
   },
   additionalProperties: false, // Prevents extra fields in the body
 };
@@ -54,6 +56,27 @@ const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
     const tags = await fastify.tag.get();
     return reply.status(200).send({ tags });
   });
+
+  // New route for getting tags by family
+  fastify.get(
+    "/family/:familyId",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: {
+            familyId: { type: "string", format: "uuid" },
+          },
+        },
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { familyId } = request.params as { familyId: string };
+      const tags = await fastify.tag.getByFamily(familyId);
+      return reply.status(200).send({ tags });
+    }
+  );
 
   fastify.get(
     "/:tagId",
@@ -74,8 +97,8 @@ const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
     "/",
     { schema: { body: createTagRequestBodySchema } },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { type, name } = request.body as TagInput;
-      const tag = await fastify.tag.create({ type, name });
+      const { type, name, family_id } = request.body as TagInput;
+      const tag = await fastify.tag.create({ type, name, family_id });
       return reply.status(200).send({ tag });
     }
   );
@@ -90,8 +113,12 @@ const tagRoutes: FastifyPluginAsync = async (fastify, opts) => {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { tagId } = request.params as UpdateTagParams;
-      const { type, name } = request.body as TagInput;
-      const updatedTag = await fastify.tag.update(tagId, { type, name });
+      const { type, name, family_id } = request.body as TagInput;
+      const updatedTag = await fastify.tag.update(tagId, {
+        type,
+        name,
+        family_id,
+      });
       if (!updatedTag) {
         return reply.status(404).send({ message: "Tag not found" });
       }

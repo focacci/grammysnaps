@@ -40,6 +40,7 @@ interface Tag {
   id: string;
   name: string;
   type: "Person" | "Location" | "Event" | "Time";
+  family_id: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -65,6 +66,7 @@ function PhotoView({ user }: PhotoViewProps) {
   const [newTagType, setNewTagType] = useState<
     "Person" | "Location" | "Event" | "Time"
   >("Person");
+  const [newTagFamilyId, setNewTagFamilyId] = useState<string>("");
   const [creatingTag, setCreatingTag] = useState(false);
   const [showEditTagModal, setShowEditTagModal] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
@@ -72,6 +74,7 @@ function PhotoView({ user }: PhotoViewProps) {
   const [editTagType, setEditTagType] = useState<
     "Person" | "Location" | "Event" | "Time"
   >("Person");
+  const [editTagFamilyId, setEditTagFamilyId] = useState<string>("");
   const [savingTag, setSavingTag] = useState(false);
   const [deletingTag, setDeletingTag] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -104,19 +107,7 @@ function PhotoView({ user }: PhotoViewProps) {
   });
 
   // Function to load user's family groups
-  const loadUserFamilies = async () => {
-    try {
-      const response = await fetch(`/api/family/user/${user.id}`);
-      if (response.ok) {
-        const families = await response.json();
-        setFamilyGroups(families);
-      } else {
-        console.error("Failed to fetch families");
-      }
-    } catch (error) {
-      console.error("Error fetching families:", error);
-    }
-  };
+  // This function has been replaced by inline fetching in useEffect
 
   // Fetch data from API
   useEffect(() => {
@@ -125,27 +116,48 @@ function PhotoView({ user }: PhotoViewProps) {
         setLoading(true);
         setError(null);
 
-        // Fetch images, tags, and families in parallel
-        const [imagesResponse, tagsResponse] = await Promise.all([
-          fetch("/api/image"),
-          fetch("/api/tag"),
+        // First fetch user's families
+        const familiesResponse = await fetch(`/api/family/user/${user.id}`);
+        if (!familiesResponse.ok) {
+          throw new Error(
+            `Failed to fetch families: ${familiesResponse.status}`
+          );
+        }
+        const familiesData = await familiesResponse.json();
+        setFamilyGroups(familiesData);
+
+        // Set default family for new tags
+        if (familiesData.length > 0 && !newTagFamilyId) {
+          setNewTagFamilyId(familiesData[0].id);
+        }
+
+        // Fetch images and tags for all user's families in parallel
+        const imagePromise = fetch("/api/image");
+        const tagPromises = familiesData.map((family: FamilyGroup) =>
+          fetch(`/api/tag/family/${family.id}`)
+        );
+
+        const [imagesResponse, ...tagResponses] = await Promise.all([
+          imagePromise,
+          ...tagPromises,
         ]);
 
         if (!imagesResponse.ok) {
           throw new Error(`Failed to fetch images: ${imagesResponse.status}`);
         }
-        if (!tagsResponse.ok) {
-          throw new Error(`Failed to fetch tags: ${tagsResponse.status}`);
-        }
 
         const imagesData = await imagesResponse.json();
-        const tagsData = await tagsResponse.json();
-
         setImages(imagesData.images || []);
-        setTags(tagsData.tags || []);
 
-        // Load families separately (don't block image loading on family loading)
-        loadUserFamilies();
+        // Combine tags from all families
+        const allTags: Tag[] = [];
+        for (const tagResponse of tagResponses) {
+          if (tagResponse.ok) {
+            const tagData = await tagResponse.json();
+            allTags.push(...(tagData.tags || []));
+          }
+        }
+        setTags(allTags);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching data:", err);
@@ -293,6 +305,10 @@ function PhotoView({ user }: PhotoViewProps) {
       alert("Please enter a tag name");
       return;
     }
+    if (!newTagFamilyId) {
+      alert("Must select a family group");
+      return;
+    }
 
     setCreatingTag(true);
     try {
@@ -304,6 +320,7 @@ function PhotoView({ user }: PhotoViewProps) {
         body: JSON.stringify({
           name: newTagName.trim(),
           type: newTagType,
+          family_id: newTagFamilyId,
         }),
       });
 
@@ -319,6 +336,7 @@ function PhotoView({ user }: PhotoViewProps) {
       // Reset form and close modal
       setNewTagName("");
       setNewTagType("Person");
+      // Don't reset family selection to keep the same family selected
       setShowCreateTagModal(false);
     } catch (err) {
       console.error("Error creating tag:", err);
@@ -332,12 +350,14 @@ function PhotoView({ user }: PhotoViewProps) {
     setShowCreateTagModal(false);
     setNewTagName("");
     setNewTagType("Person");
+    // Keep the family selection for next time
   };
 
   const handleEditTag = (tag: Tag) => {
     setEditingTag(tag);
     setEditTagName(tag.name);
     setEditTagType(tag.type);
+    setEditTagFamilyId(tag.family_id);
     setShowEditTagModal(true);
   };
 
@@ -346,12 +366,17 @@ function PhotoView({ user }: PhotoViewProps) {
     setEditingTag(null);
     setEditTagName("");
     setEditTagType("Person");
+    setEditTagFamilyId("");
   };
 
   const handleEditTagSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTag || !editTagName.trim()) {
       alert("Please enter a tag name");
+      return;
+    }
+    if (!editTagFamilyId) {
+      alert("Must select a family group");
       return;
     }
 
@@ -365,6 +390,7 @@ function PhotoView({ user }: PhotoViewProps) {
         body: JSON.stringify({
           name: editTagName.trim(),
           type: editTagType,
+          family_id: editTagFamilyId,
         }),
       });
 
@@ -570,13 +596,40 @@ function PhotoView({ user }: PhotoViewProps) {
     }));
   };
 
-  // Group tags by type
-  const groupedTags = {
-    People: tags.filter((tag) => tag.type === "Person"),
-    Places: tags.filter((tag) => tag.type === "Location"),
-    Events: tags.filter((tag) => tag.type === "Event"),
-    Time: tags.filter((tag) => tag.type === "Time"),
-  };
+  // Group tags by family and then by type
+  const tagsByFamilyAndType = familyGroups
+    .filter(
+      (family) => selectedFamily === "all" || family.id === selectedFamily
+    )
+    .reduce(
+      (acc, family) => {
+        const familyTags = tags.filter((tag) => tag.family_id === family.id);
+        acc[family.id] = {
+          familyName: family.name,
+          familyId: family.id,
+          tagsByType: {
+            People: familyTags.filter((tag) => tag.type === "Person"),
+            Places: familyTags.filter((tag) => tag.type === "Location"),
+            Events: familyTags.filter((tag) => tag.type === "Event"),
+            Time: familyTags.filter((tag) => tag.type === "Time"),
+          },
+        };
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          familyName: string;
+          familyId: string;
+          tagsByType: {
+            People: Tag[];
+            Places: Tag[];
+            Events: Tag[];
+            Time: Tag[];
+          };
+        }
+      >
+    );
 
   const filteredImages = images.filter((image) => {
     // Filter by tags first
@@ -644,57 +697,102 @@ function PhotoView({ user }: PhotoViewProps) {
             </button>
           </div>
           <div className="filter-sections">
-            {Object.entries(groupedTags).map(
-              ([sectionName, sectionTags]) =>
-                sectionTags.length > 0 && (
-                  <div key={sectionName} className="filter-section">
-                    <button
-                      className="section-header"
-                      onClick={() => toggleSection(sectionName)}
-                      aria-expanded={!collapsedSections[sectionName]}
+            {Object.entries(tagsByFamilyAndType).map(
+              ([familyId, familyData]) => (
+                <div key={familyId} className="filter-section">
+                  <button
+                    className="section-header"
+                    onClick={() => toggleSection(`family-${familyId}`)}
+                    aria-expanded={!collapsedSections[`family-${familyId}`]}
+                  >
+                    <span
+                      className={`section-caret ${
+                        collapsedSections[`family-${familyId}`]
+                          ? "collapsed"
+                          : ""
+                      }`}
                     >
-                      <span
-                        className={`section-caret ${
-                          collapsedSections[sectionName] ? "collapsed" : ""
-                        }`}
-                      >
-                        ▼
-                      </span>
-                      <span className="section-title">{sectionName}</span>
-                    </button>
-                    {!collapsedSections[sectionName] && (
-                      <div className="filter-list">
-                        {sectionTags.map((tag) => (
-                          <div
-                            key={tag.id}
-                            className={`filter-item ${
-                              selectedTags.includes(tag.name) ? "selected" : ""
-                            }`}
-                          >
-                            <span
-                              className="filter-label"
-                              onClick={() => handleTagToggle(tag.name)}
+                      ▼
+                    </span>
+                    <span className="section-title">
+                      {familyData.familyName}
+                    </span>
+                  </button>
+                  {!collapsedSections[`family-${familyId}`] && (
+                    <div className="filter-list">
+                      {Object.entries(familyData.tagsByType).map(
+                        ([tagType, typeTags]) =>
+                          typeTags.length > 0 && (
+                            <div
+                              key={`${familyId}-${tagType}`}
+                              className="filter-section"
                             >
-                              {tag.name}
-                            </span>
-                            <div className="filter-item-actions">
                               <button
-                                className="edit-tag-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditTag(tag);
-                                }}
-                                title="Edit tag"
+                                className="section-header"
+                                onClick={() =>
+                                  toggleSection(`${familyId}-${tagType}`)
+                                }
+                                aria-expanded={
+                                  !collapsedSections[`${familyId}-${tagType}`]
+                                }
+                                style={{ paddingLeft: "1rem" }}
                               >
-                                ✏️
+                                <span
+                                  className={`section-caret ${
+                                    collapsedSections[`${familyId}-${tagType}`]
+                                      ? "collapsed"
+                                      : ""
+                                  }`}
+                                >
+                                  ▼
+                                </span>
+                                <span className="section-title">{tagType}</span>
                               </button>
+                              {!collapsedSections[`${familyId}-${tagType}`] && (
+                                <div
+                                  className="filter-list"
+                                  style={{ paddingLeft: "1rem" }}
+                                >
+                                  {typeTags.map((tag) => (
+                                    <div
+                                      key={tag.id}
+                                      className={`filter-item ${
+                                        selectedTags.includes(tag.name)
+                                          ? "selected"
+                                          : ""
+                                      }`}
+                                    >
+                                      <span
+                                        className="filter-label"
+                                        onClick={() =>
+                                          handleTagToggle(tag.name)
+                                        }
+                                      >
+                                        {tag.name}
+                                      </span>
+                                      <div className="filter-item-actions">
+                                        <button
+                                          className="edit-tag-btn"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditTag(tag);
+                                          }}
+                                          title="Edit tag"
+                                        >
+                                          ✏️
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
+                          )
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
             )}
           </div>
         </aside>
@@ -859,50 +957,106 @@ function PhotoView({ user }: PhotoViewProps) {
               <div className="form-group">
                 <label>Select Tags:</label>
                 <div className="tag-selection">
-                  {Object.entries(groupedTags).map(
-                    ([sectionName, sectionTags]) =>
-                      sectionTags.length > 0 && (
-                        <div key={sectionName} className="filter-section">
-                          <button
-                            type="button"
-                            className="section-header"
-                            onClick={() => toggleModalSection(sectionName)}
-                            aria-expanded={!modalCollapsedSections[sectionName]}
+                  {Object.entries(tagsByFamilyAndType).map(
+                    ([familyId, familyData]) => (
+                      <div key={familyId} className="filter-section">
+                        <button
+                          type="button"
+                          className="section-header"
+                          onClick={() =>
+                            toggleModalSection(`family-${familyId}`)
+                          }
+                          aria-expanded={
+                            !modalCollapsedSections[`family-${familyId}`]
+                          }
+                        >
+                          <span
+                            className={`section-caret ${
+                              modalCollapsedSections[`family-${familyId}`]
+                                ? "collapsed"
+                                : ""
+                            }`}
                           >
-                            <span
-                              className={`section-caret ${
-                                modalCollapsedSections[sectionName]
-                                  ? "collapsed"
-                                  : ""
-                              }`}
-                            >
-                              ▼
-                            </span>
-                            <span className="section-title">{sectionName}</span>
-                          </button>
-                          {!modalCollapsedSections[sectionName] && (
-                            <div className="filter-list">
-                              <div className="tag-checkboxes">
-                                {sectionTags.map((tag) => (
+                            ▼
+                          </span>
+                          <span className="section-title">
+                            {familyData.familyName}
+                          </span>
+                        </button>
+                        {!modalCollapsedSections[`family-${familyId}`] && (
+                          <div className="filter-list">
+                            {Object.entries(familyData.tagsByType).map(
+                              ([tagType, typeTags]) =>
+                                typeTags.length > 0 && (
                                   <div
-                                    key={tag.id}
-                                    className={`tag-checkbox ${
-                                      selectedUploadTags.includes(tag.id)
-                                        ? "selected"
-                                        : ""
-                                    }`}
-                                    onClick={() =>
-                                      handleUploadTagToggle(tag.id)
-                                    }
+                                    key={`${familyId}-${tagType}`}
+                                    className="filter-section"
                                   >
-                                    <span>{tag.name}</span>
+                                    <button
+                                      type="button"
+                                      className="section-header"
+                                      onClick={() =>
+                                        toggleModalSection(
+                                          `${familyId}-${tagType}`
+                                        )
+                                      }
+                                      aria-expanded={
+                                        !modalCollapsedSections[
+                                          `${familyId}-${tagType}`
+                                        ]
+                                      }
+                                      style={{ paddingLeft: "1rem" }}
+                                    >
+                                      <span
+                                        className={`section-caret ${
+                                          modalCollapsedSections[
+                                            `${familyId}-${tagType}`
+                                          ]
+                                            ? "collapsed"
+                                            : ""
+                                        }`}
+                                      >
+                                        ▼
+                                      </span>
+                                      <span className="section-title">
+                                        {tagType}
+                                      </span>
+                                    </button>
+                                    {!modalCollapsedSections[
+                                      `${familyId}-${tagType}`
+                                    ] && (
+                                      <div
+                                        className="filter-list"
+                                        style={{ paddingLeft: "1rem" }}
+                                      >
+                                        <div className="tag-checkboxes">
+                                          {typeTags.map((tag) => (
+                                            <div
+                                              key={tag.id}
+                                              className={`tag-checkbox ${
+                                                selectedUploadTags.includes(
+                                                  tag.id
+                                                )
+                                                  ? "selected"
+                                                  : ""
+                                              }`}
+                                              onClick={() =>
+                                                handleUploadTagToggle(tag.id)
+                                              }
+                                            >
+                                              <span>{tag.name}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )
+                                )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -967,6 +1121,24 @@ function PhotoView({ user }: PhotoViewProps) {
                   <option value="Location">Location</option>
                   <option value="Event">Event</option>
                   <option value="Time">Time</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tagFamily">Family:</label>
+                <select
+                  id="tagFamily"
+                  value={newTagFamilyId}
+                  onChange={(e) => setNewTagFamilyId(e.target.value)}
+                  className="tag-type-select"
+                  required
+                >
+                  <option value="">Select a family</option>
+                  {familyGroups.map((family) => (
+                    <option key={family.id} value={family.id}>
+                      {family.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1091,54 +1263,108 @@ function PhotoView({ user }: PhotoViewProps) {
                   <div className="form-group">
                     <label>Select Tags:</label>
                     <div className="tag-selection">
-                      {Object.entries(groupedTags).map(
-                        ([sectionName, sectionTags]) =>
-                          sectionTags.length > 0 && (
-                            <div key={sectionName} className="filter-section">
-                              <button
-                                type="button"
-                                className="section-header"
-                                onClick={() => toggleModalSection(sectionName)}
-                                aria-expanded={
-                                  !modalCollapsedSections[sectionName]
-                                }
+                      {Object.entries(tagsByFamilyAndType).map(
+                        ([familyId, familyData]) => (
+                          <div key={familyId} className="filter-section">
+                            <button
+                              type="button"
+                              className="section-header"
+                              onClick={() =>
+                                toggleModalSection(`family-${familyId}`)
+                              }
+                              aria-expanded={
+                                !modalCollapsedSections[`family-${familyId}`]
+                              }
+                            >
+                              <span
+                                className={`section-caret ${
+                                  modalCollapsedSections[`family-${familyId}`]
+                                    ? "collapsed"
+                                    : ""
+                                }`}
                               >
-                                <span
-                                  className={`section-caret ${
-                                    modalCollapsedSections[sectionName]
-                                      ? "collapsed"
-                                      : ""
-                                  }`}
-                                >
-                                  ▼
-                                </span>
-                                <span className="section-title">
-                                  {sectionName}
-                                </span>
-                              </button>
-                              {!modalCollapsedSections[sectionName] && (
-                                <div className="filter-list">
-                                  <div className="tag-checkboxes">
-                                    {sectionTags.map((tag) => (
+                                ▼
+                              </span>
+                              <span className="section-title">
+                                {familyData.familyName}
+                              </span>
+                            </button>
+                            {!modalCollapsedSections[`family-${familyId}`] && (
+                              <div className="filter-list">
+                                {Object.entries(familyData.tagsByType).map(
+                                  ([tagType, typeTags]) =>
+                                    typeTags.length > 0 && (
                                       <div
-                                        key={tag.id}
-                                        className={`tag-checkbox ${
-                                          editImageTags.includes(tag.id)
-                                            ? "selected"
-                                            : ""
-                                        }`}
-                                        onClick={() =>
-                                          handleEditImageTagToggle(tag.id)
-                                        }
+                                        key={`${familyId}-${tagType}`}
+                                        className="filter-section"
                                       >
-                                        <span>{tag.name}</span>
+                                        <button
+                                          type="button"
+                                          className="section-header"
+                                          onClick={() =>
+                                            toggleModalSection(
+                                              `${familyId}-${tagType}`
+                                            )
+                                          }
+                                          aria-expanded={
+                                            !modalCollapsedSections[
+                                              `${familyId}-${tagType}`
+                                            ]
+                                          }
+                                          style={{ paddingLeft: "1rem" }}
+                                        >
+                                          <span
+                                            className={`section-caret ${
+                                              modalCollapsedSections[
+                                                `${familyId}-${tagType}`
+                                              ]
+                                                ? "collapsed"
+                                                : ""
+                                            }`}
+                                          >
+                                            ▼
+                                          </span>
+                                          <span className="section-title">
+                                            {tagType}
+                                          </span>
+                                        </button>
+                                        {!modalCollapsedSections[
+                                          `${familyId}-${tagType}`
+                                        ] && (
+                                          <div
+                                            className="filter-list"
+                                            style={{ paddingLeft: "1rem" }}
+                                          >
+                                            <div className="tag-checkboxes">
+                                              {typeTags.map((tag) => (
+                                                <div
+                                                  key={tag.id}
+                                                  className={`tag-checkbox ${
+                                                    editImageTags.includes(
+                                                      tag.id
+                                                    )
+                                                      ? "selected"
+                                                      : ""
+                                                  }`}
+                                                  onClick={() =>
+                                                    handleEditImageTagToggle(
+                                                      tag.id
+                                                    )
+                                                  }
+                                                >
+                                                  <span>{tag.name}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )
+                                    )
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
                       )}
                     </div>
                   </div>
@@ -1215,6 +1441,24 @@ function PhotoView({ user }: PhotoViewProps) {
                   <option value="Location">Location</option>
                   <option value="Event">Event</option>
                   <option value="Time">Time</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="editTagFamily">Family:</label>
+                <select
+                  id="editTagFamily"
+                  value={editTagFamilyId}
+                  onChange={(e) => setEditTagFamilyId(e.target.value)}
+                  className="tag-type-select"
+                  required
+                >
+                  <option value="">Select a family</option>
+                  {familyGroups.map((family) => (
+                    <option key={family.id} value={family.id}>
+                      {family.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 

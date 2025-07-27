@@ -5,6 +5,7 @@ import { Tag } from "../types/tag.types";
 export interface TagInput {
   type: "Person" | "Location" | "Event" | "Time";
   name: string;
+  family_id: string;
 }
 
 declare module "fastify" {
@@ -12,6 +13,7 @@ declare module "fastify" {
     tag: {
       create: (input: TagInput) => Promise<Tag>;
       get: () => Promise<Tag[]>;
+      getByFamily: (familyId: string) => Promise<Tag[]>;
       getById: (id: string) => Promise<Tag | null>;
       update: (id: string, input: TagInput) => Promise<Tag | null>;
       delete: (id: string) => Promise<void>;
@@ -26,11 +28,11 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("tag", {
     async create(input: TagInput): Promise<Tag> {
-      const { type, name } = input;
+      const { type, name, family_id } = input;
       try {
         const { rows } = await fastify.pg.query<Tag>(
-          "INSERT INTO tags (type, name) VALUES ($1, $2) RETURNING *",
-          [type, name]
+          "INSERT INTO tags (type, name, family_id) VALUES ($1, $2, $3) RETURNING *",
+          [type, name, family_id]
         );
         return rows[0];
       } catch (err) {
@@ -46,6 +48,19 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to fetch tags");
+      }
+    },
+
+    async getByFamily(familyId: string): Promise<Tag[]> {
+      try {
+        const { rows } = await fastify.pg.query<Tag>(
+          "SELECT * FROM tags WHERE family_id = $1",
+          [familyId]
+        );
+        return rows;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to fetch tags by family");
       }
     },
 
@@ -68,8 +83,8 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [tag],
         } = await fastify.pg.query<Tag>(
-          "UPDATE tags SET type = $1, name = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
-          [input.type, input.name, id]
+          "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
+          [input.type, input.name, input.family_id, id]
         );
         return tag || null;
       } catch (err) {

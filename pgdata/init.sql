@@ -8,22 +8,6 @@ CREATE TABLE IF NOT EXISTS images (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS tags (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  type VARCHAR(63) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS image_tags (
-  image_id UUID NOT NULL,
-  tag_id UUID NOT NULL,
-  PRIMARY KEY (image_id, tag_id),
-  FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
-  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -64,4 +48,22 @@ CREATE TABLE IF NOT EXISTS family_relations (
   FOREIGN KEY (family_id_1) REFERENCES families(id) ON DELETE CASCADE,
   FOREIGN KEY (family_id_2) REFERENCES families(id) ON DELETE CASCADE,
   CHECK (family_id_1 != family_id_2)
+);
+
+CREATE TABLE IF NOT EXISTS tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type VARCHAR(63) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  family_id UUID NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS image_tags (
+  image_id UUID NOT NULL,
+  tag_id UUID NOT NULL,
+  PRIMARY KEY (image_id, tag_id),
+  FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 );
