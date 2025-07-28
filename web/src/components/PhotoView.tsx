@@ -1435,10 +1435,7 @@ function PhotoView({ user }: PhotoViewProps) {
       >
         {selectedImage && (
           <div className="image-preview-info">
-            <h3>{selectedImage.title || selectedImage.filename}</h3>
-            {selectedImage.title && (
-              <p className="image-filename">File: {selectedImage.filename}</p>
-            )}
+            <h3>{selectedImage.title || ""}</h3>
             <div className="image-tags">
               {selectedImage.tags?.map((tagId, index) => (
                 <span key={index} className="tag-chip">
@@ -1447,10 +1444,20 @@ function PhotoView({ user }: PhotoViewProps) {
                 </span>
               )) || <span className="no-tags">No tags</span>}
             </div>
+            {selectedImage.filename && (
+              <p className="image-filename">
+                Filename: {selectedImage.filename}
+              </p>
+            )}
             {selectedImage.created_at && (
               <p className="image-date">
-                Created:{" "}
-                {new Date(selectedImage.created_at).toLocaleDateString()}
+                Uploaded: {new Date(selectedImage.created_at).toLocaleString()}
+              </p>
+            )}
+            {selectedImage.updated_at && (
+              <p className="image-updated">
+                Last Edited:{" "}
+                {new Date(selectedImage.updated_at).toLocaleString()}
               </p>
             )}
           </div>

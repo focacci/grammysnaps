@@ -61,7 +61,12 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`modal-content ${
+          mode === "preview" ? "image-modal-preview" : ""
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <div className="modal-header-left">
             {mode === "edit" && onBack && (
