@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import fastifyRateLimit from "@fastify/rate-limit";
+// import fastifyRateLimit from "@fastify/rate-limit";
 import { LoginInput } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
 
@@ -57,6 +57,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
         }
 
         // Convert to public user (remove password hash)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password_hash: _, ...userPublic } = user;
 
         // Generate tokens

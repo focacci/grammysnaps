@@ -328,7 +328,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
         } else {
           setJoinFamilyError("Failed to fetch family information");
         }
-      } catch (error) {
+      } catch {
         setJoinFamilyError("Failed to fetch family information");
       } finally {
         setLoadingJoinFamilyInfo(false);
@@ -797,6 +797,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       }
 
       // Prepare the request body
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const requestBody: any = {};
 
       // Only include email if it changed

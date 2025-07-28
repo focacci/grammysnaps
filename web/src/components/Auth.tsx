@@ -5,6 +5,7 @@ import { ClientValidationUtils } from "../utils/validation";
 import { API_BASE_URL } from "../services/api.service";
 
 interface AuthProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLogin: (user: any) => void;
   onCancel: () => void;
 }

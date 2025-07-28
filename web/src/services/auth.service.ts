@@ -320,7 +320,7 @@ class AuthService {
       if (response.ok) {
         return `Bearer ${accessToken}`;
       }
-    } catch (error) {
+    } catch {
       console.debug("Token validation failed, attempting refresh");
     }
 
@@ -393,6 +393,7 @@ class AuthService {
     });
 
     // If we get 401, try to refresh token once
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (response.status === 401 && !(options.headers as any)?.["X-Retry"]) {
       const newAuthHeader = await this.getAuthHeader();
       if (newAuthHeader && newAuthHeader !== authHeader) {

@@ -132,6 +132,7 @@ export class ClientValidationUtils {
 
     // Additional validation for names (only letters, spaces, hyphens, apostrophes)
     if (fieldName.toLowerCase().includes("name")) {
+      // eslint-disable-next-line no-useless-escape
       const nameRegex = /^[a-zA-Z\s\-'\.]+$/;
       if (sanitized && !nameRegex.test(sanitized)) {
         return {
