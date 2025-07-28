@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./PhotoView.css";
+import ImageModal from "./ImageModal";
 
 // Type definitions
 interface User {
@@ -199,7 +200,7 @@ function PhotoView({ user }: PhotoViewProps) {
     };
 
     fetchData();
-  }, [user.id]);
+  }, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize mobile sidebar state based on screen size
   useEffect(() => {
@@ -1074,284 +1075,242 @@ function PhotoView({ user }: PhotoViewProps) {
       </div>
 
       {/* Upload Modal */}
-      {showUploadModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Upload New Image</h2>
-              <button className="close-btn" onClick={closeModal}>
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleUploadSubmit} className="upload-form">
-                <div className="form-content">
-                  <div className="form-group">
-                    <label>Select Image File:</label>
-                    <div
-                      className={`file-drop-zone ${
-                        dragOver ? "drag-over" : ""
-                      } ${
-                        uploadFile && uploadFilePreviewUrl ? "has-preview" : ""
-                      }`}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      {uploadFile && uploadFilePreviewUrl ? (
-                        <div className="file-preview-display">
-                          <img
-                            src={uploadFilePreviewUrl}
-                            alt={uploadFile.name}
-                            className="upload-image-preview"
-                            onError={(e) => {
-                              // Fallback if preview fails to load
-                              e.currentTarget.style.display = "none";
-                              e.currentTarget.parentElement!.innerHTML =
-                                '<div class="image-preview-placeholder"><span>📸</span><p>Preview not available</p></div>';
-                            }}
-                          />
-                        </div>
-                      ) : uploadFile ? (
-                        <div className="file-selected">
-                          <span className="file-icon">📁</span>
-                          <span className="file-name">{uploadFile.name}</span>
-                          <span className="file-size">
-                            ({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
-                          </span>
-                          <button
-                            type="button"
-                            className="remove-file-btn"
-                            onClick={() => {
-                              // Clean up preview URL
-                              if (uploadFilePreviewUrl) {
-                                URL.revokeObjectURL(uploadFilePreviewUrl);
-                                setUploadFilePreviewUrl(null);
-                              }
-                              setUploadFile(null);
-                              setUploadTitle("");
-                            }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="file-drop-content">
-                          <span className="drop-icon">📤</span>
-                          <p>Drag and drop an image here, or</p>
-                          <button
-                            type="button"
-                            className="browse-btn"
-                            onClick={() =>
-                              document.getElementById("file-input")?.click()
-                            }
-                          >
-                            Browse Files
-                          </button>
-                          <p className="file-info">
-                            Supported: JPEG, PNG, GIF, WebP (Max 10MB)
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    {uploadFile && uploadFilePreviewUrl && (
-                      <button
-                        type="button"
-                        className="change-file-btn"
-                        onClick={() =>
-                          document.getElementById("file-input")?.click()
-                        }
-                      >
-                        Select Different Photo
-                      </button>
-                    )}
-                    <input
-                      id="file-input"
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                      onChange={handleFileInputChange}
-                      style={{ display: "none" }}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="title">Title (optional):</label>
-                    <input
-                      id="title"
-                      type="text"
-                      value={uploadTitle}
-                      onChange={(e) => setUploadTitle(e.target.value)}
-                      placeholder="Enter image title"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Select Families (required):</label>
-                    <div className="family-selection">
-                      {familyGroups.length > 0 ? (
-                        familyGroups.map((family) => (
-                          <div
-                            key={family.id}
-                            className={`family-checkbox ${
-                              selectedUploadFamilies.includes(family.id)
-                                ? "selected"
-                                : ""
-                            }`}
-                            onClick={() => handleUploadFamilyToggle(family.id)}
-                          >
-                            <span>{family.name}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="empty-families-message">
-                          <span>
-                            You are not a member of any families. Please join or
-                            create a family to upload photos.
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {uploadError && (
-                    <div className="upload-error-message">{uploadError}</div>
-                  )}
-
-                  <div className="form-group">
-                    <label>Select Tags:</label>
-                    <div className="tag-selection">
-                      {Object.entries(tagsByFamilyAndType)
-                        .filter(([familyId]) =>
-                          selectedUploadFamilies.includes(familyId)
-                        )
-                        .map(([familyId, familyData]) => (
-                          <div key={familyId} className="filter-section">
-                            <button
-                              type="button"
-                              className="section-header"
-                              onClick={() =>
-                                toggleModalSection(`family-${familyId}`)
-                              }
-                              aria-expanded={
-                                !modalCollapsedSections[`family-${familyId}`]
-                              }
-                            >
-                              <span
-                                className={`section-caret ${
-                                  modalCollapsedSections[`family-${familyId}`]
-                                    ? "collapsed"
-                                    : ""
-                                }`}
-                              >
-                                ▼
-                              </span>
-                              <span className="section-title">
-                                {familyData.familyName}
-                              </span>
-                            </button>
-                            {!modalCollapsedSections[`family-${familyId}`] && (
-                              <div className="filter-list">
-                                {Object.entries(familyData.tagsByType).map(
-                                  ([tagType, typeTags]) =>
-                                    typeTags.length > 0 && (
-                                      <div
-                                        key={`${familyId}-${tagType}`}
-                                        className="filter-section"
-                                      >
-                                        <button
-                                          type="button"
-                                          className="section-header"
-                                          onClick={() =>
-                                            toggleModalSection(
-                                              `${familyId}-${tagType}`
-                                            )
-                                          }
-                                          aria-expanded={
-                                            !modalCollapsedSections[
-                                              `${familyId}-${tagType}`
-                                            ]
-                                          }
-                                          style={{ paddingLeft: "1rem" }}
-                                        >
-                                          <span
-                                            className={`section-caret ${
-                                              modalCollapsedSections[
-                                                `${familyId}-${tagType}`
-                                              ]
-                                                ? "collapsed"
-                                                : ""
-                                            }`}
-                                          >
-                                            ▼
-                                          </span>
-                                          <span className="section-title">
-                                            {tagType}
-                                          </span>
-                                        </button>
-                                        {!modalCollapsedSections[
-                                          `${familyId}-${tagType}`
-                                        ] && (
-                                          <div
-                                            className="filter-list"
-                                            style={{ paddingLeft: "1rem" }}
-                                          >
-                                            <div className="tag-checkboxes">
-                                              {typeTags.map((tag) => (
-                                                <div
-                                                  key={tag.id}
-                                                  className={`tag-checkbox ${
-                                                    selectedUploadTags.includes(
-                                                      tag.id
-                                                    )
-                                                      ? "selected"
-                                                      : ""
-                                                  }`}
-                                                  onClick={() =>
-                                                    handleUploadTagToggle(
-                                                      tag.id
-                                                    )
-                                                  }
-                                                >
-                                                  <span>{tag.name}</span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
+      <ImageModal
+        isOpen={showUploadModal}
+        mode="create"
+        title="Upload New Image"
+        onClose={closeModal}
+        onLeftAction={closeModal}
+        onRightAction={handleUploadSubmit}
+        leftButtonText="Cancel"
+        rightButtonText={uploading ? "Uploading..." : "Upload"}
+        leftButtonClass="cancel-btn"
+        rightButtonClass="submit-btn"
+        rightButtonDisabled={
+          uploading || !uploadFile || familyGroups.length === 0
+        }
+        showSelectDifferentButton={
+          uploadFile && uploadFilePreviewUrl ? true : false
+        }
+        onSelectDifferentPhoto={() =>
+          document.getElementById("file-input")?.click()
+        }
+        imageSection={
+          <>
+            <div
+              className={`file-drop-zone ${dragOver ? "drag-over" : ""} ${
+                uploadFile && uploadFilePreviewUrl ? "has-preview" : ""
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              {uploadFile && uploadFilePreviewUrl ? (
+                <div className="file-preview-display">
+                  <img
+                    src={uploadFilePreviewUrl}
+                    alt={uploadFile.name}
+                    className="upload-image-preview"
+                    onError={(e) => {
+                      // Fallback if preview fails to load
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement!.innerHTML =
+                        '<div class="image-preview-placeholder"><span>📸</span><p>Preview not available</p></div>';
+                    }}
+                  />
                 </div>
-
-                <div className="form-actions">
+              ) : uploadFile ? (
+                <div className="file-selected">
+                  <span className="file-icon">📁</span>
+                  <span className="file-name">{uploadFile.name}</span>
+                  <span className="file-size">
+                    ({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </span>
                   <button
                     type="button"
-                    onClick={closeModal}
-                    className="cancel-btn"
+                    className="remove-file-btn"
+                    onClick={() => {
+                      // Clean up preview URL
+                      if (uploadFilePreviewUrl) {
+                        URL.revokeObjectURL(uploadFilePreviewUrl);
+                        setUploadFilePreviewUrl(null);
+                      }
+                      setUploadFile(null);
+                      setUploadTitle("");
+                    }}
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={
-                      uploading || !uploadFile || familyGroups.length === 0
-                    }
-                    className="submit-btn"
-                  >
-                    {uploading ? "Uploading..." : "Upload Image"}
+                    ×
                   </button>
                 </div>
-              </form>
+              ) : (
+                <div className="file-drop-content">
+                  <span className="drop-icon">📤</span>
+                  <p>Drag and drop an image here, or</p>
+                  <button
+                    type="button"
+                    className="browse-btn"
+                    onClick={() =>
+                      document.getElementById("file-input")?.click()
+                    }
+                  >
+                    Browse Files
+                  </button>
+                  <p className="file-info">
+                    Supported: JPEG, PNG, GIF, WebP (Max 10MB)
+                  </p>
+                </div>
+              )}
             </div>
+            <input
+              id="file-input"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleFileInputChange}
+              style={{ display: "none" }}
+            />
+          </>
+        }
+      >
+        <div className="form-group">
+          <label htmlFor="title">Title (optional):</label>
+          <input
+            id="title"
+            type="text"
+            value={uploadTitle}
+            onChange={(e) => setUploadTitle(e.target.value)}
+            placeholder="Enter image title"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Select Families (required):</label>
+          <div className="family-selection">
+            {familyGroups.length > 0 ? (
+              familyGroups.map((family) => (
+                <div
+                  key={family.id}
+                  className={`family-checkbox ${
+                    selectedUploadFamilies.includes(family.id) ? "selected" : ""
+                  }`}
+                  onClick={() => handleUploadFamilyToggle(family.id)}
+                >
+                  <span>{family.name}</span>
+                </div>
+              ))
+            ) : (
+              <div className="empty-families-message">
+                <span>
+                  You are not a member of any families. Please join or create a
+                  family to upload photos.
+                </span>
+              </div>
+            )}
           </div>
         </div>
-      )}
+
+        {uploadError && (
+          <div className="upload-error-message">{uploadError}</div>
+        )}
+
+        <div className="form-group">
+          <label>Select Tags:</label>
+          <div className="tag-selection">
+            {Object.entries(tagsByFamilyAndType)
+              .filter(([familyId]) => selectedUploadFamilies.includes(familyId))
+              .map(([familyId, familyData]) => (
+                <div key={familyId} className="filter-section">
+                  <button
+                    type="button"
+                    className="section-header"
+                    onClick={() => toggleModalSection(`family-${familyId}`)}
+                    aria-expanded={
+                      !modalCollapsedSections[`family-${familyId}`]
+                    }
+                  >
+                    <span
+                      className={`section-caret ${
+                        modalCollapsedSections[`family-${familyId}`]
+                          ? "collapsed"
+                          : ""
+                      }`}
+                    >
+                      ▼
+                    </span>
+                    <span className="section-title">
+                      {familyData.familyName}
+                    </span>
+                  </button>
+                  {!modalCollapsedSections[`family-${familyId}`] && (
+                    <div className="filter-list">
+                      {Object.entries(familyData.tagsByType).map(
+                        ([tagType, typeTags]) =>
+                          typeTags.length > 0 && (
+                            <div
+                              key={`${familyId}-${tagType}`}
+                              className="filter-section"
+                            >
+                              <button
+                                type="button"
+                                className="section-header"
+                                onClick={() =>
+                                  toggleModalSection(`${familyId}-${tagType}`)
+                                }
+                                aria-expanded={
+                                  !modalCollapsedSections[
+                                    `${familyId}-${tagType}`
+                                  ]
+                                }
+                                style={{ paddingLeft: "1rem" }}
+                              >
+                                <span
+                                  className={`section-caret ${
+                                    modalCollapsedSections[
+                                      `${familyId}-${tagType}`
+                                    ]
+                                      ? "collapsed"
+                                      : ""
+                                  }`}
+                                >
+                                  ▼
+                                </span>
+                                <span className="section-title">{tagType}</span>
+                              </button>
+                              {!modalCollapsedSections[
+                                `${familyId}-${tagType}`
+                              ] && (
+                                <div
+                                  className="filter-list"
+                                  style={{ paddingLeft: "1rem" }}
+                                >
+                                  <div className="tag-checkboxes">
+                                    {typeTags.map((tag) => (
+                                      <div
+                                        key={tag.id}
+                                        className={`tag-checkbox ${
+                                          selectedUploadTags.includes(tag.id)
+                                            ? "selected"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          handleUploadTagToggle(tag.id)
+                                        }
+                                      >
+                                        <span>{tag.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      </ImageModal>
 
       {/* Create Tag Modal */}
       {showCreateTagModal && (
@@ -1441,273 +1400,235 @@ function PhotoView({ user }: PhotoViewProps) {
       )}
 
       {/* Image Preview Modal */}
-      {showImageModal && selectedImage && (
-        <div className="modal-overlay" onClick={closeImageModal}>
-          <div
-            className="modal-content image-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h2>{isEditingImage ? "Edit Image" : "Image Preview"}</h2>
-              <div className="modal-header-actions">
-                {!isEditingImage && (
-                  <>
-                    <button
-                      className="download-btn"
-                      onClick={handleDownloadImage}
-                      type="button"
-                      title="Download image"
-                    >
-                      Download
-                    </button>
-                    <button
-                      className="edit-btn"
-                      onClick={handleEditToggle}
-                      type="button"
-                    >
-                      Edit
-                    </button>
-                  </>
-                )}
-                <button className="close-btn" onClick={closeImageModal}>
-                  ×
-                </button>
+      <ImageModal
+        isOpen={showImageModal && selectedImage !== null && !isEditingImage}
+        mode="preview"
+        title="Image Preview"
+        onClose={closeImageModal}
+        onLeftAction={handleDownloadImage}
+        onRightAction={handleEditToggle}
+        leftButtonText="Download"
+        rightButtonText="Edit"
+        leftButtonClass="download-btn"
+        rightButtonClass="edit-btn"
+        imageSection={
+          selectedImage && selectedImage.s3_url ? (
+            <div className="image-preview-container">
+              <img
+                src={selectedImage.s3_url}
+                alt={selectedImage.filename}
+                className="image-preview-display"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.parentElement!.innerHTML =
+                    '<div class="image-preview-placeholder"><span>📸</span></div>';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="image-preview-placeholder">
+              <span>📸</span>
+            </div>
+          )
+        }
+      >
+        {selectedImage && (
+          <div className="image-preview-info">
+            <h3>{selectedImage.title || selectedImage.filename}</h3>
+            {selectedImage.title && (
+              <p className="image-filename">File: {selectedImage.filename}</p>
+            )}
+            <div className="image-tags">
+              {selectedImage.tags?.map((tagId, index) => (
+                <span key={index} className="tag-chip">
+                  {tags.find((tag) => tag.id === tagId)?.name ||
+                    "*Unnamed Tag*"}
+                </span>
+              )) || <span className="no-tags">No tags</span>}
+            </div>
+            {selectedImage.created_at && (
+              <p className="image-date">
+                Created:{" "}
+                {new Date(selectedImage.created_at).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        )}
+      </ImageModal>
+
+      {/* Image Edit Modal */}
+      <ImageModal
+        isOpen={showImageModal && selectedImage !== null && isEditingImage}
+        mode="edit"
+        title="Edit Image"
+        onClose={closeImageModal}
+        onLeftAction={handleDeleteImage}
+        onRightAction={handleSaveImage}
+        leftButtonText={deletingImage ? "Deleting..." : "Delete"}
+        rightButtonText={savingImage ? "Saving..." : "Save"}
+        leftButtonDisabled={deletingImage}
+        rightButtonDisabled={savingImage}
+        leftButtonClass="delete-btn"
+        rightButtonClass="submit-btn"
+        onBack={handleEditToggle}
+        imageSection={
+          selectedImage && selectedImage.s3_url ? (
+            <div className="image-preview-container">
+              <img
+                src={selectedImage.s3_url}
+                alt={selectedImage.filename}
+                className="image-preview-display"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.parentElement!.innerHTML =
+                    '<div class="image-preview-placeholder"><span>📸</span></div>';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="image-preview-placeholder">
+              <span>📸</span>
+            </div>
+          )
+        }
+      >
+        <div className="form-group">
+          <label htmlFor="editTitle">Title (optional):</label>
+          <input
+            id="editTitle"
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Enter image title"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Select Families:</label>
+          <div className="family-selection">
+            {familyGroups.length > 0 ? (
+              familyGroups.map((family) => (
+                <div
+                  key={family.id}
+                  className={`family-checkbox ${
+                    editImageFamilies.includes(family.id) ? "selected" : ""
+                  }`}
+                  onClick={() => handleEditImageFamilyToggle(family.id)}
+                >
+                  <span>{family.name}</span>
+                </div>
+              ))
+            ) : (
+              <div className="empty-families-message">
+                <span>
+                  You must be a member of at least one family to edit images.
+                </span>
               </div>
-            </div>
-
-            <div className="image-preview-content">
-              {/* Always show image preview */}
-              {selectedImage.s3_url ? (
-                <div className="image-preview-container">
-                  <img
-                    src={selectedImage.s3_url}
-                    alt={selectedImage.filename}
-                    className="image-preview-display"
-                    onError={(e) => {
-                      // Fallback to placeholder if image fails to load
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement!.innerHTML =
-                        '<div class="image-preview-placeholder"><span>📸</span></div>';
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="image-preview-placeholder">
-                  <span>📸</span>
-                </div>
-              )}
-
-              {!isEditingImage ? (
-                <>
-                  <div className="image-preview-info">
-                    <h3>{selectedImage.title || selectedImage.filename}</h3>
-                    {selectedImage.title && (
-                      <p className="image-filename">
-                        File: {selectedImage.filename}
-                      </p>
-                    )}
-                    <div className="image-tags">
-                      {selectedImage.tags?.map((tagId, index) => (
-                        <span key={index} className="tag-chip">
-                          {tags.find((tag) => tag.id === tagId)?.name ||
-                            "*Unnamed Tag*"}
-                        </span>
-                      )) || <span className="no-tags">No tags</span>}
-                    </div>
-                    {selectedImage.created_at && (
-                      <p className="image-date">
-                        Created:{" "}
-                        {new Date(
-                          selectedImage.created_at
-                        ).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <form onSubmit={handleSaveImage} className="upload-form">
-                  <div className="form-group">
-                    <label htmlFor="editTitle">Title (optional):</label>
-                    <input
-                      id="editTitle"
-                      type="text"
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      placeholder="Enter image title"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Select Families:</label>
-                    <div className="family-selection">
-                      {familyGroups.length > 0 ? (
-                        familyGroups.map((family) => (
-                          <div
-                            key={family.id}
-                            className={`family-checkbox ${
-                              editImageFamilies.includes(family.id)
-                                ? "selected"
-                                : ""
-                            }`}
-                            onClick={() =>
-                              handleEditImageFamilyToggle(family.id)
-                            }
-                          >
-                            <span>{family.name}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="empty-families-message">
-                          <span>
-                            You must be a member of at least one family to edit
-                            images.
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Select Tags:</label>
-                    <div className="tag-selection">
-                      {Object.entries(tagsByFamilyAndType).map(
-                        ([familyId, familyData]) => (
-                          <div key={familyId} className="filter-section">
-                            <button
-                              type="button"
-                              className="section-header"
-                              onClick={() =>
-                                toggleModalSection(`family-${familyId}`)
-                              }
-                              aria-expanded={
-                                !modalCollapsedSections[`family-${familyId}`]
-                              }
-                            >
-                              <span
-                                className={`section-caret ${
-                                  modalCollapsedSections[`family-${familyId}`]
-                                    ? "collapsed"
-                                    : ""
-                                }`}
-                              >
-                                ▼
-                              </span>
-                              <span className="section-title">
-                                {familyData.familyName}
-                              </span>
-                            </button>
-                            {!modalCollapsedSections[`family-${familyId}`] && (
-                              <div className="filter-list">
-                                {Object.entries(familyData.tagsByType).map(
-                                  ([tagType, typeTags]) =>
-                                    typeTags.length > 0 && (
-                                      <div
-                                        key={`${familyId}-${tagType}`}
-                                        className="filter-section"
-                                      >
-                                        <button
-                                          type="button"
-                                          className="section-header"
-                                          onClick={() =>
-                                            toggleModalSection(
-                                              `${familyId}-${tagType}`
-                                            )
-                                          }
-                                          aria-expanded={
-                                            !modalCollapsedSections[
-                                              `${familyId}-${tagType}`
-                                            ]
-                                          }
-                                          style={{ paddingLeft: "1rem" }}
-                                        >
-                                          <span
-                                            className={`section-caret ${
-                                              modalCollapsedSections[
-                                                `${familyId}-${tagType}`
-                                              ]
-                                                ? "collapsed"
-                                                : ""
-                                            }`}
-                                          >
-                                            ▼
-                                          </span>
-                                          <span className="section-title">
-                                            {tagType}
-                                          </span>
-                                        </button>
-                                        {!modalCollapsedSections[
-                                          `${familyId}-${tagType}`
-                                        ] && (
-                                          <div
-                                            className="filter-list"
-                                            style={{ paddingLeft: "1rem" }}
-                                          >
-                                            <div className="tag-checkboxes">
-                                              {typeTags.map((tag) => (
-                                                <div
-                                                  key={tag.id}
-                                                  className={`tag-checkbox ${
-                                                    editImageTags.includes(
-                                                      tag.id
-                                                    )
-                                                      ? "selected"
-                                                      : ""
-                                                  }`}
-                                                  onClick={() =>
-                                                    handleEditImageTagToggle(
-                                                      tag.id
-                                                    )
-                                                  }
-                                                >
-                                                  <span>{tag.name}</span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      onClick={handleDeleteImage}
-                      disabled={deletingImage}
-                      className="delete-btn"
-                    >
-                      {deletingImage ? "Deleting..." : "Delete Image"}
-                    </button>
-                    <div className="form-actions-right">
-                      <button
-                        type="button"
-                        onClick={handleEditToggle}
-                        className="cancel-btn"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={savingImage}
-                        className="submit-btn"
-                      >
-                        {savingImage ? "Saving..." : "Save Changes"}
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              )}
-            </div>
+            )}
           </div>
         </div>
-      )}
+
+        <div className="form-group">
+          <label>Select Tags:</label>
+          <div className="tag-selection">
+            {Object.entries(tagsByFamilyAndType)
+              .filter(([familyId]) => editImageFamilies.includes(familyId))
+              .map(([familyId, familyData]) => (
+                <div key={familyId} className="filter-section">
+                  <button
+                    type="button"
+                    className="section-header"
+                    onClick={() => toggleModalSection(`family-${familyId}`)}
+                    aria-expanded={
+                      !modalCollapsedSections[`family-${familyId}`]
+                    }
+                  >
+                    <span
+                      className={`section-caret ${
+                        modalCollapsedSections[`family-${familyId}`]
+                          ? "collapsed"
+                          : ""
+                      }`}
+                    >
+                      ▼
+                    </span>
+                    <span className="section-title">
+                      {familyData.familyName}
+                    </span>
+                  </button>
+                  {!modalCollapsedSections[`family-${familyId}`] && (
+                    <div className="filter-list">
+                      {Object.entries(familyData.tagsByType).map(
+                        ([tagType, typeTags]) =>
+                          typeTags.length > 0 && (
+                            <div
+                              key={`${familyId}-${tagType}`}
+                              className="filter-section"
+                            >
+                              <button
+                                type="button"
+                                className="section-header"
+                                onClick={() =>
+                                  toggleModalSection(`${familyId}-${tagType}`)
+                                }
+                                aria-expanded={
+                                  !modalCollapsedSections[
+                                    `${familyId}-${tagType}`
+                                  ]
+                                }
+                                style={{ paddingLeft: "1rem" }}
+                              >
+                                <span
+                                  className={`section-caret ${
+                                    modalCollapsedSections[
+                                      `${familyId}-${tagType}`
+                                    ]
+                                      ? "collapsed"
+                                      : ""
+                                  }`}
+                                >
+                                  ▼
+                                </span>
+                                <span className="section-title">{tagType}</span>
+                              </button>
+                              {!modalCollapsedSections[
+                                `${familyId}-${tagType}`
+                              ] && (
+                                <div
+                                  className="filter-list"
+                                  style={{ paddingLeft: "1rem" }}
+                                >
+                                  <div className="tag-checkboxes">
+                                    {typeTags.map((tag) => (
+                                      <div
+                                        key={tag.id}
+                                        className={`tag-checkbox ${
+                                          editImageTags.includes(tag.id)
+                                            ? "selected"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          handleEditImageTagToggle(tag.id)
+                                        }
+                                      >
+                                        <span>{tag.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      </ImageModal>
 
       {/* Edit Tag Modal */}
       {showEditTagModal && editingTag && (
