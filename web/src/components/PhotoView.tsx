@@ -219,6 +219,60 @@ function PhotoView({ user }: PhotoViewProps) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Handle mobile viewport height changes for browser UI
+  useEffect(() => {
+    const setVH = () => {
+      // Set CSS custom property for actual viewport height
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+
+      // On mobile, add extra bottom padding to prevent browser UI overlap
+      if (window.innerWidth <= 768) {
+        const gridContainer = document.querySelector(".image-grid-container");
+        if (gridContainer) {
+          // Calculate extra padding needed based on viewport changes
+          const viewportHeight = window.innerHeight;
+          const documentHeight = document.documentElement.clientHeight;
+          const extraPadding = Math.max(
+            0,
+            documentHeight - viewportHeight + 80
+          ); // 80px buffer
+
+          (
+            gridContainer as HTMLElement
+          ).style.paddingBottom = `${extraPadding}px`;
+        }
+      }
+    };
+
+    // Set initial values
+    setVH();
+
+    // Listen for viewport changes (handles mobile browser UI show/hide)
+    window.addEventListener("resize", setVH);
+    window.addEventListener("orientationchange", setVH);
+
+    // Also listen for scroll to detect browser UI changes
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setVH();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", setVH);
+      window.removeEventListener("orientationchange", setVH);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   // Manage body class for modal scroll prevention
   useEffect(() => {
     const isAnyModalOpen =
@@ -1057,7 +1111,7 @@ function PhotoView({ user }: PhotoViewProps) {
                     </div>
                   )}
                   <div className="image-info">
-                    <h4>{image.title || image.filename}</h4>
+                    {image.title && <h4>{image.title}</h4>}
                     <div className="image-tags">
                       {image.tags?.map((tagId, index) => (
                         <span key={index} className="tag-chip">
@@ -1403,7 +1457,7 @@ function PhotoView({ user }: PhotoViewProps) {
       <ImageModal
         isOpen={showImageModal && selectedImage !== null && !isEditingImage}
         mode="preview"
-        title="Image Preview"
+        title="Preview"
         onClose={closeImageModal}
         onLeftAction={handleDownloadImage}
         onRightAction={handleEditToggle}
@@ -1468,7 +1522,7 @@ function PhotoView({ user }: PhotoViewProps) {
       <ImageModal
         isOpen={showImageModal && selectedImage !== null && isEditingImage}
         mode="edit"
-        title="Edit Image"
+        title="Edit"
         onClose={closeImageModal}
         onLeftAction={handleDeleteImage}
         onRightAction={handleSaveImage}

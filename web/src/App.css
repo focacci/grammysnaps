@@ -70,6 +70,14 @@ body {
   background-color: var(--bg-primary);
 }
 
+/* Mobile app container adjustments */
+@media (max-width: 768px) {
+  .app {
+    height: 100vh;
+    overflow: hidden; /* Prevent body scroll on mobile */
+  }
+}
+
 /* Global Button & Input Styles */
 button {
   border: none;
