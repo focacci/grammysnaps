@@ -5,6 +5,24 @@
   background-color: var(--bg-primary);
 }
 
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+  /* Prevent scrolling on mobile */
+  touch-action: none;
+  /* Prevent bounce effect on iOS */
+  position: fixed;
+  width: 100%;
+}
+
+/* Reset body scroll prevention on desktop */
+@media (min-width: 769px) {
+  body.modal-open {
+    position: static;
+    touch-action: auto;
+  }
+}
+
 /* Loading and Error States */
 .loading-container,
 .error-container {
@@ -788,6 +806,9 @@
   align-items: center;
   z-index: 1000;
   padding: 1rem;
+  backdrop-filter: blur(2px);
+  /* Prevent background scrolling */
+  overscroll-behavior: contain;
 }
 
 .modal-content {
@@ -801,22 +822,39 @@
   border: 1px solid var(--border-light);
   transition: all 0.3s ease;
   position: relative;
+  /* Ensure modal content is above everything */
+  z-index: 1001;
 }
 
 /* Mobile modal optimizations */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: 0.5rem;
+    padding: 0;
     align-items: flex-start;
-    padding-top: 2rem;
+    /* Use full viewport height accounting for mobile browser bars */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    /* Prevent scrolling through modal */
+    touch-action: none;
+    overflow: hidden;
   }
 
   .modal-content {
     width: 100%;
     max-width: none;
-    max-height: calc(100vh - 2rem);
-    border-radius: 8px;
+    /* Account for mobile browser UI and safe areas */
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
     margin: 0;
+    /* Prevent content from going behind browser UI */
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    display: flex;
+    flex-direction: column;
+    /* Ensure smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 }
 
@@ -829,8 +867,10 @@
   position: sticky;
   top: 0;
   background: var(--bg-primary);
-  z-index: 10;
+  z-index: 1002;
   gap: 16px;
+  /* Ensure header stays above modal content */
+  backdrop-filter: blur(8px);
 }
 
 .modal-header h2 {
@@ -848,6 +888,41 @@
   min-width: 0;
 }
 
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  /* Ensure content doesn't scroll behind sticky elements */
+  position: relative;
+  /* Add bottom padding for mobile safe areas when content scrolls to bottom */
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+}
+
+/* Mobile modal body optimizations */
+@media (max-width: 768px) {
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    /* Prevent scrolling issues on mobile */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Account for sticky header and mobile browser UI */
+    min-height: 0;
+    /* Ensure proper bottom padding for mobile browser UI */
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+
+    /* Hide scrollbar on mobile */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  /* Hide scrollbar for WebKit browsers (Safari, Chrome) on mobile */
+  .modal-body::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .modal-header-right {
   display: flex;
   align-items: center;
@@ -859,8 +934,14 @@
   .modal-header {
     padding: 16px 20px;
     flex-wrap: nowrap;
-    border-radius: 8px 8px 0 0;
+    border-radius: 0;
     gap: 12px;
+    /* Account for mobile status bar */
+    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    /* Stronger background on mobile */
+    background: var(--bg-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
   }
 
   .modal-header h2 {
@@ -975,13 +1056,31 @@
 
 /* Upload Form */
 .upload-form {
-  padding: 24px;
+  /* Remove height constraints for natural scrolling */
+  display: block;
+  /* Remove padding since modal-body handles it */
+  padding: 0;
+}
+
+.form-content {
+  /* Remove flex and scroll constraints - let content flow naturally */
+  /* Enable smooth scrolling is now handled by modal-body */
+  /* Add some padding for content */
+  padding-bottom: 0;
 }
 
 /* Mobile upload form optimizations */
 @media (max-width: 768px) {
   .upload-form {
-    padding: 16px 20px;
+    /* Remove padding since modal-body handles it */
+    padding: 0;
+    /* Remove height constraints */
+    height: auto;
+  }
+
+  .form-content {
+    /* Remove flex constraints */
+    padding-bottom: 0;
   }
 }
 
@@ -1067,8 +1166,7 @@
 }
 
 .tag-selection {
-  max-height: 300px;
-  overflow-y: auto;
+  /* Remove height constraints to allow natural expansion */
   border: 1px solid var(--border-light);
   border-radius: 6px;
   padding: 16px;
@@ -1079,7 +1177,7 @@
 /* Mobile tag selection optimizations */
 @media (max-width: 768px) {
   .tag-selection {
-    max-height: 250px;
+    /* Remove height constraints for mobile too */
     padding: 12px;
     border-radius: 8px;
   }
@@ -1304,11 +1402,15 @@
   gap: 12px;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-light);
-  position: sticky;
-  bottom: 0;
-  background: var(--bg-primary);
-  z-index: 5;
+  /* Remove border-top divider */
+  /* border-top: 1px solid var(--border-light); */
+  /* Remove sticky positioning for single scroll area */
+  position: static;
+  background: transparent;
+  z-index: auto;
+  /* Remove backdrop filter */
+  backdrop-filter: none;
+  flex-shrink: 0;
 }
 
 .form-actions-right {
@@ -1319,33 +1421,58 @@
 /* Mobile form actions optimizations */
 @media (max-width: 768px) {
   .form-actions {
-    flex-direction: column;
+    /* Spread buttons across full width */
+    flex-direction: row;
     gap: 12px;
     padding: 16px 0;
     margin-top: 16px;
-    align-items: stretch;
-    position: sticky;
-    bottom: 0;
-    background: var(--bg-primary);
-    border-top: 2px solid var(--border-light);
-    margin-left: -20px;
-    margin-right: -20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border-radius: 0 0 8px 8px;
+    align-items: center;
+    /* Remove sticky positioning for single scroll area */
+    position: static;
+    background: transparent;
+    /* Remove border-top divider on mobile too */
+    /* border-top: 2px solid var(--border-light); */
+    /* Remove negative margins since we're not extending to edges */
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    /* Remove safe area padding since not at bottom */
+    padding-bottom: 16px;
+    /* Remove shadow since not floating */
+    box-shadow: none;
+    flex-shrink: 0;
+    /* Spread buttons across full width - cancel left, upload right */
+    justify-content: space-between;
+    /* Remove width override */
+    width: auto;
+    position: static;
+    left: auto;
+  }
+
+  .cancel-btn {
+    /* Ensure cancel button stays on the left */
+    margin-right: auto;
+  }
+
+  .submit-btn {
+    /* Upload button on the right */
+    margin-left: auto;
   }
 
   .form-actions-right {
     display: flex;
-    flex-direction: column;
+    /* Keep buttons side by side on mobile too */
+    flex-direction: row;
     gap: 8px;
-    width: 100%;
+    /* Remove full width to keep buttons natural size */
+    width: auto;
     order: 2;
   }
 
   .delete-btn {
     order: 1;
-    width: 100%;
+    /* Remove full width to keep button natural size */
+    width: auto;
   }
 }
 
@@ -1356,6 +1483,8 @@
     margin-right: -20px;
     padding-left: 20px;
     padding-right: 20px;
+    /* Extra padding for very small screens */
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1698,9 +1827,24 @@
   justify-content: center;
 }
 
+/* Remove borders and padding when showing image preview */
+.file-drop-zone.has-preview {
+  border: none;
+  padding: 0;
+  background: transparent;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .file-drop-zone.drag-over {
   border-color: var(--primary-orange);
   background: rgba(255, 152, 0, 0.1);
+}
+
+/* Don't apply drag-over styles when showing preview */
+.file-drop-zone.has-preview.drag-over {
+  border: none;
+  background: transparent;
 }
 
 /* Mobile file drop zone optimizations */
@@ -1711,12 +1855,20 @@
     border-radius: 8px;
     border-width: 2px;
   }
+
+  .file-drop-zone.has-preview {
+    padding: 0;
+  }
 }
 
 @media (max-width: 480px) {
   .file-drop-zone {
     padding: 1rem;
     min-height: 80px;
+  }
+
+  .file-drop-zone.has-preview {
+    padding: 0;
   }
 }
 
@@ -1843,6 +1995,152 @@
 
 .remove-file-btn:hover {
   background: #b71c1c;
+}
+
+/* Upload Image Preview Styles */
+.file-preview-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+  padding: 0;
+}
+
+.file-preview-display .upload-image-preview {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.change-file-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.change-file-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary-orange);
+}
+
+.image-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.upload-image-preview {
+  max-width: 100%;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  padding: 2rem;
+}
+
+.image-preview-placeholder span {
+  font-size: 2rem;
+  opacity: 0.6;
+}
+
+.image-preview-placeholder p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Mobile image preview optimizations */
+@media (max-width: 768px) {
+  .file-preview-display {
+    min-height: 200px;
+  }
+
+  .file-preview-display .upload-image-preview {
+    max-height: 50vh;
+  }
+
+  .change-file-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 15px;
+    margin-top: 0.75rem;
+  }
+
+  .image-preview-container {
+    max-height: 200px;
+    padding: 0.75rem;
+  }
+
+  .upload-image-preview {
+    max-height: 180px;
+  }
+
+  .image-preview-placeholder {
+    padding: 1.5rem;
+  }
+
+  .image-preview-placeholder span {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-preview-display {
+    min-height: 150px;
+  }
+
+  .file-preview-display .upload-image-preview {
+    max-height: 40vh;
+  }
+
+  .change-file-btn {
+    padding: 0.625rem 1rem;
+    font-size: 14px;
+  }
+
+  .image-preview-container {
+    max-height: 150px;
+    padding: 0.5rem;
+  }
+
+  .upload-image-preview {
+    max-height: 40vh;
+  }
+
+  .image-preview-placeholder {
+    padding: 1rem;
+  }
 }
 
 /* Focus improvements for keyboard navigation */
