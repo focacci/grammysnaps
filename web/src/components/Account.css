@@ -22,7 +22,6 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-md);
 }
 
 .profile-picture {
@@ -31,7 +30,6 @@
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--primary-orange);
-  box-shadow: var(--shadow-md);
 }
 
 .profile-picture-placeholder {
@@ -43,7 +41,6 @@
   align-items: center;
   justify-content: center;
   border: 4px solid var(--primary-orange);
-  box-shadow: var(--shadow-md);
 }
 
 .profile-avatar-icon {
