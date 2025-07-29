@@ -237,8 +237,26 @@ function Account({ user, onUserUpdate }: AccountProps) {
   // Copy Family ID to Clipboard
   const handleCopyFamilyId = async (familyId: string) => {
     try {
-      await navigator.clipboard.writeText(familyId);
-      setCopiedFamilyId(familyId);
+      // Check if clipboard API is available
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(familyId);
+        setCopiedFamilyId(familyId);
+        console.log("Copied via clipboard API:", familyId);
+      } else {
+        // Fallback for browsers without clipboard API
+        const textArea = document.createElement("textarea");
+        textArea.value = familyId;
+        textArea.style.position = "fixed";
+        textArea.style.top = "-1000px";
+        textArea.style.left = "-1000px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        setCopiedFamilyId(familyId);
+        console.log("Copied via fallback method:", familyId);
+      }
 
       // Clear the feedback after 3 seconds
       setTimeout(() => {
@@ -246,6 +264,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
       }, 3000);
     } catch (error) {
       console.error("Failed to copy family ID:", error);
+      // Show error feedback to user
+      alert(`Failed to copy. Family ID: ${familyId}`);
     }
   };
 
@@ -942,8 +962,18 @@ function Account({ user, onUserUpdate }: AccountProps) {
                           <span className="family-id-container">
                             <button
                               className="copy-id-btn"
-                              onClick={() => handleCopyFamilyId(family.id)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleCopyFamilyId(family.id);
+                              }}
+                              onTouchEnd={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleCopyFamilyId(family.id);
+                              }}
                               title="Click to copy family ID"
+                              type="button"
                             >
                               {family.id}
                             </button>
