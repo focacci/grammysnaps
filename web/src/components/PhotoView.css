@@ -374,9 +374,17 @@ body.modal-open {
   min-height: 44px; /* iOS touch target */
 }
 
-.filter-item:hover {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-light);
+/* Only show hover effects on devices that support hovering */
+@media (hover: hover) {
+  .filter-item:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-light);
+  }
+
+  .filter-item.selected:hover {
+    background-color: var(--primary-orange-dark);
+    border-color: var(--primary-orange-dark);
+  }
 }
 
 .filter-item.selected {
@@ -399,11 +407,6 @@ body.modal-open {
   }
 }
 
-.filter-item.selected:hover {
-  background-color: var(--primary-orange-dark);
-  border-color: var(--primary-orange-dark);
-}
-
 .filter-label {
   font-weight: 500;
   color: inherit;
@@ -415,12 +418,19 @@ body.modal-open {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  opacity: 0;
+  opacity: 1; /* Always visible for touch devices */
   transition: opacity 0.2s ease;
 }
 
-.filter-item:hover .filter-item-actions {
-  opacity: 1;
+/* Only show hover effects for edit buttons on devices that support hovering */
+@media (hover: hover) {
+  .filter-item-actions {
+    opacity: 0; /* Hidden by default on hover devices */
+  }
+
+  .filter-item:hover .filter-item-actions {
+    opacity: 1;
+  }
 }
 
 .edit-tag-btn {
@@ -437,9 +447,12 @@ body.modal-open {
   justify-content: center;
 }
 
-.edit-tag-btn:hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+/* Only show hover effects for edit buttons on devices that support hovering */
+@media (hover: hover) {
+  .edit-tag-btn:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
 }
 
 /* Image Grid Container */
