@@ -173,8 +173,10 @@ textarea:focus {
   );
   border-bottom: 1px solid var(--primary-orange-dark);
   box-shadow: var(--shadow-md);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   width: 100%;
   box-sizing: border-box;
@@ -516,6 +518,7 @@ textarea:focus {
   height: calc(100vh - var(--navbar-height));
   background-color: var(--bg-primary);
   transition: background-color 0.3s ease;
+  margin-top: var(--navbar-height); /* Account for fixed navbar */
 }
 
 /* Mobile main content adjustments */

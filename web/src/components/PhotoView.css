@@ -81,7 +81,7 @@ body.modal-open {
 /* Content layout */
 .content-layout {
   display: flex;
-  height: calc(100vh - var(--navbar-height));
+  height: 100%;
   width: 100%;
   position: relative;
 }
@@ -89,10 +89,7 @@ body.modal-open {
 /* Mobile content layout adjustments */
 @media (max-width: 768px) {
   .content-layout {
-    height: calc(100vh - var(--navbar-height));
-    height: calc(
-      100dvh - var(--navbar-height)
-    ); /* Use dynamic viewport height on mobile */
+    height: 100%;
     flex-direction: row; /* Keep side-by-side layout */
     overflow: hidden; /* Prevent main viewport scroll on mobile */
   }
