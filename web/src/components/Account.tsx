@@ -1057,10 +1057,32 @@ function Account({ user, onUserUpdate }: AccountProps) {
                                 e.stopPropagation();
                                 handleCopyFamilyId(family.id);
                               }}
+                              onTouchStart={(e) => {
+                                // Add visual feedback on touch start
+                                e.currentTarget.style.transform = "scale(0.95)";
+                              }}
                               onTouchEnd={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleCopyFamilyId(family.id);
+                                // Reset visual feedback
+                                e.currentTarget.style.transform = "";
+                                // Only trigger copy if this was a tap, not a swipe
+                                const touch = e.changedTouches[0];
+                                if (
+                                  touch &&
+                                  e.currentTarget.contains(
+                                    document.elementFromPoint(
+                                      touch.clientX,
+                                      touch.clientY
+                                    ) as Node
+                                  )
+                                ) {
+                                  handleCopyFamilyId(family.id);
+                                }
+                              }}
+                              onTouchCancel={(e) => {
+                                // Reset visual feedback if touch is cancelled
+                                e.currentTarget.style.transform = "";
                               }}
                               title="Click to copy family ID"
                               type="button"

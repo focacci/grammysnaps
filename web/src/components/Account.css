@@ -1068,17 +1068,52 @@
 
   /* Copy button mobile optimizations */
   .copy-id-btn {
-    padding: 4px 4px;
+    padding: 2px 4px;
     font-size: 12px;
-    min-height: 30px;
-    /* Improve touch handling */
+    min-height: 24px;
+    /* Improve touch handling and prevent accidental clicks */
     touch-action: manipulation;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    /* Ensure click events work on mobile */
-    cursor: pointer;
+    /* Require deliberate touch */
+    pointer-events: auto;
+    /* Add touch delay to distinguish from scroll gestures */
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(255, 127, 0, 0.3);
+    /* Increase touch target size */
+    position: relative;
+  }
+
+  /* Add larger touch target without affecting visual size */
+  .copy-id-btn::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  /* Prevent hover effects on mobile for copy button */
+  .copy-id-btn:hover {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-light) !important;
+    color: var(--text-secondary) !important;
+    transform: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Only show active state on actual press */
+  .copy-id-btn:active {
+    background-color: var(--primary-orange) !important;
+    border-color: var(--primary-orange) !important;
+    color: white !important;
+    transform: scale(0.95);
+    transition: all 0.1s ease;
   }
 
   /* Form element improvements */
