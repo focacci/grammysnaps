@@ -5,6 +5,7 @@ import {
   SecurityUpdateInput,
 } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
+import { MultipartFile } from "@fastify/multipart";
 
 interface UserParams {
   id: string;
@@ -251,6 +252,167 @@ export default async function userRoutes(fastify: FastifyInstance) {
         return reply
           .status(500)
           .send({ error: "Failed to remove user from family" });
+      }
+    }
+  );
+
+  // Set profile picture
+  fastify.post(
+    "/:id/profile-picture",
+    {
+      schema: {
+        consumes: ["multipart/form-data"],
+        params: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+          },
+        },
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      try {
+        // Log request headers for debugging
+        fastify.log.info(`Content-Type: ${request.headers["content-type"]}`);
+        fastify.log.info(
+          `Content-Length: ${request.headers["content-length"]}`
+        );
+
+        // Check if request is multipart
+        if (!request.isMultipart()) {
+          return reply.status(400).send({
+            message: "Request must be multipart/form-data",
+          });
+        }
+
+        // Parse multipart form data and get the file
+        let file: MultipartFile | undefined;
+
+        try {
+          fastify.log.info("Starting profile picture upload parsing");
+
+          // With attachFieldsToBody: true, files are in request.body
+          const body = request.body as Record<string, unknown>;
+          fastify.log.info(`Request body keys:`, Object.keys(body || {}));
+
+          // Find the file field in the body
+          if (body) {
+            for (const [key, value] of Object.entries(body)) {
+              fastify.log.info(`Body field ${key}:`, typeof value);
+
+              // Check if this is a file (has file property)
+              if (value && typeof value === "object" && "file" in value) {
+                file = value as MultipartFile;
+                fastify.log.info(
+                  `Found file in ${key}: ${file.filename}, mimetype=${file.mimetype}`
+                );
+                break;
+              }
+            }
+          }
+        } catch (parseError) {
+          fastify.log.error("Error parsing multipart data:", parseError);
+          return reply.status(400).send({
+            message: "Error processing form data",
+          });
+        }
+
+        if (!file) {
+          return reply.status(400).send({
+            message: "No file uploaded. Please provide a profile picture.",
+          });
+        }
+
+        fastify.log.info(
+          `Processing file: ${file.filename}, mimetype: ${file.mimetype}`
+        );
+
+        // Validate file type
+        const allowedTypes = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+        ];
+        if (!allowedTypes.includes(file.mimetype)) {
+          return reply.status(400).send({
+            message:
+              "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
+          });
+        }
+
+        // Convert file stream to buffer and check size
+        const buffer = await file.toBuffer();
+        fastify.log.info(`File buffer created, size: ${buffer.length} bytes`);
+
+        const maxSize = 5 * 1024 * 1024; // 5 MB
+        if (buffer.length === 0) {
+          return reply.status(400).send({ message: "Uploaded file is empty" });
+        }
+
+        if (buffer.length > maxSize) {
+          return reply
+            .status(400)
+            .send({ message: "File size exceeds 5 MB limit" });
+        }
+
+        fastify.log.info(
+          `Uploading file: ${file.filename}, size: ${buffer.length} bytes`
+        );
+
+        // Generate a unique key for S3
+        const fileExtension = file.filename?.split(".").pop() || "jpg";
+        const s3Key = fastify.s3.createKey(
+          "profile-pictures",
+          id,
+          `profile.${fileExtension}`
+        );
+
+        // Upload to S3 (assumes fastify.s3 is configured)
+        await fastify.s3.upload({
+          key: s3Key,
+          buffer: buffer,
+          contentType: file.mimetype,
+          metadata: {
+            userId: id,
+            uploadedAt: new Date().toISOString(),
+          },
+        });
+
+        const publicUrl = fastify.s3.getPublicUrl(s3Key);
+
+        // Optionally, update user record with the S3 URL
+        await fastify.user.update(id, {
+          profile_picture_url: publicUrl,
+        });
+
+        return reply.send({ url: publicUrl });
+      } catch (error) {
+        fastify.log.error("Profile picture upload error:", error);
+
+        if (error instanceof Error) {
+          // Handle specific S3 errors
+          if (error.message.includes("S3") || error.message.includes("AWS")) {
+            return reply.status(500).send({
+              message: "Failed to upload to storage service",
+              error: error.message,
+            });
+          }
+
+          // Handle user update errors
+          if (error.message.includes("User not found")) {
+            return reply
+              .status(404)
+              .send({ message: "User not found", error: error.message });
+          }
+        }
+
+        return reply.status(500).send({
+          message: "Profile picture upload failed",
+          error: String(error),
+        });
       }
     }
   );

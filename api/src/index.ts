@@ -1,7 +1,7 @@
-import Fastify, { fastify, FastifyInstance } from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import fastifyPostgres from "@fastify/postgres";
 import fastifyMultipart from "@fastify/multipart";
-import fastifyRateLimit from "@fastify/rate-limit";
+// import fastifyRateLimit from "@fastify/rate-limit";
 
 import imagePlugin from "./plugins/image.plugin";
 import imageRoutes from "./routes/image.routes";
@@ -87,7 +87,7 @@ const main = async () => {
   });
   server.register(s3Plugin, {
     region: "us-east-2",
-    bucket: "grammysnaps",
+    bucket: process.env.S3_BUCKET_NAME!,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   });

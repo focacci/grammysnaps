@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   last_name VARCHAR(100) NOT NULL,
   birthday DATE,
   families TEXT[] NOT NULL,
+  profile_picture_url VARCHAR(2047),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

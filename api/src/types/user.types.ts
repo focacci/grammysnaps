@@ -9,6 +9,7 @@ export interface User {
   last_name: string;
   birthday?: string; // ISO date string
   families: string[];
+  profile_picture_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,7 @@ export interface UserInput {
   last_name: string;
   birthday?: string;
   families?: string[];
+  profile_picture_url?: string;
 }
 
 export interface UserUpdate {
@@ -30,6 +32,7 @@ export interface UserUpdate {
   last_name?: string;
   birthday?: string;
   families?: string[];
+  profile_picture_url?: string;
 }
 
 export interface UserPublic {
@@ -40,6 +43,7 @@ export interface UserPublic {
   last_name: string;
   birthday?: string;
   families: string[];
+  profile_picture_url?: string;
   created_at: string;
   updated_at: string;
 }

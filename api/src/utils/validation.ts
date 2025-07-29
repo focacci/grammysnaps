@@ -1,6 +1,6 @@
-const validator = require("validator");
-const DOMPurify = require("dompurify");
-const { JSDOM } = require("jsdom");
+import validator from "validator";
+import DOMPurify from "dompurify";
+import { JSDOM } from "jsdom";
 
 // Create a DOM window for server-side DOMPurify
 const window = new JSDOM("").window;
@@ -99,6 +99,7 @@ export class ValidationUtils {
 
     // Additional validation for names (only letters, spaces, hyphens, apostrophes)
     if (fieldName.toLowerCase().includes("name")) {
+      // eslint-disable-next-line no-useless-escape
       const nameRegex = /^[a-zA-Z\s\-'\.]+$/;
       if (!nameRegex.test(sanitized)) {
         throw new Error(
@@ -203,5 +204,31 @@ export class ValidationUtils {
     if (attempts >= maxAttempts) {
       throw new Error("Too many attempts. Please try again later");
     }
+  }
+
+  /**
+   * Sanitize and validate URL input
+   */
+  static sanitizeURL(url: string, fieldName: string = "URL"): string {
+    if (!url || typeof url !== "string") {
+      throw new Error(`${fieldName} is required and must be a string`);
+    }
+
+    const trimmed = url.trim();
+
+    // Validate URL format
+    if (!validator.isURL(trimmed, { require_protocol: true })) {
+      throw new Error(`Invalid ${fieldName} format`);
+    }
+
+    // Optionally, limit length
+    if (trimmed.length > 2048) {
+      throw new Error(`${fieldName} is too long (max 2048 characters)`);
+    }
+
+    // Sanitize to remove any embedded HTML
+    const sanitized = purify.sanitize(trimmed, { ALLOWED_TAGS: [] });
+
+    return sanitized;
   }
 }

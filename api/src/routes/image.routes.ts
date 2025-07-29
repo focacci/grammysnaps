@@ -1,26 +1,7 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { Image, ImageInput } from "../types/image.types";
+import { ImageInput } from "../types/image.types";
 import { MultipartFile } from "@fastify/multipart";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
-
-const createImageRequestBodySchema = {
-  type: "object",
-  required: ["filename", "family_ids"],
-  properties: {
-    filename: { type: "string", minLength: 1 },
-    tags: {
-      type: "array",
-      items: { type: "string", format: "uuid" },
-    },
-    family_ids: {
-      type: "array",
-      items: { type: "string", format: "uuid" },
-      minItems: 1,
-    },
-  },
-  additionalProperties: false, // Prevents extra fields in the body
-};
 
 interface GetImageParams {
   imageId: string;
@@ -61,7 +42,7 @@ const updateImageBodySchema = {
   },
 };
 
-const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
+const imageRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const images = await fastify.image.get();
     return reply.status(200).send({ images });
@@ -128,42 +109,6 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
         return reply
           .status(500)
           .send({ message: "Failed to download image", error: err });
-      }
-    }
-  );
-
-  // Simple upload endpoint for testing
-  fastify.post(
-    "/upload",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        fastify.log.info("Simple upload endpoint called");
-
-        if (!request.isMultipart()) {
-          return reply
-            .status(400)
-            .send({ message: "Request must be multipart" });
-        }
-
-        const data = await request.file();
-        if (!data) {
-          return reply.status(400).send({ message: "No file provided" });
-        }
-
-        fastify.log.info(
-          `Received file: ${data.filename}, size: ${data.file.bytesRead}`
-        );
-
-        return reply.status(200).send({
-          message: "File received successfully",
-          filename: data.filename,
-          mimetype: data.mimetype,
-        });
-      } catch (error) {
-        fastify.log.error("Upload error:", error);
-        return reply
-          .status(500)
-          .send({ message: "Upload failed", error: String(error) });
       }
     }
   );
@@ -293,7 +238,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
 
       // Generate S3 key first
       const s3Key = fastify.s3.createKey(
-        "family_photos",
+        "family-photos",
         uuidv4(),
         fileData.filename
       );
@@ -411,7 +356,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify, opts) => {
             // Extract S3 key from the public URL
             // URL format: https://grammysnaps.s3.us-east-2.amazonaws.com/grammysnaps/familyId/imageId/filename
             const url = new URL(image.s3_url);
-            let s3Key = url.pathname.substring(1); // Remove leading slash
+            const s3Key = url.pathname.substring(1); // Remove leading slash
 
             fastify.log.info(`Deleting S3 object with key: ${s3Key}`);
             await fastify.s3.delete(s3Key);

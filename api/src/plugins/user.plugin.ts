@@ -37,6 +37,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   // Helper function to convert User to UserPublic (remove password_hash)
   const toPublicUser = (user: User): UserPublic => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash, ...publicUser } = user;
 
     // Ensure birthday is consistently formatted as YYYY-MM-DD
@@ -170,8 +171,15 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async update(id: string, input: UserUpdate): Promise<UserPublic | null> {
-      const { email, first_name, middle_name, last_name, birthday, families } =
-        input;
+      const {
+        email,
+        first_name,
+        middle_name,
+        last_name,
+        birthday,
+        families,
+        profile_picture_url,
+      } = input;
 
       try {
         // Sanitize and validate the ID
@@ -212,6 +220,9 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             : undefined;
         const sanitizedFamilies = families
           ? ValidationUtils.sanitizeFamilyIds(families)
+          : undefined;
+        const sanitizedProfilePictureUrl = profile_picture_url
+          ? ValidationUtils.sanitizeURL(profile_picture_url)
           : undefined;
 
         // Check for conflicts with other users if updating email
@@ -260,6 +271,12 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         if (sanitizedFamilies !== undefined) {
           updateFields.push(`families = $${paramCount}`);
           values.push(sanitizedFamilies);
+          paramCount++;
+        }
+
+        if (sanitizedProfilePictureUrl !== undefined) {
+          updateFields.push(`profile_picture_url = $${paramCount}`);
+          values.push(sanitizedProfilePictureUrl);
           paramCount++;
         }
 
