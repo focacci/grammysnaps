@@ -446,17 +446,15 @@
 }
 
 .section-footer {
-  margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--border-light);
   display: flex;
   gap: 1rem;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .join-family-btn {
   background: none;
-  border: 2px dashed #28a745;
+  border: 2px solid #28a745;
   color: #28a745;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
