@@ -513,8 +513,19 @@ textarea:focus {
 .main-content {
   padding: 0;
   width: 100%;
+  height: calc(100vh - var(--navbar-height));
   background-color: var(--bg-primary);
   transition: background-color 0.3s ease;
+}
+
+/* Mobile main content adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    height: calc(100vh - var(--navbar-height));
+    height: calc(
+      100dvh - var(--navbar-height)
+    ); /* Use dynamic viewport height on mobile */
+  }
 }
 
 /* Home View Styles */

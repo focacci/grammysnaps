@@ -9,7 +9,7 @@
 @media (max-width: 768px) {
   .photo-view {
     overflow: hidden; /* Prevent any scrolling at the top level */
-    height: 100vh;
+    height: 100%;
   }
 }
 
@@ -81,7 +81,7 @@ body.modal-open {
 /* Content layout */
 .content-layout {
   display: flex;
-  height: calc(100vh - 56px);
+  height: calc(100vh - var(--navbar-height));
   width: 100%;
   position: relative;
 }
@@ -89,12 +89,12 @@ body.modal-open {
 /* Mobile content layout adjustments */
 @media (max-width: 768px) {
   .content-layout {
-    height: 100vh;
+    height: calc(100vh - var(--navbar-height));
+    height: calc(
+      100dvh - var(--navbar-height)
+    ); /* Use dynamic viewport height on mobile */
     flex-direction: row; /* Keep side-by-side layout */
     overflow: hidden; /* Prevent main viewport scroll on mobile */
-    left: 0;
-    right: 0;
-    bottom: 0;
   }
 }
 
@@ -471,19 +471,19 @@ body.modal-open {
     padding: 1rem;
     flex: 1;
     overflow-y: auto;
-    height: 100%; /* Ensure it takes full height of parent */
+    min-height: 0; /* Allow flex item to shrink */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     overscroll-behavior: contain; /* Prevent scroll chaining */
-    /* Use minimum of fixed padding or 15% of small viewport height */
-    padding-bottom: 1rem;
+    /* Add extra padding at bottom for better scrolling experience */
+    padding-bottom: 3rem; /* Increased bottom padding for mobile browser UI */
   }
 }
 
 @media (max-width: 480px) {
   .image-grid-container {
     padding: 0.75rem;
-    /* Use minimum of fixed padding or 20% of small viewport height */
-    padding-bottom: 0.75rem;
+    /* Increased bottom padding for small mobile screens */
+    padding-bottom: 4rem; /* More space for very small mobile screens */
   }
 }
 
@@ -728,7 +728,6 @@ body.modal-open {
   display: grid;
   grid-template-columns: repeat(auto-fill, 280px);
   gap: 1.5rem;
-  max-height: 100%;
   justify-content: start;
   margin-bottom: 2rem; /* Base padding below last row */
 }
