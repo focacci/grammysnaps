@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./Account.css";
 import authService from "../services/auth.service";
 import { API_BASE_URL } from "../services/api.service";
+import ImageModal from "./ImageModal";
 
 // Type definitions
 interface User {
@@ -71,6 +72,16 @@ function Account({ user, onUserUpdate }: AccountProps) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Profile Picture Modal State
+  const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
+  const [selectedProfileFile, setSelectedProfileFile] = useState<File | null>(
+    null
+  );
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(
+    null
+  );
+  const [profileUploading, setProfileUploading] = useState(false);
 
   // Create Family Modal State
   const [showCreateFamilyModal, setShowCreateFamilyModal] = useState(false);
@@ -779,6 +790,100 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setError("");
   };
 
+  // Profile Picture Handlers
+  const handleProfilePictureClick = () => {
+    setShowProfilePictureModal(true);
+    setSelectedProfileFile(null);
+    setProfilePreviewUrl(null);
+  };
+
+  const handleProfileFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedProfileFile(file);
+      const url = URL.createObjectURL(file);
+      setProfilePreviewUrl(url);
+    }
+  };
+
+  const handleSelectDifferentProfilePhoto = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setSelectedProfileFile(file);
+        const url = URL.createObjectURL(file);
+        setProfilePreviewUrl(url);
+      }
+    };
+    input.click();
+  };
+
+  const handleProfilePictureSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProfileFile) return;
+
+    setProfileUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedProfileFile);
+
+      const authHeader = await authService.getAuthHeader();
+      if (!authHeader) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/user/${user.id}/profile-picture`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: authHeader,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to upload profile picture");
+      }
+
+      const data = await response.json();
+
+      // Update user data with new profile picture URL
+      const updatedUser = { ...user, profile_picture_url: data.url };
+      authService.setUser(updatedUser);
+      onUserUpdate(updatedUser);
+
+      // Close modal and reset state
+      setShowProfilePictureModal(false);
+      setSelectedProfileFile(null);
+      setProfilePreviewUrl(null);
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to upload profile picture"
+      );
+    } finally {
+      setProfileUploading(false);
+    }
+  };
+
+  const handleCloseProfilePictureModal = () => {
+    setShowProfilePictureModal(false);
+    setSelectedProfileFile(null);
+    setProfilePreviewUrl(null);
+    // Clean up preview URL
+    if (profilePreviewUrl) {
+      URL.revokeObjectURL(profilePreviewUrl);
+    }
+  };
+
   // Security Settings Handlers
   const handleSecuritySettings = () => {
     setShowSecurityModal(true);
@@ -894,7 +999,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <div className="account-container">
         {/* Profile Section */}
         <div className="profile-section">
-          <div className="profile-picture-container">
+          <div
+            className="profile-picture-container"
+            onClick={handleProfilePictureClick}
+          >
             {user.profile_picture_url ? (
               <img
                 src={user.profile_picture_url}
@@ -906,6 +1014,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 <span className="profile-avatar-icon">👤</span>
               </div>
             )}
+            <div className="profile-picture-overlay">
+              <span>📷</span>
+            </div>
           </div>
           <div className="user-info">
             <h1 className="user-name">{getFullName(user)}</h1>
@@ -1642,6 +1753,61 @@ function Account({ user, onUserUpdate }: AccountProps) {
           </div>
         </div>
       )}
+
+      {/* Profile Picture Modal */}
+      <ImageModal
+        isOpen={showProfilePictureModal}
+        mode="create"
+        title="Profile Picture"
+        onClose={handleCloseProfilePictureModal}
+        onLeftAction={handleCloseProfilePictureModal}
+        onRightAction={handleProfilePictureSubmit}
+        leftButtonText="Cancel"
+        rightButtonText={profileUploading ? "Uploading..." : "Save"}
+        leftButtonClass="cancel-btn"
+        rightButtonClass="submit-btn"
+        rightButtonDisabled={!selectedProfileFile || profileUploading}
+        showSelectDifferentButton={!!selectedProfileFile}
+        onSelectDifferentPhoto={handleSelectDifferentProfilePhoto}
+        imageSection={
+          <div className="image-preview-section">
+            {selectedProfileFile ? (
+              <div className="image-preview">
+                <img
+                  src={profilePreviewUrl || ""}
+                  alt="Profile preview"
+                  className="preview-image"
+                />
+              </div>
+            ) : (
+              <div className="file-upload-area">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfileFileSelect}
+                  className="file-input"
+                  id="profile-file-input"
+                />
+                <label
+                  htmlFor="profile-file-input"
+                  className="file-upload-label"
+                >
+                  <div className="upload-content">
+                    <span className="upload-icon">📷</span>
+                    <span className="upload-text">Choose Profile Picture</span>
+                    <span className="upload-hint">
+                      Supported formats: JPG, PNG, GIF, WebP (max 5MB)
+                    </span>
+                  </div>
+                </label>
+              </div>
+            )}
+          </div>
+        }
+      >
+        {/* No additional form fields needed for profile picture */}
+        <div></div>
+      </ImageModal>
     </div>
   );
 }
