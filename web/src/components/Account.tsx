@@ -1018,13 +1018,13 @@ function Account({ user, onUserUpdate }: AccountProps) {
               )}
               <div className="section-footer">
                 <button className="join-family-btn" onClick={handleJoinFamily}>
-                  + Join Family Group
+                  Join Family
                 </button>
                 <button
                   className="create-family-btn-footer"
                   onClick={handleCreateFamily}
                 >
-                  + Create Family Group
+                  Create Family
                 </button>
               </div>
             </div>
