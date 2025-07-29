@@ -794,31 +794,31 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const handleProfilePictureClick = () => {
     setShowProfilePictureModal(true);
     setSelectedProfileFile(null);
-    setProfilePreviewUrl(null);
+    // If user already has a profile picture, show it as preview
+    if (user.profile_picture_url) {
+      setProfilePreviewUrl(user.profile_picture_url);
+    } else {
+      setProfilePreviewUrl(null);
+    }
   };
 
-  const handleProfileFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileFileSelect = (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setProfilePreviewUrl(previewUrl);
+    setSelectedProfileFile(file);
+  };
+
+  const handleProfileFileInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedProfileFile(file);
-      const url = URL.createObjectURL(file);
-      setProfilePreviewUrl(url);
+      handleProfileFileSelect(file);
     }
   };
 
   const handleSelectDifferentProfilePhoto = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        setSelectedProfileFile(file);
-        const url = URL.createObjectURL(file);
-        setProfilePreviewUrl(url);
-      }
-    };
-    input.click();
+    document.getElementById("profile-file-input")?.click();
   };
 
   const handleProfilePictureSubmit = async (e: React.FormEvent) => {
@@ -877,11 +877,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const handleCloseProfilePictureModal = () => {
     setShowProfilePictureModal(false);
     setSelectedProfileFile(null);
-    setProfilePreviewUrl(null);
-    // Clean up preview URL
-    if (profilePreviewUrl) {
+    // Clean up blob preview URL only, not existing profile picture URLs
+    if (profilePreviewUrl && profilePreviewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(profilePreviewUrl);
     }
+    setProfilePreviewUrl(null);
   };
 
   // Security Settings Handlers
@@ -1767,42 +1767,99 @@ function Account({ user, onUserUpdate }: AccountProps) {
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
         rightButtonDisabled={!selectedProfileFile || profileUploading}
-        showSelectDifferentButton={!!selectedProfileFile}
+        showSelectDifferentButton={!!selectedProfileFile || !!profilePreviewUrl}
         onSelectDifferentPhoto={handleSelectDifferentProfilePhoto}
         imageSection={
-          <div className="image-preview-section">
-            {selectedProfileFile ? (
-              <div className="image-preview">
-                <img
-                  src={profilePreviewUrl || ""}
-                  alt="Profile preview"
-                  className="preview-image"
-                />
-              </div>
-            ) : (
-              <div className="file-upload-area">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleProfileFileSelect}
-                  className="file-input"
-                  id="profile-file-input"
-                />
-                <label
-                  htmlFor="profile-file-input"
-                  className="file-upload-label"
-                >
-                  <div className="upload-content">
-                    <span className="upload-icon">📷</span>
-                    <span className="upload-text">Choose Profile Picture</span>
-                    <span className="upload-hint">
-                      Supported formats: JPG, PNG, GIF, WebP (max 5MB)
-                    </span>
-                  </div>
-                </label>
-              </div>
-            )}
-          </div>
+          <>
+            <div
+              className={`file-drop-zone ${
+                (selectedProfileFile && profilePreviewUrl) ||
+                (!selectedProfileFile && profilePreviewUrl)
+                  ? "has-preview"
+                  : ""
+              }`}
+            >
+              {selectedProfileFile && profilePreviewUrl ? (
+                <div className="file-preview-display">
+                  <img
+                    src={profilePreviewUrl}
+                    alt={selectedProfileFile.name}
+                    className="upload-image-preview"
+                    onError={(e) => {
+                      // Fallback if preview fails to load
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement!.innerHTML =
+                        '<div class="image-preview-placeholder"><span>📸</span><p>Preview not available</p></div>';
+                    }}
+                  />
+                </div>
+              ) : selectedProfileFile ? (
+                <div className="file-selected">
+                  <span className="file-icon">📁</span>
+                  <span className="file-name">{selectedProfileFile.name}</span>
+                  <span className="file-size">
+                    ({(selectedProfileFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </span>
+                  <button
+                    type="button"
+                    className="remove-file-btn"
+                    onClick={() => {
+                      // Clean up preview URL only if it's a blob URL
+                      if (
+                        profilePreviewUrl &&
+                        profilePreviewUrl.startsWith("blob:")
+                      ) {
+                        URL.revokeObjectURL(profilePreviewUrl);
+                      }
+                      setSelectedProfileFile(null);
+                      // Reset to existing profile picture if available
+                      setProfilePreviewUrl(user.profile_picture_url || null);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : profilePreviewUrl ? (
+                <div className="file-preview-display">
+                  <img
+                    src={profilePreviewUrl}
+                    alt="Current profile picture"
+                    className="upload-image-preview"
+                    onError={(e) => {
+                      // Fallback if preview fails to load
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement!.innerHTML =
+                        '<div class="image-preview-placeholder"><span>📸</span><p>Preview not available</p></div>';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="file-drop-content">
+                  <span className="drop-icon">�</span>
+                  <p>Drag and drop an image here, or</p>
+                  <button
+                    type="button"
+                    className="browse-btn"
+                    onClick={() =>
+                      document.getElementById("profile-file-input")?.click()
+                    }
+                  >
+                    Browse Files
+                  </button>
+                  <p className="file-info">
+                    Supported: JPEG, PNG, GIF, WebP (Max 10MB)
+                  </p>
+                </div>
+              )}
+            </div>
+            <input
+              id="profile-file-input"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleProfileFileInputChange}
+              style={{ display: "none" }}
+            />
+          </>
         }
       >
         {/* No additional form fields needed for profile picture */}
