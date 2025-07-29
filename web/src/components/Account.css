@@ -391,6 +391,11 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Dark mode enhancements for setting arrows */
+[data-theme="dark"] .setting-arrow {
+  color: #ffffff;
+}
+
 .family-group-actions {
   display: flex;
   gap: 0.75rem;
@@ -941,8 +946,14 @@
 /* Mobile and Tablet Styles (768px and below) */
 @media (max-width: 768px) {
   /* Layout adjustments */
+
+  .account-container {
+    gap: 1.5rem;
+  }
+
   .account-view {
     padding: 1rem;
+    padding-top: 1.5rem;
   }
 
   .profile-section {
@@ -999,7 +1010,8 @@
 
   /* Settings grid */
   .settings-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
   }
 
   /* Section adjustments */
@@ -1036,8 +1048,24 @@
 
   /* Settings items */
   .setting-item {
-    padding: 16px;
-    min-height: 60px;
+    padding: 12px 8px;
+    min-height: 50px;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .setting-item .setting-icon {
+    font-size: 1.1rem;
+  }
+
+  .setting-item .setting-label {
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+
+  .setting-item .setting-arrow {
+    display: none;
   }
 
   /* Copy button mobile optimizations */
@@ -1108,8 +1136,17 @@
   }
 
   .setting-item {
-    min-height: 64px;
-    padding: 18px;
+    min-height: 48px;
+    padding: 10px 6px;
+    gap: 0.25rem;
+  }
+
+  .setting-item .setting-icon {
+    font-size: 1rem;
+  }
+
+  .setting-item .setting-label {
+    font-size: 0.8rem;
   }
 
   .section-header {

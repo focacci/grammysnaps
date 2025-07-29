@@ -1128,7 +1128,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <div className="settings-grid">
               <button className="setting-item" onClick={handleSecuritySettings}>
                 <span className="setting-icon">🔒</span>
-                <span className="setting-label">Security & Privacy</span>
+                <span className="setting-label">Security</span>
                 <span className="setting-arrow">→</span>
               </button>
               <button className="setting-item">
@@ -1138,7 +1138,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
               </button>
               <button className="setting-item">
                 <span className="setting-icon">📱</span>
-                <span className="setting-label">Connected Devices</span>
+                <span className="setting-label">Devices</span>
                 <span className="setting-arrow">→</span>
               </button>
             </div>
