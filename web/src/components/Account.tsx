@@ -14,7 +14,7 @@ interface User {
   families: string[];
   created_at: string;
   updated_at: string;
-  profilePicture?: string;
+  profile_picture_url?: string;
 }
 
 interface FamilyGroup {
@@ -895,9 +895,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
         {/* Profile Section */}
         <div className="profile-section">
           <div className="profile-picture-container">
-            {user.profilePicture ? (
+            {user.profile_picture_url ? (
               <img
-                src={user.profilePicture}
+                src={user.profile_picture_url}
                 alt={`${getFullName(user)}'s profile`}
                 className="profile-picture"
               />

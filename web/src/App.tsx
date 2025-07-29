@@ -167,7 +167,15 @@ function App() {
                 onClick={toggleDropdown}
                 aria-label="Profile menu"
               >
-                <span>👤</span>
+                {user.profile_picture_url ? (
+                  <img
+                    src={user.profile_picture_url}
+                    alt="Profile"
+                    className="profile-avatar"
+                  />
+                ) : (
+                  <span className="profile-avatar-icon">👤</span>
+                )}
               </button>
               {dropdownOpen && (
                 <div className="dropdown-menu">

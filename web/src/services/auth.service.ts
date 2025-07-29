@@ -10,7 +10,7 @@ interface User {
   families: string[];
   created_at: string;
   updated_at: string;
-  profilePicture?: string;
+  profile_picture_url?: string;
 }
 
 interface AuthTokens {
