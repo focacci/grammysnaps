@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "./Account.css";
 import authService from "../services/auth.service";
 import { API_BASE_URL } from "../services/api.service";
@@ -62,18 +62,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
   const [loadingFamilies, setLoadingFamilies] = useState(true);
 
-  // Edit Profile Modal State
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editForm, setEditForm] = useState({
-    first_name: user.first_name,
-    middle_name: user.middle_name || "",
-    last_name: user.last_name,
-    birthday: user.birthday || "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // Profile Picture Modal State
+  // Profile Picture and Edit Profile Modal State (merged)
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
   const [selectedProfileFile, setSelectedProfileFile] = useState<File | null>(
     null
@@ -82,6 +71,13 @@ function Account({ user, onUserUpdate }: AccountProps) {
     null
   );
   const [profileUploading, setProfileUploading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    first_name: user.first_name,
+    middle_name: user.middle_name || "",
+    last_name: user.last_name,
+    birthday: user.birthday || "",
+  });
+  const [error, setError] = useState("");
 
   // Create Family Modal State
   const [showCreateFamilyModal, setShowCreateFamilyModal] = useState(false);
@@ -155,12 +151,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     confirm: false,
   });
 
-  // Load user's families on component mount
-  useEffect(() => {
-    loadUserFamilies();
-  }, [user.id]);
-
-  const loadUserFamilies = async () => {
+  const loadUserFamilies = useCallback(async () => {
     try {
       setLoadingFamilies(true);
       const response = await fetch(`${API_BASE_URL}/family/user/${user.id}`);
@@ -175,7 +166,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
     } finally {
       setLoadingFamilies(false);
     }
-  };
+  }, [user.id]);
+
+  // Load user's families on component mount
+  useEffect(() => {
+    loadUserFamilies();
+  }, [loadUserFamilies]);
 
   const toggleSection = (sectionName: string) => {
     setCollapsedSections((prev) => ({
@@ -733,9 +729,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
     }
   };
 
-  // Edit Profile Handlers
-  const handleEditProfile = () => {
-    setShowEditModal(true);
+  // Profile Picture and Edit Profile Handlers (merged)
+  const handleProfilePictureClick = () => {
+    setShowProfilePictureModal(true);
+    setSelectedProfileFile(null);
+    // Reset form to current user data
     setEditForm({
       first_name: user.first_name,
       middle_name: user.middle_name || "",
@@ -743,57 +741,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
       birthday: user.birthday || "",
     });
     setError("");
-  };
-
-  const handleEditFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/user/${user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          first_name: editForm.first_name.trim(),
-          middle_name: editForm.middle_name.trim() || undefined,
-          last_name: editForm.last_name.trim(),
-          birthday: editForm.birthday || undefined,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to update profile");
-      }
-
-      // Update user data in auth service
-      authService.setUser(data);
-
-      // Update parent component's user data
-      onUserUpdate(data);
-
-      // Close modal
-      setShowEditModal(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCloseEditModal = () => {
-    setShowEditModal(false);
-    setError("");
-  };
-
-  // Profile Picture Handlers
-  const handleProfilePictureClick = () => {
-    setShowProfilePictureModal(true);
-    setSelectedProfileFile(null);
     // If user already has a profile picture, show it as preview
     if (user.profile_picture_url) {
       setProfilePreviewUrl(user.profile_picture_url);
@@ -823,51 +770,83 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
   const handleProfilePictureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProfileFile) return;
-
+    setError("");
     setProfileUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedProfileFile);
 
-      const authHeader = await authService.getAuthHeader();
-      if (!authHeader) {
-        throw new Error("Not authenticated");
+    try {
+      let profilePictureUrl = user.profile_picture_url;
+
+      // First, upload profile picture if one was selected
+      if (selectedProfileFile) {
+        const formData = new FormData();
+        formData.append("file", selectedProfileFile);
+
+        const authHeader = await authService.getAuthHeader();
+        if (!authHeader) {
+          throw new Error("Not authenticated");
+        }
+
+        const response = await fetch(
+          `${API_BASE_URL}/user/${user.id}/profile-picture`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: authHeader,
+            },
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to upload profile picture");
+        }
+
+        const data = await response.json();
+        profilePictureUrl = data.url;
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/user/${user.id}/profile-picture`,
+      // Then, update user profile data
+      const userUpdateResponse = await fetch(
+        `${API_BASE_URL}/user/${user.id}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
-            Authorization: authHeader,
+            "Content-Type": "application/json",
           },
-          body: formData,
+          body: JSON.stringify({
+            first_name: editForm.first_name.trim(),
+            middle_name: editForm.middle_name.trim() || undefined,
+            last_name: editForm.last_name.trim(),
+            birthday: editForm.birthday || undefined,
+          }),
         }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to upload profile picture");
+      const userData = await userUpdateResponse.json();
+
+      if (!userUpdateResponse.ok) {
+        throw new Error(userData.error || "Failed to update profile");
       }
 
-      const data = await response.json();
+      // Merge the profile picture URL with the updated user data
+      const finalUserData = { ...userData };
+      if (selectedProfileFile && profilePictureUrl) {
+        finalUserData.profile_picture_url = profilePictureUrl;
+      }
 
-      // Update user data with new profile picture URL
-      const updatedUser = { ...user, profile_picture_url: data.url };
-      authService.setUser(updatedUser);
-      onUserUpdate(updatedUser);
+      // Update user data in auth service
+      authService.setUser(finalUserData);
+      onUserUpdate(finalUserData);
 
       // Close modal and reset state
       setShowProfilePictureModal(false);
       setSelectedProfileFile(null);
       setProfilePreviewUrl(null);
     } catch (error) {
-      console.error("Error uploading profile picture:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to upload profile picture"
+      console.error("Error updating profile:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to update profile"
       );
     } finally {
       setProfileUploading(false);
@@ -1147,11 +1126,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
           <h2 className="section-title-static">Account Settings</h2>
           <div className="section-content">
             <div className="settings-grid">
-              <button className="setting-item" onClick={handleEditProfile}>
-                <span className="setting-icon">✏️</span>
-                <span className="setting-label">Edit Profile</span>
-                <span className="setting-arrow">→</span>
-              </button>
               <button className="setting-item" onClick={handleSecuritySettings}>
                 <span className="setting-icon">🔒</span>
                 <span className="setting-label">Security & Privacy</span>
@@ -1481,82 +1455,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
         </div>
       )}
 
-      {/* Edit Profile Modal */}
-      {showEditModal && (
-        <div className="auth-overlay">
-          <div className="auth-modal">
-            <div className="auth-header">
-              <h2>Edit Profile</h2>
-              <button className="auth-close" onClick={handleCloseEditModal}>
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleEditFormSubmit} className="auth-form">
-              <div className="form-group">
-                <label htmlFor="editFirstName">First Name *</label>
-                <input
-                  type="text"
-                  id="editFirstName"
-                  value={editForm.first_name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, first_name: e.target.value })
-                  }
-                  required
-                  placeholder="Enter your first name"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="editMiddleName">Middle Name</label>
-                <input
-                  type="text"
-                  id="editMiddleName"
-                  value={editForm.middle_name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, middle_name: e.target.value })
-                  }
-                  placeholder="Enter your middle name (optional)"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="editLastName">Last Name *</label>
-                <input
-                  type="text"
-                  id="editLastName"
-                  value={editForm.last_name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, last_name: e.target.value })
-                  }
-                  required
-                  placeholder="Enter your last name"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="editBirthday">Birthday</label>
-                <input
-                  type="date"
-                  id="editBirthday"
-                  value={editForm.birthday}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, birthday: e.target.value })
-                  }
-                  placeholder="Select your birthday (optional)"
-                />
-              </div>
-
-              {error && <div className="auth-error">{error}</div>}
-
-              <button type="submit" className="auth-submit" disabled={loading}>
-                {loading ? "Updating..." : "Update Profile"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* View Members Modal */}
       {showViewMembersModal && viewMembersFamily && (
         <div className="auth-overlay">
@@ -1758,15 +1656,15 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <ImageModal
         isOpen={showProfilePictureModal}
         mode="create"
-        title="Profile Picture"
+        title="Edit Profile"
         onClose={handleCloseProfilePictureModal}
         onLeftAction={handleCloseProfilePictureModal}
         onRightAction={handleProfilePictureSubmit}
         leftButtonText="Cancel"
-        rightButtonText={profileUploading ? "Uploading..." : "Save"}
+        rightButtonText={profileUploading ? "Saving..." : "Save Changes"}
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
-        rightButtonDisabled={!selectedProfileFile || profileUploading}
+        rightButtonDisabled={profileUploading}
         showSelectDifferentButton={!!selectedProfileFile || !!profilePreviewUrl}
         onSelectDifferentPhoto={handleSelectDifferentProfilePhoto}
         imageSection={
@@ -1862,8 +1760,64 @@ function Account({ user, onUserUpdate }: AccountProps) {
           </>
         }
       >
-        {/* No additional form fields needed for profile picture */}
-        <div></div>
+        {/* Profile Information Form */}
+        <div className="profile-edit-form">
+          <div className="form-group">
+            <label htmlFor="editFirstName">First Name *</label>
+            <input
+              type="text"
+              id="editFirstName"
+              value={editForm.first_name}
+              onChange={(e) =>
+                setEditForm({ ...editForm, first_name: e.target.value })
+              }
+              required
+              placeholder="Enter your first name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="editMiddleName">Middle Name</label>
+            <input
+              type="text"
+              id="editMiddleName"
+              value={editForm.middle_name}
+              onChange={(e) =>
+                setEditForm({ ...editForm, middle_name: e.target.value })
+              }
+              placeholder="Enter your middle name (optional)"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="editLastName">Last Name *</label>
+            <input
+              type="text"
+              id="editLastName"
+              value={editForm.last_name}
+              onChange={(e) =>
+                setEditForm({ ...editForm, last_name: e.target.value })
+              }
+              required
+              placeholder="Enter your last name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="editBirthday">Birthday</label>
+            <input
+              type="date"
+              id="editBirthday"
+              value={editForm.birthday}
+              onChange={(e) =>
+                setEditForm({ ...editForm, birthday: e.target.value })
+              }
+              placeholder="Select your birthday (optional)"
+            />
+          </div>
+
+          {error && <div className="auth-error">{error}</div>}
+        </div>
       </ImageModal>
     </div>
   );

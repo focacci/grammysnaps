@@ -3,6 +3,20 @@
 /* Modal overlay and basic structure inherit from PhotoView.css */
 /* This file only contains specific overrides or additions for the ImageModal component */
 
+/* Hide scrollbars on desktop for all modal content */
+@media (min-width: 769px) {
+  .modal-content,
+  .modal-body {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+  }
+
+  .modal-content::-webkit-scrollbar,
+  .modal-body::-webkit-scrollbar {
+    display: none !important; /* WebKit browsers (Chrome, Safari, Edge) */
+  }
+}
+
 /* Image preview content layout for preview mode - flex for full height */
 .image-preview-content {
   display: flex;
@@ -10,6 +24,13 @@
   gap: 0.5rem; /* Reduced gap between title and photo */
   height: 100%;
   overflow-y: auto;
+  /* Hide scrollbar on desktop */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.image-preview-content::-webkit-scrollbar {
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
 }
 
 /* Preview mode specific styles - override PhotoView.css modal header layout */
@@ -37,6 +58,13 @@
   padding-top: 1rem !important;
   overflow-y: auto !important;
   max-height: calc(100vh - 120px) !important;
+  /* Hide scrollbar on desktop */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+}
+
+.image-modal-preview.modal-content .modal-body::-webkit-scrollbar {
+  display: none !important; /* WebKit browsers (Chrome, Safari, Edge) */
 }
 
 /* Form content layout for create/edit modes - flex for full height */
@@ -44,6 +72,13 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Hide scrollbar on desktop */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.upload-form::-webkit-scrollbar {
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
 }
 
 .form-content {
@@ -51,6 +86,13 @@
   flex-direction: column;
   flex: 1;
   gap: 1.5rem;
+  /* Hide scrollbar on desktop */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.form-content::-webkit-scrollbar {
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
 }
 
 /* First form group (image section) should take available space */
@@ -103,17 +145,6 @@
   .modal-header-left h2 {
     font-size: 1.3rem;
   }
-}
-
-/* Form actions styling - consistent across all modal views */
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-light);
 }
 
 /* File Upload Styles for ImageModal */
@@ -387,9 +418,9 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-light);
+  padding-bottom: 0.5rem;
+  padding-top: 10px;
+  margin-top: 0;
 }
 
 /* Base button styling */
@@ -407,17 +438,17 @@
   letter-spacing: 0.025em;
 }
 
-/* Cancel button - no fill, gray border */
+/* Cancel button - dark grey background */
 .cancel-btn {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 2px solid var(--border-light);
+  background: #6b7280;
+  color: white;
+  border: 2px solid #6b7280;
 }
 
 .cancel-btn:hover {
-  background: var(--bg-secondary);
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
+  background: #4b5563;
+  border-color: #4b5563;
+  color: white;
 }
 
 /* Submit/Upload/Save buttons - blue */
@@ -527,8 +558,8 @@
   /* Form actions mobile styling */
   .modal-content .form-actions {
     gap: 0.75rem !important;
-    padding-top: 1rem !important;
-    margin-top: 1.5rem !important;
+    padding-top: 0.5rem !important;
+    margin-top: 0;
     flex-direction: row !important;
     justify-content: space-between !important;
   }
