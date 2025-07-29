@@ -286,30 +286,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Completely disable hover effects on touch devices */
-@media (hover: none) {
-  .copy-id-btn:hover {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border-light) !important;
-    color: var(--text-secondary) !important;
-    transform: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  }
-
-  [data-theme="dark"] .copy-id-btn:hover {
-    background: #3a3a3a !important;
-    border-color: #555555 !important;
-    color: #cccccc !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  }
-
-  /* Ensure proper touch handling */
-  .copy-id-btn {
-    pointer-events: auto !important;
-    -webkit-tap-highlight-color: rgba(255, 127, 0, 0.2) !important;
-  }
-}
-
 .copy-feedback {
   position: absolute;
   top: -3rem;
