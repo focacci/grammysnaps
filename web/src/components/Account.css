@@ -71,7 +71,6 @@
   margin: 0;
   color: var(--text-secondary);
   font-size: 1rem;
-  font-style: italic;
 }
 
 /* Account Sections */
@@ -641,24 +640,6 @@
   background: #dc2626;
 }
 
-@media (max-width: 768px) {
-  .member-row {
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem;
-  }
-
-  .member-birthday {
-    grid-column: 2;
-    text-align: left;
-    margin-top: 0.25rem;
-  }
-
-  .member-actions {
-    grid-column: 2;
-    justify-content: flex-end;
-  }
-}
-
 /* Account Settings */
 .settings-grid {
   display: grid;
@@ -701,146 +682,7 @@
   font-weight: bold;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .account-view {
-    padding: 1rem;
-  }
-
-  .profile-section {
-    padding: 1rem;
-  }
-
-  .profile-picture,
-  .profile-picture-placeholder {
-    width: 100px;
-    height: 100px;
-  }
-
-  .profile-avatar-icon {
-    font-size: 2.5rem;
-  }
-
-  .user-name {
-    font-size: 1.5rem;
-  }
-
-  .family-group-details {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .family-group-actions {
-    width: 100%;
-    justify-content: flex-end;
-    /* Reverse button order on mobile - View Members will appear on the right */
-    flex-direction: row-reverse;
-  }
-
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .section-header {
-    padding: 1rem;
-    min-height: 48px;
-  }
-
-  .section-content {
-    padding: 0.5rem;
-  }
-
-  .family-group-card {
-    padding: 0.5rem;
-  }
-
-  /* Remove hover effects on mobile */
-  .family-group-card:hover {
-    border-color: var(--border-light);
-    box-shadow: none;
-  }
-
-  /* Mobile touch improvements */
-  .action-btn,
-  .view-btn,
-  .manage-btn,
-  .leave-btn,
-  .join-family-btn,
-  .create-family-btn,
-  .create-family-btn-footer {
-    min-height: 44px;
-    padding: 12px 16px;
-    font-size: 16px;
-  }
-
-  /* Right align view members button on mobile */
-  .view-btn {
-    margin-left: auto;
-  }
-
-  .setting-item {
-    padding: 16px;
-    min-height: 60px;
-  }
-
-  .copy-id-btn {
-    padding: 4px 4px;
-    font-size: 12px;
-    min-height: 30px;
-    /* Improve touch handling */
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    /* Ensure click events work on mobile */
-    cursor: pointer;
-  }
-
-  /* Improve form elements */
-  .add-member-form input {
-    padding: 14px 12px;
-    font-size: 16px;
-    min-height: 48px;
-  }
-
-  .add-member-form button {
-    padding: 14px 20px;
-    font-size: 16px;
-    min-height: 48px;
-  }
-
-  /* Modal improvements */
-  .modal-header {
-    padding: 16px 20px;
-  }
-
-  .modal-content {
-    padding: 16px 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  /* Larger touch targets for small screens */
-  .action-btn,
-  .view-btn,
-  .manage-btn,
-  .leave-btn {
-    min-height: 48px;
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  .setting-item {
-    min-height: 64px;
-    padding: 18px;
-  }
-
-  .section-header {
-    min-height: 52px;
-    font-size: 18px;
-  }
-}
+/* Account Settings */
 
 /* Security Modal Styles */
 .form-divider {
@@ -953,19 +795,6 @@
   transform: translateY(0);
 }
 
-/* Responsive adjustments for modal header */
-@media (max-width: 480px) {
-  .modal-header-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .delete-family-btn {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-  }
-}
-
 /* Join Family Modal Styles */
 .join-family-modal {
   width: 95% !important;
@@ -1016,4 +845,215 @@
   padding: 1rem;
   color: var(--text-secondary);
   font-style: italic;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Touch device hover effect overrides */
+@media (hover: none) {
+  .copy-id-btn:hover {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-light) !important;
+    color: var(--text-secondary) !important;
+    transform: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  [data-theme="dark"] .copy-id-btn:hover {
+    background: #3a3a3a !important;
+    border-color: #555555 !important;
+    color: #cccccc !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Ensure proper touch handling */
+  .copy-id-btn {
+    pointer-events: auto !important;
+    -webkit-tap-highlight-color: rgba(255, 127, 0, 0.2) !important;
+  }
+}
+
+/* Mobile and Tablet Styles (768px and below) */
+@media (max-width: 768px) {
+  /* Layout adjustments */
+  .account-view {
+    padding: 1rem;
+  }
+
+  .profile-section {
+    padding: 1rem;
+  }
+
+  .profile-picture,
+  .profile-picture-placeholder {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-avatar-icon {
+    font-size: 2.5rem;
+  }
+
+  /* Typography adjustments */
+  .user-name {
+    font-size: 1.5rem;
+  }
+
+  .user-email {
+    font-size: 0.9rem;
+  }
+
+  .user-birthday {
+    font-size: 0.9rem;
+  }
+
+  /* Family group layout */
+  .family-group-details {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .family-group-actions {
+    width: 100%;
+    justify-content: flex-end;
+    /* Reverse button order on mobile - View Members will appear on the right */
+    flex-direction: row-reverse;
+  }
+
+  /* Remove hover effects on mobile */
+  .family-group-card:hover {
+    border-color: var(--border-light);
+    box-shadow: none;
+  }
+
+  /* Settings grid */
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Section adjustments */
+  .section-header {
+    padding: 1rem;
+    min-height: 48px;
+  }
+
+  .section-content {
+    padding: 0.5rem;
+  }
+
+  .family-group-card {
+    padding: 0.5rem;
+  }
+
+  /* Mobile touch improvements - Standard buttons */
+  .action-btn,
+  .view-btn,
+  .manage-btn,
+  .leave-btn,
+  .join-family-btn,
+  .create-family-btn,
+  .create-family-btn-footer {
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  /* Right align view members button on mobile */
+  .view-btn {
+    margin-left: auto;
+  }
+
+  /* Settings items */
+  .setting-item {
+    padding: 16px;
+    min-height: 60px;
+  }
+
+  /* Copy button mobile optimizations */
+  .copy-id-btn {
+    padding: 4px 4px;
+    font-size: 12px;
+    min-height: 30px;
+    /* Improve touch handling */
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Ensure click events work on mobile */
+    cursor: pointer;
+  }
+
+  /* Form element improvements */
+  .add-member-form input {
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  .add-member-form button {
+    padding: 14px 20px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  /* Modal improvements */
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-content {
+    padding: 16px 20px;
+  }
+
+  /* Member management layout */
+  .member-row {
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+  }
+
+  .member-birthday {
+    grid-column: 2;
+    text-align: left;
+    margin-top: 0.25rem;
+  }
+
+  .member-actions {
+    grid-column: 2;
+    justify-content: flex-end;
+  }
+}
+
+/* Small Mobile Styles (480px and below) */
+@media (max-width: 480px) {
+  /* Enhanced touch targets for small screens */
+  .action-btn,
+  .view-btn,
+  .manage-btn,
+  .leave-btn {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .setting-item {
+    min-height: 64px;
+    padding: 18px;
+  }
+
+  .section-header {
+    min-height: 52px;
+    font-size: 18px;
+  }
+
+  /* Modal header improvements */
+  .modal-header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .delete-family-btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
 }
