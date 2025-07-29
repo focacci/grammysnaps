@@ -358,7 +358,7 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
 }
 
 .filter-item {

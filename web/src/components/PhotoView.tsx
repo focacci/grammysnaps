@@ -976,10 +976,7 @@ function PhotoView({ user }: PhotoViewProps) {
                                 {!collapsedSections[
                                   `${familyId}-${tagType}`
                                 ] && (
-                                  <div
-                                    className="filter-list"
-                                    style={{ paddingLeft: "1rem" }}
-                                  >
+                                  <div className="filter-list">
                                     {typeTags.map((tag) => (
                                       <div
                                         key={tag.id}
