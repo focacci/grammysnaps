@@ -307,6 +307,35 @@ textarea:focus {
   .logo {
     font-size: 1.3rem;
   }
+
+  /* Remove hover effects on mobile */
+  .logo:hover {
+    color: var(--text-inverse);
+    transform: none;
+  }
+
+  /* Add click feedback on mobile */
+  .logo:active {
+    color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.05);
+    transition: all 0.1s ease;
+  }
+
+  /* Create a brief flash effect after click */
+  .logo.clicked {
+    color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.05);
+    animation: logoClickFeedback 0.5s ease-out;
+  }
+}
+
+@keyframes logoClickFeedback {
+  0% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 480px) {
