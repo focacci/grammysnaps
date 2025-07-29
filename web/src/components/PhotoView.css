@@ -2,6 +2,7 @@
 .photo-view {
   width: 100%;
   height: 100%;
+  flex: 1; /* Take up remaining space in flex container */
   background-color: var(--bg-primary);
 }
 
@@ -10,6 +11,8 @@
   .photo-view {
     overflow: hidden; /* Prevent any scrolling at the top level */
     height: 100%;
+    /* Ensure we don't create scroll conflicts */
+    position: relative;
   }
 }
 
@@ -81,7 +84,7 @@ body.modal-open {
 /* Content layout */
 .content-layout {
   display: flex;
-  height: 100%;
+  height: 100%; /* Use full height of parent container */
   width: 100%;
   position: relative;
 }
@@ -468,19 +471,24 @@ body.modal-open {
     padding: 1rem;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal scroll */
     min-height: 0; /* Allow flex item to shrink */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    overscroll-behavior: contain; /* Prevent scroll chaining */
-    /* Add extra padding at bottom for better scrolling experience */
-    padding-bottom: 3rem; /* Increased bottom padding for mobile browser UI */
+    overscroll-behavior: contain; /* Prevent scroll chaining to parent */
+    /* Extra bottom padding to prevent cutoff from mobile browser UI */
+    padding-bottom: 2rem; /* Increased to ensure content is visible */
+    /* Ensure scroll container has defined boundaries */
+    position: relative;
+    /* Ensure scroll starts at top */
+    scroll-behavior: smooth;
   }
 }
 
 @media (max-width: 480px) {
   .image-grid-container {
     padding: 0.75rem;
-    /* Increased bottom padding for small mobile screens */
-    padding-bottom: 4rem; /* More space for very small mobile screens */
+    /* Extra bottom padding for small mobile screens to prevent cutoff */
+    padding-bottom: 2.5rem; /* More space to avoid mobile browser UI */
   }
 }
 
@@ -742,7 +750,7 @@ body.modal-open {
   .image-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.75rem;
-    margin-bottom: 4rem; /* Much more space at bottom for small mobile */
+    margin-bottom: 1.5rem; /* Additional space at bottom for small mobile */
   }
 }
 
@@ -750,7 +758,7 @@ body.modal-open {
   .image-grid {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    margin-bottom: 5rem; /* Maximum space for very small screens */
+    margin-bottom: 2rem; /* Extra space for very small screens */
   }
 }
 
