@@ -189,8 +189,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
     if (!birthday) return null;
 
     try {
-      // Parse YYYY-MM-DD format safely
-      const [year, month, day] = birthday.split("-").map(Number);
+      // Parse YYYY-MM-DD format safely from ISO string
+      const [year, month, day] = birthday.split("T")[0].split("-").map(Number);
 
       // Validate date components
       if (
