@@ -512,7 +512,6 @@ textarea:focus {
 /* Main content area */
 .main-content {
   padding: 0;
-  min-height: calc(100vh - var(--navbar-height));
   width: 100%;
   background-color: var(--bg-primary);
   transition: background-color 0.3s ease;

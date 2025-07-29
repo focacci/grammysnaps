@@ -10,7 +10,6 @@
   .photo-view {
     overflow: hidden; /* Prevent any scrolling at the top level */
     height: 100vh;
-    height: calc(var(--vh, 1vh) * 100); /* Use dynamic viewport height */
   }
 }
 
@@ -82,7 +81,7 @@ body.modal-open {
 /* Content layout */
 .content-layout {
   display: flex;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 56px);
   width: 100%;
   position: relative;
 }
@@ -90,11 +89,12 @@ body.modal-open {
 /* Mobile content layout adjustments */
 @media (max-width: 768px) {
   .content-layout {
-    height: calc(100vh - 56px);
-    /* Account for iOS safe areas and use dynamic viewport height */
-    height: calc(var(--vh, 1vh) * 100 - 56px - env(safe-area-inset-bottom));
+    height: 100vh;
     flex-direction: row; /* Keep side-by-side layout */
     overflow: hidden; /* Prevent main viewport scroll on mobile */
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 }
 
@@ -475,7 +475,7 @@ body.modal-open {
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     overscroll-behavior: contain; /* Prevent scroll chaining */
     /* Use minimum of fixed padding or 15% of small viewport height */
-    padding-bottom: max(calc(1rem + env(safe-area-inset-bottom) + 4rem), 15svh);
+    padding-bottom: 1rem;
   }
 }
 
@@ -483,7 +483,7 @@ body.modal-open {
   .image-grid-container {
     padding: 0.75rem;
     /* Use minimum of fixed padding or 20% of small viewport height */
-    padding-bottom: max(calc(1rem + env(safe-area-inset-bottom) + 5rem), 20svh);
+    padding-bottom: 0.75rem;
   }
 }
 
@@ -739,7 +739,6 @@ body.modal-open {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
     justify-content: center;
-    margin-bottom: 3rem; /* Much more space at bottom for mobile */
   }
 }
 
