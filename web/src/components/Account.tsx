@@ -1023,7 +1023,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <p className="user-email">{user.email}</p>
             {user.birthday && formatBirthday(user.birthday) && (
               <p className="user-birthday">
-                🎂 Born {formatBirthday(user.birthday)}
+                🎂 {formatBirthday(user.birthday)}
               </p>
             )}
           </div>

@@ -17,8 +17,8 @@
 .profile-section {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  padding: 1rem;
+  align-items: center;
+  padding: 0.5rem;
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-light);
@@ -41,7 +41,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,15 +57,16 @@
 .profile-picture {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
+  border-radius: 12px;
   object-fit: cover;
-  border: 4px solid var(--primary-orange);
+  border: 0.25px solid var(--primary-orange);
+  display: block;
 }
 
 .profile-picture-placeholder {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
+  border-radius: 16px;
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
@@ -79,7 +80,11 @@
 }
 
 .user-info {
-  text-align: left;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
   padding-left: 1.5rem;
 }
 
@@ -887,13 +892,17 @@
   }
 
   .profile-section {
-    padding: 1rem;
+    padding: 0.25rem;
+  }
+
+  .user-info {
+    padding-left: 0.5rem;
   }
 
   .profile-picture,
   .profile-picture-placeholder {
-    width: 80px;
-    height: 80px;
+    max-width: 100px;
+    max-height: 100px;
   }
 
   .profile-avatar-icon {
@@ -903,10 +912,12 @@
   /* Typography adjustments */
   .user-name {
     font-size: 1.5rem;
+    margin: 0 0 0.25rem 0;
   }
 
   .user-email {
     font-size: 0.9rem;
+    margin: 0 0 0.25rem 0;
   }
 
   .user-birthday {
