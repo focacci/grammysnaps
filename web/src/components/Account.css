@@ -733,6 +733,8 @@
   .family-group-actions {
     width: 100%;
     justify-content: flex-end;
+    /* Reverse button order on mobile - View Members will appear on the right */
+    flex-direction: row-reverse;
   }
 
   .settings-grid {
@@ -752,6 +754,12 @@
     padding: 0.5rem;
   }
 
+  /* Remove hover effects on mobile */
+  .family-group-card:hover {
+    border-color: var(--border-light);
+    box-shadow: none;
+  }
+
   /* Mobile touch improvements */
   .action-btn,
   .view-btn,
@@ -763,6 +771,11 @@
     min-height: 44px;
     padding: 12px 16px;
     font-size: 16px;
+  }
+
+  /* Right align view members button on mobile */
+  .view-btn {
+    margin-left: auto;
   }
 
   .setting-item {
@@ -814,13 +827,8 @@
   .manage-btn,
   .leave-btn {
     min-height: 48px;
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  .family-group-actions {
-    flex-direction: column;
-    gap: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
   }
 
   .setting-item {
