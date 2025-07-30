@@ -51,6 +51,8 @@
   display: flex; /* Use flexbox layout for account sections */
   flex-direction: column; /* Stack account sections vertically */
   gap: 2rem; /* Add consistent spacing between account sections */
+  width: 100%; /* Ensure full width usage within max-width constraint */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Profile Section */
@@ -158,6 +160,8 @@
   box-shadow: var(--shadow-sm); /* Small shadow for depth and separation */
   overflow: hidden; /* Hide any content that extends beyond rounded corners */
   transition: all 0.3s ease; /* Smooth transition for hover effects */
+  width: 100%; /* Ensure full width within container */
+  box-sizing: border-box; /* Include padding and border in width calculation */
 }
 
 .section-header {
@@ -217,6 +221,11 @@
 
 .section-content {
   padding: 0.5rem; /* Minimal padding around section content */
+  width: 100%; /* Ensure full width of parent container */
+  box-sizing: border-box; /* Include padding in width calculation */
+  display: flex; /* Use flexbox for consistent content layout */
+  flex-direction: column; /* Stack section content vertically */
+  gap: 0; /* No gap between immediate children (empty state and footer) */
 }
 
 /* Family Groups */
@@ -229,6 +238,13 @@
   ); /* Tertiary background for visual distinction */
   border-radius: 8px; /* Rounded corners for modern appearance */
   border: 1px dashed var(--border-light); /* Dashed border to indicate empty/placeholder state */
+  width: 100%; /* Ensure full width to match family cards container */
+  min-height: 120px; /* Minimum height to maintain consistent visual weight */
+  display: flex; /* Use flexbox for content centering */
+  flex-direction: column; /* Stack content vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  box-sizing: border-box; /* Include padding and border in width calculation */
 }
 
 .loading-state {
@@ -267,6 +283,8 @@
   display: flex; /* Use flexbox for family groups layout */
   flex-direction: column; /* Stack family group cards vertically */
   gap: 1rem; /* Add consistent spacing between family cards */
+  width: 100%; /* Ensure full width to maintain consistent layout */
+  box-sizing: border-box; /* Include any padding in width calculation */
 }
 
 .family-group-card {
@@ -506,6 +524,8 @@
   display: flex; /* Use flexbox for footer button layout */
   gap: 1rem; /* Add spacing between footer buttons */
   justify-content: space-between; /* Spread buttons to opposite ends */
+  width: 100%; /* Ensure full width to maintain consistent layout */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .join-family-btn {
@@ -1024,6 +1044,30 @@
       0,
       0.2
     ) !important; /* Orange tap highlight for touch feedback */
+  }
+}
+
+/* Desktop Layout Optimizations (769px and above) */
+@media (min-width: 769px) {
+  /* Ensure consistent full-width layout on desktop */
+  .account-container {
+    width: 100%; /* Full width within max-width constraint */
+  }
+
+  .section-content {
+    min-width: 100%; /* Ensure section content takes full available width */
+  }
+
+  .empty-state,
+  .family-groups-list,
+  .section-footer {
+    width: 100%; /* Ensure all content areas maintain full width */
+  }
+
+  /* Maintain consistent family card width */
+  .family-group-card {
+    width: 100%; /* Full width for family cards on desktop */
+    box-sizing: border-box; /* Include padding and border in width */
   }
 }
 
