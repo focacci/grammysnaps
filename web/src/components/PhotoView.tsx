@@ -43,6 +43,7 @@ interface Tag {
   name: string;
   type: "Person" | "Location" | "Event" | "Time";
   family_id: string;
+  created_by: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -495,6 +496,7 @@ function PhotoView({ user }: PhotoViewProps) {
           name: newTagName.trim(),
           type: newTagType,
           family_id: newTagFamilyId,
+          created_by: user.id,
         }),
       });
 
@@ -994,18 +996,20 @@ function PhotoView({ user }: PhotoViewProps) {
                                         >
                                           {tag.name}
                                         </span>
-                                        <div className="filter-item-actions">
-                                          <button
-                                            className="edit-tag-btn"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleEditTag(tag);
-                                            }}
-                                            title="Edit tag"
-                                          >
-                                            ✏️
-                                          </button>
-                                        </div>
+                                        {tag.created_by === user.id && (
+                                          <div className="filter-item-actions">
+                                            <button
+                                              className="edit-tag-btn"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditTag(tag);
+                                              }}
+                                              title="Edit tag"
+                                            >
+                                              ✏️
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
                                     ))}
                                   </div>

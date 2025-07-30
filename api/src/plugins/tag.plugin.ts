@@ -6,6 +6,13 @@ export interface TagInput {
   type: "Person" | "Location" | "Event" | "Time";
   name: string;
   family_id: string;
+  created_by: string; // user ID
+}
+
+export interface TagUpdateInput {
+  type: "Person" | "Location" | "Event" | "Time";
+  name: string;
+  family_id: string;
 }
 
 declare module "fastify" {
@@ -15,7 +22,7 @@ declare module "fastify" {
       get: () => Promise<Tag[]>;
       getByFamily: (familyId: string) => Promise<Tag[]>;
       getById: (id: string) => Promise<Tag | null>;
-      update: (id: string, input: TagInput) => Promise<Tag | null>;
+      update: (id: string, input: TagUpdateInput) => Promise<Tag | null>;
       delete: (id: string) => Promise<void>;
     };
   }
@@ -28,11 +35,11 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("tag", {
     async create(input: TagInput): Promise<Tag> {
-      const { type, name, family_id } = input;
+      const { type, name, family_id, created_by } = input;
       try {
         const { rows } = await fastify.pg.query<Tag>(
-          "INSERT INTO tags (type, name, family_id) VALUES ($1, $2, $3) RETURNING *",
-          [type, name, family_id]
+          "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
+          [type, name, family_id, created_by]
         );
         return rows[0];
       } catch (err) {
@@ -78,7 +85,7 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async update(id: string, input: TagInput): Promise<Tag | null> {
+    async update(id: string, input: TagUpdateInput): Promise<Tag | null> {
       try {
         const {
           rows: [tag],

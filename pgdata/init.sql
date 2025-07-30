@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS tags (
   type VARCHAR(63) NOT NULL,
   name VARCHAR(255) NOT NULL,
   family_id UUID NOT NULL,
+  UNIQUE (type, name, family_id),
+  created_by UUID NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
