@@ -3,6 +3,38 @@
   padding: 2rem;
   background-color: var(--bg-primary);
   min-height: calc(100vh - var(--navbar-height));
+  /* Remove fixed height to allow content to expand naturally */
+  /* Use flex layout like PhotoView */
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--navbar-height));
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Override app container scroll prevention for account page */
+.app:has(.account-view) {
+  overflow: visible !important;
+}
+
+/* Mobile account view adjustments */
+@media (max-width: 768px) {
+  .account-view {
+    /* Follow PhotoView pattern - proper height calculation */
+    height: calc(100vh - var(--navbar-height));
+    /* Enable smooth scrolling on mobile */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Add more bottom padding to prevent cutoff from mobile browser UI */
+    padding-bottom: 18rem;
+  }
+
+  /* Ensure app container allows scrolling when account view is present */
+  .app:has(.account-view) {
+    overflow: auto !important;
+    height: auto !important;
+  }
 }
 
 .account-container {
@@ -947,11 +979,16 @@
 
   .account-container {
     gap: 1.5rem;
+    /* Allow container to expand naturally */
   }
 
   .account-view {
     padding: 1rem;
     padding-top: 1.5rem;
+    /* Follow PhotoView mobile pattern for consistent behavior */
+    padding-bottom: 4rem; /* More bottom padding for mobile browser UI */
+    /* Ensure proper mobile scroll behavior */
+    overscroll-behavior: contain;
   }
 
   .profile-section {
