@@ -1,950 +1,993 @@
 /* Account - Optimized Styles */
 .account-view {
-  padding: 2rem;
-  background-color: var(--bg-primary);
-  min-height: calc(100vh - var(--navbar-height));
+  padding: 2rem; /* Add generous padding around account content */
+  background-color: var(
+    --bg-primary
+  ); /* Use theme-aware primary background color */
+  min-height: calc(
+    100vh - var(--navbar-height)
+  ); /* Ensure minimum height fills viewport minus navbar */
   /* Remove fixed height to allow content to expand naturally */
   /* Use flex layout like PhotoView */
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - var(--navbar-height));
-  overflow-y: auto;
-  box-sizing: border-box;
+  display: flex; /* Use flexbox layout for vertical content arrangement */
+  flex-direction: column; /* Stack content vertically from top to bottom */
+  height: calc(
+    100vh - var(--navbar-height)
+  ); /* Set exact height to viewport minus navbar space */
+  overflow-y: auto; /* Allow vertical scrolling when content exceeds container height */
+  box-sizing: border-box; /* Include padding in height calculations */
 }
 
 /* Override app container scroll prevention for account page */
 .app:has(.account-view) {
-  overflow: visible !important;
+  overflow: visible !important; /* Allow scrolling when account view is present */
 }
 
 /* Mobile account view adjustments */
 @media (max-width: 768px) {
   .account-view {
     /* Follow PhotoView pattern - proper height calculation */
-    height: calc(100vh - var(--navbar-height));
+    height: calc(
+      100vh - var(--navbar-height)
+    ); /* Maintain consistent height calculation for mobile */
     /* Enable smooth scrolling on mobile */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overflow-y: auto; /* Allow vertical scrolling on mobile devices */
+    -webkit-overflow-scrolling: touch; /* Enable smooth momentum scrolling on iOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining to parent elements */
     /* Add more bottom padding to prevent cutoff from mobile browser UI */
-    padding-bottom: 18rem;
+    padding-bottom: 18rem; /* Large bottom padding to account for mobile browser UI changes */
   }
 
   /* Ensure app container allows scrolling when account view is present */
   .app:has(.account-view) {
-    overflow: auto !important;
-    height: auto !important;
+    overflow: auto !important; /* Allow scrolling in app container on mobile */
+    height: auto !important; /* Remove fixed height constraints on mobile */
   }
 }
 
 .account-container {
-  max-width: 800px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  max-width: 800px; /* Limit content width for better readability on large screens */
+  margin: 0 auto; /* Center container horizontally within account view */
+  display: flex; /* Use flexbox layout for account sections */
+  flex-direction: column; /* Stack account sections vertically */
+  gap: 2rem; /* Add consistent spacing between account sections */
 }
 
 /* Profile Section */
 .profile-section {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 0.5rem;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
+  display: flex; /* Use flexbox for profile layout */
+  flex-direction: row; /* Arrange profile picture and info horizontally */
+  align-items: center; /* Vertically center profile picture with user info */
+  padding: 0.5rem; /* Add padding around profile section content */
+  background: var(--bg-secondary); /* Use theme-aware secondary background */
+  border-radius: 12px; /* Add rounded corners for modern appearance */
+  border: 1px solid var(--border-light); /* Add subtle border for definition */
 }
 
 .profile-picture-container {
-  position: relative;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  position: relative; /* Enable positioning for overlay element */
+  cursor: pointer; /* Show pointer cursor to indicate clickable area */
+  transition: transform 0.2s ease; /* Smooth scaling animation on hover */
 }
 
 .profile-picture-container:hover {
-  transform: scale(1.02);
+  transform: scale(1.02); /* Slightly enlarge container on hover for feedback */
 }
 
 .profile-picture-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  font-size: 1.5rem;
+  position: absolute; /* Position overlay on top of profile picture */
+  top: 0; /* Align to top edge of container */
+  left: 0; /* Align to left edge of container */
+  right: 0; /* Align to right edge of container */
+  bottom: 0; /* Align to bottom edge of container */
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent dark overlay */
+  border-radius: 12px; /* Match container border radius */
+  display: flex; /* Use flexbox for icon centering */
+  align-items: center; /* Center icon vertically */
+  justify-content: center; /* Center icon horizontally */
+  opacity: 0; /* Hide overlay by default */
+  transition: opacity 0.2s ease; /* Smooth fade in/out animation */
+  font-size: 1.5rem; /* Large icon size for clear visibility */
 }
 
 .profile-picture-container:hover .profile-picture-overlay {
-  opacity: 1;
+  opacity: 1; /* Show overlay on hover for edit indication */
 }
 
 .profile-picture {
-  width: 120px;
-  height: 120px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 0.25px solid var(--primary-orange);
-  display: block;
+  width: 120px; /* Fixed width for consistent profile picture size */
+  height: 120px; /* Fixed height for square aspect ratio */
+  border-radius: 12px; /* Rounded corners for modern appearance */
+  object-fit: cover; /* Crop image to fill container while maintaining aspect ratio */
+  border: 0.25px solid var(--primary-orange); /* Thin orange border for visual accent */
+  display: block; /* Block display to remove inline spacing */
 }
 
 .profile-picture-placeholder {
-  width: 120px;
-  height: 120px;
-  border-radius: 16px;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 4px solid var(--primary-orange);
+  width: 120px; /* Match profile picture width */
+  height: 120px; /* Match profile picture height */
+  border-radius: 16px; /* Slightly more rounded corners for placeholder */
+  background: var(--bg-secondary); /* Theme-aware secondary background */
+  display: flex; /* Use flexbox for icon centering */
+  align-items: center; /* Center icon vertically */
+  justify-content: center; /* Center icon horizontally */
+  border: 4px solid var(--primary-orange); /* Thick orange border for placeholder */
 }
 
 .profile-avatar-icon {
-  font-size: 3rem;
-  color: var(--text-muted);
+  font-size: 3rem; /* Large icon size for clear placeholder indication */
+  color: var(--text-muted); /* Use muted text color for subtle appearance */
 }
 
 .user-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  justify-content: center;
-  padding-left: 1.5rem;
+  flex: 1; /* Take remaining space after profile picture */
+  display: flex; /* Use flexbox for vertical text layout */
+  flex-direction: column; /* Stack user information vertically */
+  text-align: center; /* Center-align all user text */
+  justify-content: center; /* Center content vertically */
+  padding-left: 1.5rem; /* Add space between picture and text */
 }
 
 .user-name {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-  font-size: 2rem;
-  font-weight: 700;
+  margin: 0 0 0.5rem 0; /* Remove default margins, add bottom spacing */
+  color: var(--text-primary); /* Use theme-aware primary text color */
+  font-size: 2rem; /* Large font size for name prominence */
+  font-weight: 700; /* Bold weight for visual hierarchy */
 }
 
 .user-email {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  font-weight: 500;
+  margin: 0 0 0.5rem 0; /* Remove default margins, add bottom spacing */
+  color: var(--text-secondary); /* Use theme-aware secondary text color */
+  font-size: 1.1rem; /* Medium font size for email */
+  font-weight: 500; /* Medium weight for readability */
 }
 
 .user-birthday {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 1rem;
+  margin: 0; /* Remove all margins for tight spacing */
+  color: var(--text-secondary); /* Use theme-aware secondary text color */
+  font-size: 1rem; /* Standard font size for birthday */
 }
 
 /* Account Sections */
 .account-section {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: all 0.3s ease;
+  background: var(
+    --bg-secondary
+  ); /* Theme-aware secondary background for sections */
+  border-radius: 12px; /* Rounded corners for modern card appearance */
+  border: 1px solid var(--border-light); /* Subtle border for section definition */
+  box-shadow: var(--shadow-sm); /* Small shadow for depth and separation */
+  overflow: hidden; /* Hide any content that extends beyond rounded corners */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
 }
 
 .section-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  transition: background-color 0.2s ease;
-  border-bottom: 1px solid var(--border-light);
+  width: 100%; /* Take full width of section container */
+  display: flex; /* Use flexbox for header layout */
+  align-items: center; /* Vertically center header content */
+  gap: 0.75rem; /* Add consistent spacing between header elements */
+  padding: 1.25rem 1.5rem; /* Generous padding for comfortable click target */
+  background: none; /* Transparent background for header button */
+  border: none; /* Remove default button border */
+  cursor: pointer; /* Show pointer cursor for clickable header */
+  font-size: 1.1rem; /* Medium font size for section titles */
+  font-weight: 600; /* Semi-bold weight for visual hierarchy */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  transition: background-color 0.2s ease; /* Smooth background transition on hover */
+  border-bottom: 1px solid var(--border-light); /* Subtle border to separate header from content */
 }
 
 .section-header:hover {
-  background-color: var(--bg-tertiary);
+  background-color: var(
+    --bg-tertiary
+  ); /* Light background on hover for feedback */
 }
 
 .section-caret {
-  font-size: 0.9rem;
-  transition: transform 0.2s ease;
-  color: var(--primary-orange);
+  font-size: 0.9rem; /* Slightly smaller caret icon */
+  transition: transform 0.2s ease; /* Smooth rotation animation */
+  color: var(--primary-orange); /* Orange color for brand consistency */
 }
 
 .section-caret.collapsed {
-  transform: rotate(-90deg);
+  transform: rotate(-90deg); /* Rotate caret when section is collapsed */
 }
 
 .section-title {
-  flex: 1;
-  text-align: left;
+  flex: 1; /* Take available space, pushing count to right */
+  text-align: left; /* Left-align section title text */
 }
 
 .section-count {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  font-weight: 500;
+  font-size: 0.9rem; /* Smaller font for count display */
+  color: var(--text-secondary); /* Secondary color for less emphasis */
+  font-weight: 500; /* Medium weight for readability */
 }
 
 .section-title-static {
-  margin: 0;
-  padding: 1.25rem 1.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
-  background-color: var(--bg-primary);
+  margin: 0; /* Remove default heading margins */
+  padding: 1.25rem 1.5rem; /* Match section header padding */
+  font-size: 1.1rem; /* Match section header font size */
+  font-weight: 600; /* Semi-bold weight for consistency */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  border-bottom: 1px solid var(--border-light); /* Matching border for consistency */
+  background-color: var(
+    --bg-primary
+  ); /* Primary background for static headers */
 }
 
 .section-content {
-  padding: 0.5rem;
+  padding: 0.5rem; /* Minimal padding around section content */
 }
 
 /* Family Groups */
 .empty-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-  background-color: var(--bg-tertiary);
-  border-radius: 8px;
-  border: 1px dashed var(--border-light);
+  text-align: center; /* Center-align empty state content */
+  padding: 2rem; /* Generous padding for comfortable empty state */
+  color: var(--text-secondary); /* Secondary text color for subtle appearance */
+  background-color: var(
+    --bg-tertiary
+  ); /* Tertiary background for visual distinction */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  border: 1px dashed var(--border-light); /* Dashed border to indicate empty/placeholder state */
 }
 
 .loading-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-  background-color: var(--bg-tertiary);
-  border-radius: 8px;
+  text-align: center; /* Center-align loading state content */
+  padding: 2rem; /* Match empty state padding */
+  color: var(--text-secondary); /* Secondary text color for subtle appearance */
+  background-color: var(
+    --bg-tertiary
+  ); /* Tertiary background for consistency */
+  border-radius: 8px; /* Rounded corners matching empty state */
 }
 
 .empty-state p {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
+  margin-bottom: 1rem; /* Add space below empty state text */
+  font-size: 1.1rem; /* Slightly larger font for empty state message */
 }
 
 .create-family-btn {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
+  background: #3b82f6; /* Blue background for primary action */
+  color: white; /* White text for high contrast */
+  border: none; /* Remove default button border */
+  padding: 0.75rem 1.5rem; /* Comfortable padding for button */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  font-weight: 600; /* Semi-bold weight for emphasis */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  box-shadow: var(--shadow-sm); /* Small shadow for depth */
 }
 
 .create-family-btn:hover {
-  background: #2563eb;
-  box-shadow: var(--shadow-md);
+  background: #2563eb; /* Darker blue on hover for feedback */
+  box-shadow: var(--shadow-md); /* Larger shadow on hover for lift effect */
 }
 
 .family-groups-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: flex; /* Use flexbox for family groups layout */
+  flex-direction: column; /* Stack family group cards vertically */
+  gap: 1rem; /* Add consistent spacing between family cards */
 }
 
 .family-group-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  padding: 1.25rem;
-  transition: all 0.2s ease;
+  background: var(--bg-primary); /* Primary background for family cards */
+  border: 1px solid var(--border-light); /* Subtle border for card definition */
+  border-radius: 8px; /* Rounded corners for modern card appearance */
+  padding: 1.25rem; /* Comfortable padding around card content */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
 
 .family-group-card:hover {
-  border-color: var(--border-medium);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--border-medium); /* Darker border on hover */
+  box-shadow: var(--shadow-sm); /* Add shadow on hover for depth */
 }
 
 .family-group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  display: flex; /* Use flexbox for header layout */
+  align-items: center; /* Vertically center header elements */
+  justify-content: space-between; /* Spread name and role badge to opposite ends */
+  margin-bottom: 1rem; /* Add space below header */
 }
 
 .family-group-name {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  margin: 0; /* Remove default heading margins */
+  font-size: 1.2rem; /* Medium-large font size for family name */
+  font-weight: 600; /* Semi-bold weight for emphasis */
+  color: var(--text-primary); /* Theme-aware primary text color */
 }
 
 .role-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  padding: 0.25rem 0.75rem; /* Compact padding for badge */
+  border-radius: 12px; /* Rounded pill-shaped badge */
+  font-size: 0.8rem; /* Small font size for badge text */
+  font-weight: 600; /* Bold weight for badge emphasis */
+  display: flex; /* Use flexbox for badge content */
+  align-items: center; /* Center badge content vertically */
+  gap: 0.25rem; /* Small gap between badge icon and text */
 }
 
 .role-badge.admin {
-  background-color: var(--primary-orange);
-  color: var(--text-inverse);
+  background-color: var(
+    --primary-orange
+  ); /* Orange background for admin role */
+  color: var(--text-inverse); /* High contrast text color */
 }
 
 .role-badge.member {
-  background-color: var(--secondary-blue);
-  color: var(--text-inverse);
+  background-color: var(--secondary-blue); /* Blue background for member role */
+  color: var(--text-inverse); /* High contrast text color */
 }
 
 .family-group-details {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: flex; /* Use flexbox for details layout */
+  justify-content: space-between; /* Spread info and actions to opposite ends */
+  align-items: flex-end; /* Align items to bottom baseline */
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  gap: 1rem; /* Add space between wrapped elements */
 }
 
 .family-group-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: flex; /* Use flexbox for info layout */
+  flex-direction: column; /* Stack info elements vertically */
+  gap: 0.5rem; /* Add consistent spacing between info items */
 }
 
 .member-count,
 .created-date,
 .family-id-container {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
+  font-size: 0.9rem; /* Smaller font for metadata */
+  color: var(--text-secondary); /* Secondary color for less emphasis */
+  display: flex; /* Use flexbox for icon and text alignment */
+  align-items: center; /* Center icon with text vertically */
+  gap: 0.5rem; /* Space between icon and text */
+  position: relative; /* Enable positioning for copy feedback */
 }
 
 .copy-id-btn {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  cursor: pointer;
-  padding: 0.4rem 0.8rem;
-  margin: 0;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: all 0.2s ease;
-  font-family: "Consolas", "Monaco", "Courier New", monospace;
-  word-break: break-all;
-  min-width: fit-content;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--bg-secondary); /* Secondary background for copy button */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  padding: 0.4rem 0.8rem; /* Compact padding for small button */
+  margin: 0; /* Remove default margins */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  font-size: 0.8rem; /* Small font size for compact display */
+  color: var(--text-secondary); /* Secondary text color */
+  text-decoration: none; /* Remove link underline */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
+  font-family: "Consolas", "Monaco", "Courier New", monospace; /* Monospace font for IDs */
+  word-break: break-all; /* Break long IDs across lines */
+  min-width: fit-content; /* Minimum width based on content */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 .copy-id-btn:hover {
-  background-color: var(--bg-primary);
-  border-color: var(--primary-orange);
-  color: var(--text-primary);
-  transform: scale(1.01);
-  box-shadow: 0 1px 6px rgba(255, 127, 0, 0.15);
+  background-color: var(--bg-primary); /* Lighter background on hover */
+  border-color: var(--primary-orange); /* Orange border on hover for emphasis */
+  color: var(--text-primary); /* Primary text color on hover */
+  transform: scale(1.01); /* Slight scale increase on hover */
+  box-shadow: 0 1px 6px rgba(255, 127, 0, 0.15); /* Orange-tinted shadow on hover */
 }
 
 .copy-id-btn:active {
-  transform: scale(0.98);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98); /* Slight scale decrease on click for feedback */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Darker shadow on active state */
 }
 
 .copy-feedback {
-  position: absolute;
-  top: -3rem;
-  left: 50%;
-  transform: translateX(-50%);
+  position: absolute; /* Position feedback tooltip relative to button */
+  top: -3rem; /* Position above the button */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center using transform */
   background: linear-gradient(
     135deg,
     var(--primary-orange),
     var(--primary-orange-dark)
-  );
-  color: white;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(255, 127, 0, 0.3);
-  animation: fadeInOut 3s ease-in-out;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  ); /* Orange gradient background */
+  color: white; /* White text for high contrast */
+  padding: 0.5rem 0.75rem; /* Comfortable padding for tooltip */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  font-size: 0.8rem; /* Small font size for tooltip */
+  font-weight: 500; /* Medium weight for readability */
+  white-space: nowrap; /* Prevent text wrapping */
+  z-index: 100; /* High z-index to appear above other elements */
+  box-shadow: 0 4px 20px rgba(255, 127, 0, 0.3); /* Orange-tinted shadow */
+  animation: fadeInOut 3s ease-in-out; /* Fade in and out animation */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
 }
 
 .copy-feedback::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--primary-orange-dark);
+  content: ""; /* Empty content for pseudo-element arrow */
+  position: absolute; /* Position arrow relative to tooltip */
+  top: 100%; /* Position at bottom of tooltip */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center using transform */
+  border: 5px solid transparent; /* Create arrow shape with transparent borders */
+  border-top-color: var(
+    --primary-orange-dark
+  ); /* Colored top border for arrow */
 }
 
 @keyframes fadeInOut {
   0% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    opacity: 0; /* Start invisible */
+    transform: translateX(-50%) translateY(10px); /* Start slightly below */
   }
   15% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    opacity: 1; /* Fade in quickly */
+    transform: translateX(-50%) translateY(0); /* Move to final position */
   }
   85% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    opacity: 1; /* Stay visible */
+    transform: translateX(-50%) translateY(0); /* Stay in position */
   }
   100% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
+    opacity: 0; /* Fade out */
+    transform: translateX(-50%) translateY(-10px); /* Move slightly above */
   }
 }
 
 /* Dark mode enhancements for copy button */
 [data-theme="dark"] .copy-id-btn {
-  background: #3a3a3a;
-  border-color: #555555;
-  color: #cccccc;
+  background: #3a3a3a; /* Dark background for dark theme */
+  border-color: #555555; /* Dark border color */
+  color: #cccccc; /* Light text color for dark theme */
 }
 
 [data-theme="dark"] .copy-id-btn:hover {
-  background: #4a4a4a;
-  border-color: var(--primary-orange);
-  color: #ffffff;
-  box-shadow: 0 1px 8px rgba(255, 127, 0, 0.2);
+  background: #4a4a4a; /* Lighter dark background on hover */
+  border-color: var(--primary-orange); /* Orange border on hover */
+  color: #ffffff; /* White text on hover for contrast */
+  box-shadow: 0 1px 8px rgba(255, 127, 0, 0.2); /* Orange-tinted shadow in dark mode */
 }
 
 [data-theme="dark"] .copy-feedback {
-  box-shadow: 0 4px 25px rgba(255, 127, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 25px rgba(255, 127, 0, 0.4); /* Enhanced shadow in dark mode */
+  border-color: rgba(255, 255, 255, 0.3); /* Brighter border in dark mode */
 }
 
 /* Dark mode enhancements for setting arrows */
 [data-theme="dark"] .setting-arrow {
-  color: #ffffff;
+  color: #ffffff; /* White arrow color in dark mode */
 }
 
 .family-group-actions {
-  display: flex;
-  gap: 0.75rem;
+  display: flex; /* Use flexbox for action buttons layout */
+  gap: 0.75rem; /* Add consistent spacing between action buttons */
 }
 
 .action-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.5rem 1rem; /* Comfortable padding for action buttons */
+  border: none; /* Remove default button border */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  font-size: 0.9rem; /* Medium font size for button text */
+  font-weight: 500; /* Medium weight for readability */
+  cursor: pointer; /* Pointer cursor for interactive elements */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
 
 .view-btn {
-  background-color: var(--secondary-blue);
-  color: var(--text-inverse);
+  background-color: var(--secondary-blue); /* Blue background for view action */
+  color: var(--text-inverse); /* High contrast text color */
 }
 
 .view-btn:hover {
-  background-color: var(--secondary-blue-dark);
+  background-color: var(--secondary-blue-dark); /* Darker blue on hover */
 }
 
 .manage-btn {
-  background-color: var(--border-medium);
-  color: var(--text-primary);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
+  background-color: var(
+    --border-medium
+  ); /* Neutral background for manage action */
+  color: var(--text-primary); /* Primary text color */
+  padding: 0.5rem 0.75rem; /* Slightly less padding for secondary action */
+  font-size: 0.85rem; /* Smaller font for secondary action */
 }
 
 .manage-btn:hover {
-  background-color: var(--border-dark);
+  background-color: var(--border-dark); /* Darker neutral background on hover */
 }
 
 .leave-btn {
-  background-color: #dc3545;
-  color: white;
+  background-color: #dc3545; /* Red background for destructive action */
+  color: white; /* White text for high contrast */
 }
 
 .leave-btn:hover {
-  background-color: #c82333;
+  background-color: #c82333; /* Darker red on hover for feedback */
 }
 
 .leave-btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
+  background-color: #6c757d; /* Grey background when disabled */
+  cursor: not-allowed; /* Show not-allowed cursor when disabled */
 }
 
 .section-footer {
-  padding-top: 1rem;
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
+  padding-top: 1rem; /* Add space above section footer */
+  display: flex; /* Use flexbox for footer button layout */
+  gap: 1rem; /* Add spacing between footer buttons */
+  justify-content: space-between; /* Spread buttons to opposite ends */
 }
 
 .join-family-btn {
-  background: none;
-  border: 2px solid #28a745;
-  color: #28a745;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: none; /* Transparent background for outline button */
+  border: 2px solid #28a745; /* Green border for join action */
+  color: #28a745; /* Green text color matching border */
+  padding: 0.75rem 1.5rem; /* Comfortable padding for button */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  font-weight: 500; /* Medium weight for readability */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
 
 .join-family-btn:hover {
-  border-color: #1e7e34;
-  color: #1e7e34;
-  background-color: rgba(40, 167, 69, 0.05);
+  border-color: #1e7e34; /* Darker green border on hover */
+  color: #1e7e34; /* Darker green text on hover */
+  background-color: rgba(
+    40,
+    167,
+    69,
+    0.05
+  ); /* Light green background on hover */
 }
 
 .create-family-btn-footer {
-  background: #3b82f6;
-  border: 2px solid #3b82f6;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: #3b82f6; /* Blue background for create action */
+  border: 2px solid #3b82f6; /* Matching blue border */
+  color: white; /* White text for high contrast */
+  padding: 0.75rem 1.5rem; /* Comfortable padding matching join button */
+  border-radius: 8px; /* Rounded corners for consistency */
+  font-weight: 500; /* Medium weight for readability */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
 
 .create-family-btn-footer:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #2563eb; /* Darker blue background on hover */
+  border-color: #2563eb; /* Matching darker blue border on hover */
 }
 
 /* Family Management Modal */
 .family-manage-modal {
-  width: 90% !important;
-  max-width: 800px !important;
-  max-height: 80vh;
-  overflow-y: auto;
+  width: 90% !important; /* Set modal width to 90% of viewport */
+  max-width: 800px !important; /* Limit maximum width for large screens */
+  max-height: 80vh; /* Limit height to 80% of viewport height */
+  overflow-y: auto; /* Allow vertical scrolling when content exceeds height */
 }
 
 .family-manage-content {
-  padding: 0;
+  padding: 0; /* Remove default padding to allow custom section padding */
 }
 
 .add-member-section {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-light);
-  background-color: var(--bg-tertiary);
+  padding: 1.5rem; /* Generous padding around add member form */
+  border-bottom: 1px solid var(--border-light); /* Border to separate from members list */
+  background-color: var(
+    --bg-tertiary
+  ); /* Tertiary background for visual distinction */
 }
 
 .add-member-section h3 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1.1rem;
+  margin: 0 0 1rem 0; /* Remove top margin, add bottom spacing */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-size: 1.1rem; /* Medium font size for section heading */
 }
 
 .add-member-form .form-group {
-  display: flex;
-  gap: 0.75rem;
-  margin: 0;
+  display: flex; /* Use flexbox for form layout */
+  gap: 0.75rem; /* Add spacing between input and button */
+  margin: 0; /* Remove default form group margins */
 }
 
 .add-member-form input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: border-color 0.2s ease;
+  flex: 1; /* Take remaining space in form group */
+  padding: 12px; /* Comfortable padding for text input */
+  border: 1px solid var(--border-light); /* Light border for input field */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  font-size: 16px; /* Standard font size for accessibility */
+  background-color: var(--bg-primary); /* Theme-aware primary background */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-family: inherit; /* Inherit font family from parent */
+  transition: border-color 0.2s ease; /* Smooth border color transition */
 }
 
 .add-member-form input:focus {
-  outline: none;
-  border-color: var(--primary-orange);
-  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
+  outline: none; /* Remove default browser outline */
+  border-color: var(--primary-orange); /* Orange border on focus */
+  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1); /* Orange focus ring */
 }
 
 .add-member-form button {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
+  background: #3b82f6; /* Blue background for add button */
+  color: white; /* White text for high contrast */
+  border: none; /* Remove default button border */
+  padding: 0.75rem 1.5rem; /* Comfortable padding for button */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  font-weight: 500; /* Medium weight for button text */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  transition: background-color 0.2s ease; /* Smooth background color transition */
+  white-space: nowrap; /* Prevent button text from wrapping */
 }
 
 .add-member-form button:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
+  background: #94a3b8; /* Grey background when disabled */
+  cursor: not-allowed; /* Show not-allowed cursor when disabled */
 }
 
 .add-member-form button:hover:not(:disabled) {
-  background: #2563eb;
+  background: #2563eb; /* Darker blue on hover when not disabled */
 }
 
 .members-section {
-  padding: 1.5rem;
+  padding: 1.5rem; /* Generous padding around members list */
 }
 
 .members-section h3 {
-  margin: 0 0 1.5rem 0;
-  color: var(--text-primary);
-  font-size: 1.1rem;
+  margin: 0 0 1.5rem 0; /* Remove top margin, add bottom spacing */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-size: 1.1rem; /* Medium font size for section heading */
 }
 
 .members-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: flex; /* Use flexbox for members list layout */
+  flex-direction: column; /* Stack member rows vertically */
+  gap: 0.75rem; /* Add consistent spacing between member rows */
 }
 
 .member-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--border-light);
+  display: grid; /* Use CSS Grid for member row layout */
+  grid-template-columns: auto 1fr auto; /* Avatar, info (flexible), actions */
+  gap: 1rem; /* Add spacing between grid columns */
+  align-items: center; /* Vertically center all grid items */
+  padding: 1rem; /* Comfortable padding around member row */
+  background: var(--bg-secondary); /* Secondary background for member cards */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  border: 1px solid var(--border-light); /* Subtle border for definition */
 }
 
 .member-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--primary-orange);
-  color: white;
-  font-weight: 600;
-  font-size: 0.9rem;
+  width: 48px; /* Fixed width for avatar circle */
+  height: 48px; /* Fixed height for avatar circle */
+  border-radius: 50%; /* Make avatar perfectly circular */
+  display: flex; /* Use flexbox for avatar content centering */
+  align-items: center; /* Center avatar content vertically */
+  justify-content: center; /* Center avatar content horizontally */
+  background: var(--primary-orange); /* Orange background for avatar */
+  color: white; /* White text for high contrast */
+  font-weight: 600; /* Semi-bold weight for avatar initials */
+  font-size: 0.9rem; /* Medium font size for avatar text */
 }
 
 .avatar-placeholder {
-  text-transform: uppercase;
+  text-transform: uppercase; /* Convert placeholder text to uppercase */
 }
 
 .member-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: flex; /* Use flexbox for member info layout */
+  flex-direction: column; /* Stack member info elements vertically */
+  gap: 0.25rem; /* Small gap between info elements */
 }
 
 .member-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-weight: 600; /* Semi-bold weight for member name */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  display: flex; /* Use flexbox for name and badge layout */
+  align-items: center; /* Vertically center name and badges */
+  gap: 0.5rem; /* Space between name and badges */
 }
 
 .owner-badge {
-  font-size: 0.8rem;
-  color: #f59e0b;
-  font-weight: 500;
+  font-size: 0.8rem; /* Small font size for owner badge */
+  color: #f59e0b; /* Yellow/amber color for owner designation */
+  font-weight: 500; /* Medium weight for badge text */
 }
 
 .current-user-badge {
-  font-size: 0.8rem;
-  color: #3b82f6;
-  font-weight: 500;
+  font-size: 0.8rem; /* Small font size for current user badge */
+  color: #3b82f6; /* Blue color for current user designation */
+  font-weight: 500; /* Medium weight for badge text */
 }
 
 .member-email {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  color: var(--text-secondary); /* Secondary text color for email */
+  font-size: 0.9rem; /* Slightly smaller font for email */
 }
 
 .member-birthday {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
+  color: var(--text-secondary); /* Secondary text color for birthday */
+  font-size: 0.8rem; /* Small font size for birthday */
 }
 
 .member-actions {
-  display: flex;
-  gap: 0.5rem;
+  display: flex; /* Use flexbox for action buttons layout */
+  gap: 0.5rem; /* Add spacing between action buttons */
 }
 
 .remove-btn {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  background: #ef4444; /* Red background for destructive action */
+  color: white; /* White text for high contrast */
+  border: none; /* Remove default button border */
+  padding: 0.5rem 1rem; /* Comfortable padding for button */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  font-size: 0.9rem; /* Medium font size for button text */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
 .remove-btn:hover {
-  background: #dc2626;
+  background: #dc2626; /* Darker red on hover for feedback */
 }
 
 /* Account Settings */
 .settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+  display: grid; /* Use CSS Grid for settings layout */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(250px, 1fr)
+  ); /* Responsive grid with minimum column width */
+  gap: 1rem; /* Add consistent spacing between setting items */
 }
 
 .setting-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
+  display: flex; /* Use flexbox for setting item layout */
+  align-items: center; /* Vertically center setting content */
+  gap: 1rem; /* Add spacing between icon, text, and arrow */
+  padding: 1rem; /* Comfortable padding around setting content */
+  background: var(--bg-primary); /* Primary background for setting items */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  cursor: pointer; /* Pointer cursor for interactive settings */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
+  text-align: left; /* Left-align setting text */
 }
 
 .setting-item:hover {
-  border-color: var(--border-medium);
-  background-color: var(--bg-tertiary);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--border-medium); /* Darker border on hover */
+  background-color: var(--bg-tertiary); /* Tertiary background on hover */
+  box-shadow: var(--shadow-sm); /* Add shadow on hover for depth */
 }
 
 .setting-icon {
-  font-size: 1.2rem;
-  min-width: 1.5rem;
+  font-size: 1.2rem; /* Medium font size for setting icons */
+  min-width: 1.5rem; /* Minimum width to maintain consistent icon spacing */
 }
 
 .setting-label {
-  flex: 1;
-  font-weight: 500;
-  color: var(--text-primary);
+  flex: 1; /* Take available space between icon and arrow */
+  font-weight: 500; /* Medium weight for setting labels */
+  color: var(--text-primary); /* Theme-aware primary text color */
 }
 
 .setting-arrow {
-  color: var(--text-muted);
-  font-weight: bold;
+  color: var(--text-muted); /* Muted color for arrow indicators */
+  font-weight: bold; /* Bold weight for arrow visibility */
 }
 
 /* Account Settings */
 
 /* Security Modal Styles */
 .form-divider {
-  margin: 1.5rem 0 1rem 0;
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-  text-align: center;
-  background-color: var(--bg-tertiary);
+  margin: 1.5rem 0 1rem 0; /* Vertical spacing around divider */
+  padding: 0.75rem 0; /* Vertical padding within divider */
+  border-top: 1px solid var(--border-light); /* Top border for visual separation */
+  border-bottom: 1px solid var(--border-light); /* Bottom border for visual separation */
+  text-align: center; /* Center-align divider text */
+  background-color: var(
+    --bg-tertiary
+  ); /* Tertiary background for distinction */
 }
 
 .form-divider span {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 14px; /* Small font size for divider text */
+  font-weight: 500; /* Medium weight for readability */
+  color: var(--text-secondary); /* Secondary text color for subtle appearance */
+  text-transform: uppercase; /* Convert text to uppercase */
+  letter-spacing: 0.5px; /* Add letter spacing for better readability */
 }
 
 .password-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
+  position: relative; /* Enable positioning for toggle button */
+  display: flex; /* Use flexbox for input and toggle layout */
+  align-items: center; /* Vertically center input and toggle */
 }
 
 .password-input-container input {
-  flex: 1;
-  padding-right: 3rem;
+  flex: 1; /* Take remaining space in container */
+  padding-right: 3rem; /* Add right padding to make room for toggle button */
 }
 
 .password-toggle {
-  position: absolute;
-  right: 0.75rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: color 0.2s ease;
+  position: absolute; /* Position toggle button absolutely within container */
+  right: 0.75rem; /* Position from right edge of container */
+  background: none; /* Transparent background for toggle button */
+  border: none; /* Remove default button border */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  font-size: 1.2rem; /* Medium font size for toggle icon */
+  padding: 0.25rem; /* Small padding for touch target */
+  display: flex; /* Use flexbox for icon centering */
+  align-items: center; /* Center icon vertically */
+  justify-content: center; /* Center icon horizontally */
+  color: var(--text-secondary); /* Secondary text color for subtle appearance */
+  transition: color 0.2s ease; /* Smooth color transition */
 }
 
 .password-toggle:hover {
-  color: var(--text-primary);
+  color: var(--text-primary); /* Primary text color on hover */
 }
 
 .auth-success {
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  color: #388e3c;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-  text-align: center;
+  background: rgba(
+    76,
+    175,
+    80,
+    0.1
+  ); /* Light green background for success state */
+  border: 1px solid rgba(76, 175, 80, 0.3); /* Green border for success indication */
+  color: #388e3c; /* Dark green text for success message */
+  padding: 12px 16px; /* Comfortable padding for success message */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  margin-bottom: 20px; /* Space below success message */
+  font-size: 0.9rem; /* Slightly smaller font for status messages */
+  text-align: center; /* Center-align success text */
 }
 
 [data-theme="dark"] .auth-success {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: rgba(76, 175, 80, 0.4);
-  color: #66bb6a;
+  background: rgba(76, 175, 80, 0.15); /* Darker background for dark theme */
+  border-color: rgba(76, 175, 80, 0.4); /* Brighter border for dark theme */
+  color: #66bb6a; /* Lighter green text for dark theme */
 }
 
 /* Modal Header Actions */
 .modal-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex; /* Use flexbox for header actions layout */
+  align-items: center; /* Vertically center header actions */
+  gap: 12px; /* Add spacing between header action items */
 }
 
 /* Override auth-header for family manage modal */
 .family-manage-modal .auth-header {
-  justify-content: space-between;
+  justify-content: space-between; /* Spread title and actions to opposite ends */
 }
 
 .family-manage-modal .auth-header h2 {
-  flex: 1;
+  flex: 1; /* Allow title to take available space */
 }
 
 /* Delete Family Button */
 .delete-family-btn {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  background: #dc3545; /* Red background for destructive action */
+  color: white; /* White text for high contrast */
+  border: none; /* Remove default button border */
+  padding: 8px 16px; /* Compact padding for header button */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  font-size: 0.85rem; /* Smaller font size for header button */
+  font-weight: 500; /* Medium weight for button text */
+  cursor: pointer; /* Pointer cursor for interactive element */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
+  display: flex; /* Use flexbox for button content */
+  align-items: center; /* Vertically center button content */
+  gap: 6px; /* Small gap between icon and text */
 }
 
 .delete-family-btn:hover:not(:disabled) {
-  background: #c82333;
+  background: #c82333; /* Darker red on hover when not disabled */
 }
 
 .delete-family-btn:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  transform: none;
+  background: #6c757d; /* Grey background when disabled */
+  cursor: not-allowed; /* Show not-allowed cursor when disabled */
+  transform: none; /* Remove transform effects when disabled */
 }
 
 .delete-family-btn:active {
-  transform: translateY(0);
+  transform: translateY(0); /* Remove active transform for header button */
 }
 
 /* Join Family Modal Styles */
 .join-family-modal {
-  width: 95% !important;
-  max-width: 800px !important;
-  max-height: 90vh;
-  overflow-y: auto;
+  width: 95% !important; /* Set modal width to 95% of viewport */
+  max-width: 800px !important; /* Limit maximum width for large screens */
+  max-height: 90vh; /* Limit height to 90% of viewport height */
+  overflow-y: auto; /* Allow vertical scrolling when content exceeds height */
 }
 
 /* Profile Edit Form in Modal */
 .profile-edit-form {
-  margin-top: 0.5rem;
+  margin-top: 0.5rem; /* Small top margin for form separation */
 }
 
 .profile-edit-form .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem; /* Consistent bottom margin for form groups */
 }
 
 .profile-edit-form label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.9rem;
+  display: block; /* Block display for label positioning */
+  margin-bottom: 0.5rem; /* Space below label */
+  font-weight: 600; /* Semi-bold weight for label emphasis */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-size: 0.9rem; /* Slightly smaller font for labels */
 }
 
 .profile-edit-form input[type="text"],
 .profile-edit-form input[type="date"] {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: border-color 0.2s ease;
+  width: 100%; /* Full width input fields */
+  padding: 12px; /* Comfortable padding for input fields */
+  border: 1px solid var(--border-light); /* Light border for input definition */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  font-size: 16px; /* Standard font size for accessibility */
+  background-color: var(--bg-primary); /* Theme-aware primary background */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-family: inherit; /* Inherit font family from parent */
+  transition: border-color 0.2s ease; /* Smooth border color transition */
 }
 
 .profile-edit-form input[type="text"]:focus,
 .profile-edit-form input[type="date"]:focus {
-  outline: none;
-  border-color: var(--primary-orange);
-  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
+  outline: none; /* Remove default browser outline */
+  border-color: var(--primary-orange); /* Orange border on focus */
+  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1); /* Orange focus ring */
 }
 
 .profile-edit-form .auth-error {
-  background: rgba(220, 53, 69, 0.1);
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  color: #dc3545;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  text-align: center;
+  background: rgba(220, 53, 69, 0.1); /* Light red background for error state */
+  border: 1px solid rgba(220, 53, 69, 0.3); /* Red border for error indication */
+  color: #dc3545; /* Red text for error message */
+  padding: 12px 16px; /* Comfortable padding for error message */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  margin-top: 1rem; /* Space above error message */
+  font-size: 0.9rem; /* Slightly smaller font for status messages */
+  text-align: center; /* Center-align error text */
 }
 
 [data-theme="dark"] .profile-edit-form .auth-error {
-  background: rgba(220, 53, 69, 0.15);
-  border-color: rgba(220, 53, 69, 0.4);
-  color: #f87171;
+  background: rgba(220, 53, 69, 0.15); /* Darker background for dark theme */
+  border-color: rgba(220, 53, 69, 0.4); /* Brighter border for dark theme */
+  color: #f87171; /* Lighter red text for dark theme */
 }
 
 .family-preview {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: var(--bg-tertiary);
-  border-radius: 8px;
-  border: 1px solid var(--border-light);
+  margin-top: 1.5rem; /* Space above family preview section */
+  padding: 1.5rem; /* Generous padding around preview content */
+  background: var(
+    --bg-tertiary
+  ); /* Tertiary background for visual distinction */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  border: 1px solid var(--border-light); /* Light border for definition */
 }
 
 .family-preview h3 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1.1rem;
+  margin: 0 0 1rem 0; /* Remove top margin, add bottom spacing */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-size: 1.1rem; /* Medium font size for preview heading */
 }
 
 .family-preview .family-group-card {
-  margin-bottom: 1.5rem;
-  background: var(--bg-primary);
+  margin-bottom: 1.5rem; /* Space below preview card */
+  background: var(--bg-primary); /* Primary background for preview card */
 }
 
 .family-preview .member-count {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-size: 0.9rem; /* Medium font size for member count */
+  color: var(--text-secondary); /* Secondary text color for metadata */
+  display: flex; /* Use flexbox for icon and text alignment */
+  align-items: center; /* Center icon with text vertically */
+  gap: 0.5rem; /* Space between icon and text */
 }
 
 .family-id-display {
-  font-family: "Courier New", Monaco, monospace;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--border-light);
+  font-family: "Courier New", Monaco, monospace; /* Monospace font for ID display */
+  font-size: 0.85rem; /* Smaller font for ID text */
+  color: var(--text-secondary); /* Secondary text color for ID */
+  background: var(--bg-tertiary); /* Tertiary background for ID container */
+  padding: 0.25rem 0.5rem; /* Compact padding for ID display */
+  border-radius: 4px; /* Small rounded corners for ID container */
+  border: 1px solid var(--border-light); /* Light border for ID definition */
 }
 
 .loading-message {
-  text-align: center;
-  padding: 1rem;
-  color: var(--text-secondary);
-  font-style: italic;
+  text-align: center; /* Center-align loading message */
+  padding: 1rem; /* Comfortable padding for loading state */
+  color: var(--text-secondary); /* Secondary text color for loading message */
+  font-style: italic; /* Italic style for loading indication */
 }
 
 /* ==================== RESPONSIVE DESIGN ==================== */
@@ -952,24 +995,35 @@
 /* Touch device hover effect overrides */
 @media (hover: none) {
   .copy-id-btn:hover {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border-light) !important;
-    color: var(--text-secondary) !important;
-    transform: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background: var(
+      --bg-secondary
+    ) !important; /* Reset to default background on touch devices */
+    border-color: var(
+      --border-light
+    ) !important; /* Reset to default border on touch devices */
+    color: var(
+      --text-secondary
+    ) !important; /* Reset to default text color on touch devices */
+    transform: none !important; /* Remove transform effects on touch devices */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important; /* Reset to default shadow on touch devices */
   }
 
   [data-theme="dark"] .copy-id-btn:hover {
-    background: #3a3a3a !important;
-    border-color: #555555 !important;
-    color: #cccccc !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background: #3a3a3a !important; /* Dark theme background reset on touch devices */
+    border-color: #555555 !important; /* Dark theme border reset on touch devices */
+    color: #cccccc !important; /* Dark theme text reset on touch devices */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important; /* Dark theme shadow reset on touch devices */
   }
 
   /* Ensure proper touch handling */
   .copy-id-btn {
-    pointer-events: auto !important;
-    -webkit-tap-highlight-color: rgba(255, 127, 0, 0.2) !important;
+    pointer-events: auto !important; /* Ensure touch events work properly */
+    -webkit-tap-highlight-color: rgba(
+      255,
+      127,
+      0,
+      0.2
+    ) !important; /* Orange tap highlight for touch feedback */
   }
 }
 
@@ -978,89 +1032,89 @@
   /* Layout adjustments */
 
   .account-container {
-    gap: 1.5rem;
+    gap: 1.5rem; /* Reduced gap between sections on mobile */
     /* Allow container to expand naturally */
   }
 
   .account-view {
-    padding: 1rem;
-    padding-top: 1.5rem;
+    padding: 1rem; /* Reduced padding on mobile to save space */
+    padding-top: 1.5rem; /* Slightly more top padding for better mobile layout */
     /* Follow PhotoView mobile pattern for consistent behavior */
     padding-bottom: 4rem; /* More bottom padding for mobile browser UI */
     /* Ensure proper mobile scroll behavior */
-    overscroll-behavior: contain;
+    overscroll-behavior: contain; /* Prevent scroll chaining on mobile */
   }
 
   .profile-section {
-    padding: 0.25rem;
+    padding: 0.25rem; /* Reduced padding for mobile profile section */
   }
 
   .user-info {
-    padding-left: 0.5rem;
+    padding-left: 0.5rem; /* Reduced left padding on mobile */
   }
 
   .profile-picture,
   .profile-picture-placeholder {
-    max-width: 100px;
-    max-height: 100px;
+    max-width: 100px; /* Smaller profile picture on mobile */
+    max-height: 100px; /* Smaller profile picture height on mobile */
   }
 
   .profile-avatar-icon {
-    font-size: 2.5rem;
+    font-size: 2.5rem; /* Smaller avatar icon on mobile */
   }
 
   /* Typography adjustments */
   .user-name {
-    font-size: 1.5rem;
-    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem; /* Smaller name font size on mobile */
+    margin: 0 0 0.25rem 0; /* Reduced bottom margin on mobile */
   }
 
   .user-email {
-    font-size: 0.9rem;
-    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem; /* Smaller email font size on mobile */
+    margin: 0 0 0.25rem 0; /* Reduced bottom margin on mobile */
   }
 
   .user-birthday {
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Smaller birthday font size on mobile */
   }
 
   /* Family group layout */
   .family-group-details {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: column; /* Stack details vertically on mobile */
+    align-items: flex-start; /* Left-align stacked details */
   }
 
   .family-group-actions {
-    width: 100%;
-    justify-content: flex-end;
+    width: 100%; /* Full width for action buttons on mobile */
+    justify-content: flex-end; /* Right-align action buttons */
     /* Reverse button order on mobile - View Members will appear on the right */
-    flex-direction: row-reverse;
+    flex-direction: row-reverse; /* Reverse button order for mobile UX */
   }
 
   /* Remove hover effects on mobile */
   .family-group-card:hover {
-    border-color: var(--border-light);
-    box-shadow: none;
+    border-color: var(--border-light); /* Reset border color on mobile */
+    box-shadow: none; /* Remove hover shadow on mobile */
   }
 
   /* Settings grid */
   .settings-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(3, 1fr); /* Three equal columns on mobile */
+    gap: 0.5rem; /* Reduced gap between settings on mobile */
   }
 
   /* Section adjustments */
   .section-header {
-    padding: 1rem;
-    min-height: 48px;
+    padding: 1rem; /* Reduced padding for mobile section headers */
+    min-height: 48px; /* Minimum height for touch targets */
   }
 
   .section-content {
-    padding: 0.5rem;
+    padding: 0.5rem; /* Reduced content padding on mobile */
   }
 
   .family-group-card {
-    padding: 0.5rem;
+    padding: 0.5rem; /* Reduced card padding on mobile */
   }
 
   /* Mobile touch improvements - Standard buttons */
@@ -1071,125 +1125,132 @@
   .join-family-btn,
   .create-family-btn,
   .create-family-btn-footer {
-    min-height: 44px;
-    padding: 12px 16px;
-    font-size: 16px;
+    min-height: 44px; /* Minimum height for proper touch targets */
+    padding: 12px 16px; /* Larger padding for better touch interaction */
+    font-size: 16px; /* Standard font size for mobile accessibility */
   }
 
   /* Right align view members button on mobile */
   .view-btn {
-    margin-left: auto;
+    margin-left: auto; /* Push view button to right side on mobile */
   }
 
   /* Settings items */
   .setting-item {
-    padding: 12px 8px;
-    min-height: 50px;
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
+    padding: 12px 8px; /* Adjusted padding for mobile settings */
+    min-height: 50px; /* Minimum height for touch targets */
+    flex-direction: column; /* Stack icon and text vertically on mobile */
+    gap: 0.5rem; /* Reduced gap between icon and text */
+    text-align: center; /* Center-align setting content on mobile */
   }
 
   .setting-item .setting-icon {
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Slightly smaller icon on mobile */
   }
 
   .setting-item .setting-label {
-    font-size: 0.85rem;
-    line-height: 1.2;
+    font-size: 0.85rem; /* Smaller label text on mobile */
+    line-height: 1.2; /* Tighter line height for mobile */
   }
 
   .setting-item .setting-arrow {
-    display: none;
+    display: none; /* Hide arrows on mobile since layout is different */
   }
 
   /* Copy button mobile optimizations */
   .copy-id-btn {
-    padding: 2px 4px;
-    font-size: 12px;
-    min-height: 24px;
+    padding: 2px 4px; /* Compact padding for mobile */
+    font-size: 12px; /* Smaller font size for mobile */
+    min-height: 24px; /* Minimum height for mobile touch targets */
     /* Improve touch handling and prevent accidental clicks */
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    touch-action: manipulation; /* Optimize for touch interactions */
+    -webkit-user-select: none; /* Prevent text selection */
+    -moz-user-select: none; /* Prevent text selection in Firefox */
+    -ms-user-select: none; /* Prevent text selection in IE */
+    user-select: none; /* Prevent text selection */
     /* Require deliberate touch */
-    pointer-events: auto;
+    pointer-events: auto; /* Ensure touch events work */
     /* Add touch delay to distinguish from scroll gestures */
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: rgba(255, 127, 0, 0.3);
+    -webkit-touch-callout: none; /* Disable callout on iOS */
+    -webkit-tap-highlight-color: rgba(
+      255,
+      127,
+      0,
+      0.3
+    ); /* Orange tap highlight */
     /* Increase touch target size */
-    position: relative;
+    position: relative; /* Enable pseudo-element positioning */
   }
 
   /* Add larger touch target without affecting visual size */
   .copy-id-btn::before {
-    content: "";
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    right: -8px;
-    bottom: -8px;
-    background: transparent;
-    border-radius: 8px;
+    content: ""; /* Empty content for touch target expansion */
+    position: absolute; /* Position relative to button */
+    top: -8px; /* Extend touch area above */
+    left: -8px; /* Extend touch area to left */
+    right: -8px; /* Extend touch area to right */
+    bottom: -8px; /* Extend touch area below */
+    background: transparent; /* Invisible touch area */
+    border-radius: 8px; /* Rounded touch area */
   }
 
   /* Prevent hover effects on mobile for copy button */
   .copy-id-btn:hover {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border-light) !important;
-    color: var(--text-secondary) !important;
-    transform: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background: var(--bg-secondary) !important; /* Reset background on mobile */
+    border-color: var(--border-light) !important; /* Reset border on mobile */
+    color: var(--text-secondary) !important; /* Reset text color on mobile */
+    transform: none !important; /* Remove transform effects on mobile */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important; /* Reset shadow on mobile */
   }
 
   /* Only show active state on actual press */
   .copy-id-btn:active {
-    background-color: var(--primary-orange) !important;
-    border-color: var(--primary-orange) !important;
-    color: white !important;
-    transform: scale(0.95);
-    transition: all 0.1s ease;
+    background-color: var(
+      --primary-orange
+    ) !important; /* Orange background on press */
+    border-color: var(--primary-orange) !important; /* Orange border on press */
+    color: white !important; /* White text on press */
+    transform: scale(0.95); /* Slight scale down on press */
+    transition: all 0.1s ease; /* Quick transition for press feedback */
   }
 
   /* Form element improvements */
   .add-member-form input {
-    padding: 14px 12px;
-    font-size: 16px;
-    min-height: 48px;
+    padding: 14px 12px; /* Larger padding for mobile touch targets */
+    font-size: 16px; /* Standard font size for mobile accessibility */
+    min-height: 48px; /* Minimum height for proper touch targets */
   }
 
   .add-member-form button {
-    padding: 14px 20px;
-    font-size: 16px;
-    min-height: 48px;
+    padding: 14px 20px; /* Larger padding for mobile touch targets */
+    font-size: 16px; /* Standard font size for mobile accessibility */
+    min-height: 48px; /* Minimum height for proper touch targets */
   }
 
   /* Modal improvements */
   .modal-header {
-    padding: 16px 20px;
+    padding: 16px 20px; /* Increased modal header padding on mobile */
   }
 
   .modal-content {
-    padding: 16px 20px;
+    padding: 16px 20px; /* Increased modal content padding on mobile */
   }
 
   /* Member management layout */
   .member-row {
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem;
+    grid-template-columns: auto 1fr; /* Two columns on mobile: avatar and info */
+    gap: 0.75rem; /* Reduced gap for mobile layout */
   }
 
   .member-birthday {
-    grid-column: 2;
-    text-align: left;
-    margin-top: 0.25rem;
+    grid-column: 2; /* Place birthday in second column */
+    text-align: left; /* Left-align birthday text */
+    margin-top: 0.25rem; /* Small top margin for spacing */
   }
 
   .member-actions {
-    grid-column: 2;
-    justify-content: flex-end;
+    grid-column: 2; /* Place actions in second column */
+    justify-content: flex-end; /* Right-align action buttons */
   }
 }
 
@@ -1200,38 +1261,38 @@
   .view-btn,
   .manage-btn,
   .leave-btn {
-    min-height: 48px;
-    padding: 12px 16px;
-    font-size: 14px;
+    min-height: 48px; /* Larger minimum height for very small screens */
+    padding: 12px 16px; /* Maintained padding for touch targets */
+    font-size: 14px; /* Slightly smaller font for very small screens */
   }
 
   .setting-item {
-    min-height: 48px;
-    padding: 10px 6px;
-    gap: 0.25rem;
+    min-height: 48px; /* Larger minimum height for setting items */
+    padding: 10px 6px; /* Adjusted padding for very small screens */
+    gap: 0.25rem; /* Reduced gap between icon and text */
   }
 
   .setting-item .setting-icon {
-    font-size: 1rem;
+    font-size: 1rem; /* Smaller icon size for very small screens */
   }
 
   .setting-item .setting-label {
-    font-size: 0.8rem;
+    font-size: 0.8rem; /* Smaller label text for very small screens */
   }
 
   .section-header {
-    min-height: 52px;
-    font-size: 18px;
+    min-height: 52px; /* Larger minimum height for section headers */
+    font-size: 18px; /* Larger font size for better readability on small screens */
   }
 
   /* Modal header improvements */
   .modal-header-actions {
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: column; /* Stack header actions vertically on very small screens */
+    gap: 8px; /* Small gap between stacked actions */
   }
 
   .delete-family-btn {
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    font-size: 0.8rem; /* Smaller font for delete button on small screens */
+    padding: 6px 12px; /* Reduced padding for small screens */
   }
 }

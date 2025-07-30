@@ -7,333 +7,339 @@
 @media (min-width: 769px) {
   .modal-content,
   .modal-body {
-    scrollbar-width: none !important; /* Firefox */
-    -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+    scrollbar-width: none !important; /* Firefox scrollbar hiding for cleaner desktop appearance */
+    -ms-overflow-style: none !important; /* Internet Explorer 10+ scrollbar hiding */
   }
 
   .modal-content::-webkit-scrollbar,
   .modal-body::-webkit-scrollbar {
-    display: none !important; /* WebKit browsers (Chrome, Safari, Edge) */
+    display: none !important; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
   }
 }
 
 /* Image preview content layout for preview mode - flex for full height */
 .image-preview-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem; /* Reduced gap between title and photo */
-  height: 100%;
-  overflow-y: auto;
+  display: flex; /* Use flexbox for vertical layout arrangement */
+  flex-direction: column; /* Stack content vertically (title, image, etc.) */
+  gap: 0.5rem; /* Reduced gap between title and photo for compact presentation */
+  height: 100%; /* Take full available height within modal body */
+  overflow-y: auto; /* Allow vertical scrolling when content exceeds container height */
   /* Hide scrollbar on desktop */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox scrollbar hiding for cleaner appearance */
+  -ms-overflow-style: none; /* Internet Explorer 10+ scrollbar hiding */
 }
 
 .image-preview-content::-webkit-scrollbar {
-  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
 /* Preview mode specific styles - override PhotoView.css modal header layout */
 .image-modal-preview.modal-content .modal-header {
-  justify-content: flex-start !important;
+  justify-content: flex-start !important; /* Align header content to left instead of center */
 }
 
 .image-modal-preview.modal-content .modal-header .modal-header-left {
-  flex: none !important;
-  margin-right: auto !important;
+  flex: none !important; /* Don't allow left section to grow and take extra space */
+  margin-right: auto !important; /* Push close button to far right using auto margin */
 }
 
 .image-modal-preview.modal-content .modal-header .modal-header-left h2 {
-  text-align: left !important;
-  margin: 0 !important;
+  text-align: left !important; /* Left-align the heading text for better UX */
+  margin: 0 !important; /* Remove default heading margins for clean spacing */
 }
 
 .image-modal-preview.modal-content .modal-header .close-btn {
-  margin-left: auto !important;
-  flex-shrink: 0 !important;
+  margin-left: auto !important; /* Push close button to right side using flexbox */
+  flex-shrink: 0 !important; /* Prevent close button from shrinking */
 }
 
 /* Reduce top padding in modal body for preview mode */
 .image-modal-preview.modal-content .modal-body {
-  padding-top: 1rem !important;
-  overflow-y: auto !important;
-  max-height: calc(100vh - 120px) !important;
+  padding-top: 1rem !important; /* Reduced top padding for more compact preview layout */
+  overflow-y: auto !important; /* Allow vertical scrolling when content exceeds container */
+  max-height: calc(
+    100vh - 120px
+  ) !important; /* Limit height to viewport minus header/footer space */
   /* Hide scrollbar on desktop */
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+  scrollbar-width: none !important; /* Firefox scrollbar hiding for cleaner appearance */
+  -ms-overflow-style: none !important; /* Internet Explorer 10+ scrollbar hiding */
 }
 
 .image-modal-preview.modal-content .modal-body::-webkit-scrollbar {
-  display: none !important; /* WebKit browsers (Chrome, Safari, Edge) */
+  display: none !important; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
 /* Form content layout for create/edit modes - flex for full height */
 .upload-form {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  display: flex; /* Use flexbox layout for form organization */
+  flex-direction: column; /* Stack form elements vertically */
+  height: 100%; /* Take full available height within modal */
   /* Hide scrollbar on desktop */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox scrollbar hiding for cleaner appearance */
+  -ms-overflow-style: none; /* Internet Explorer 10+ scrollbar hiding */
 }
 
 .upload-form::-webkit-scrollbar {
-  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
 .form-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: 1.5rem;
+  display: flex; /* Use flexbox for form content layout */
+  flex-direction: column; /* Stack form groups vertically */
+  flex: 1; /* Take all available space, pushing submit button to bottom */
+  gap: 1.5rem; /* Add consistent spacing between form groups */
   /* Hide scrollbar on desktop */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox scrollbar hiding for cleaner appearance */
+  -ms-overflow-style: none; /* Internet Explorer 10+ scrollbar hiding */
 }
 
 .form-content::-webkit-scrollbar {
-  display: none; /* WebKit browsers (Chrome, Safari, Edge) */
+  display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
 /* First form group (image section) should take available space */
 .form-content .form-group:first-child {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  flex: 1; /* Allow first form group to expand and take available vertical space */
+  display: flex; /* Use flexbox for internal layout of image section */
+  flex-direction: column; /* Stack image elements vertically */
 }
 
 /* Back button styling */
 .back-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-right: 0.5rem;
+  background: transparent; /* Transparent background for minimal appearance */
+  border: none; /* Remove default button border */
+  color: var(--text-secondary); /* Use theme-aware secondary text color */
+  font-size: 1.5rem; /* Large enough for easy clicking/tapping */
+  cursor: pointer; /* Show pointer cursor on hover */
+  padding: 0.5rem; /* Add padding for larger click target */
+  border-radius: 4px; /* Subtle rounded corners for modern appearance */
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
+  display: flex; /* Use flexbox for icon centering */
+  align-items: center; /* Center icon vertically */
+  justify-content: center; /* Center icon horizontally */
+  width: 36px; /* Fixed width for consistent button size */
+  height: 36px; /* Fixed height for consistent button size */
+  margin-right: 0.5rem; /* Add space between back button and title */
 }
 
 .back-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: var(--bg-secondary); /* Show background on hover for feedback */
+  color: var(--text-primary); /* Darken text color on hover for emphasis */
 }
 
 /* Modal header left section for back button and title */
 .modal-header-left {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
+  display: flex; /* Use flexbox for horizontal layout */
+  align-items: center; /* Vertically center back button and title */
+  flex: 1; /* Take available space, pushing close button to right */
+  min-width: 0; /* Allow content to shrink below minimum content width */
 }
 
 /* Mobile responsive back button */
 @media (max-width: 768px) {
   .back-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 1.3rem;
-    margin-right: 0.75rem;
+    width: 32px; /* Smaller width for mobile to save space */
+    height: 32px; /* Smaller height for mobile to save space */
+    font-size: 1.3rem; /* Slightly smaller icon for mobile screens */
+    margin-right: 0.75rem; /* Increased margin for better touch spacing */
   }
 
   .modal-header-left h2 {
-    font-size: 1.3rem;
+    font-size: 1.3rem; /* Smaller heading size for mobile screens */
   }
 }
 
 /* File Upload Styles for ImageModal */
 .file-drop-zone {
-  border: 2px dashed var(--border-light);
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-  background: var(--bg-secondary);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  min-height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 2px dashed var(--border-light); /* Dashed border to indicate drop area */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  padding: 2rem; /* Generous padding for comfortable drop target */
+  text-align: center; /* Center-align drop zone content */
+  background: var(
+    --bg-secondary
+  ); /* Subtle background to distinguish drop area */
+  transition: all 0.3s ease; /* Smooth transition for hover/drag effects */
+  cursor: pointer; /* Pointer cursor to indicate clickable area */
+  min-height: 120px; /* Minimum height for adequate drop target size */
+  display: flex; /* Use flexbox for content centering */
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
 }
 
 /* Remove borders and padding when showing image preview */
 .file-drop-zone.has-preview {
-  border: none;
-  padding: 0;
-  background: transparent;
-  border-radius: 8px;
-  overflow: hidden;
+  border: none; /* Remove dashed border when image is present */
+  padding: 0; /* Remove padding to show full image */
+  background: transparent; /* Remove background to show image clearly */
+  border-radius: 8px; /* Keep rounded corners for consistency */
+  overflow: hidden; /* Hide any content that extends beyond rounded corners */
 }
 
 .file-drop-zone.drag-over {
-  border-color: var(--primary-orange);
-  background: rgba(255, 152, 0, 0.1);
+  border-color: var(--primary-orange); /* Orange border during drag operation */
+  background: rgba(255, 152, 0, 0.1); /* Light orange background during drag */
 }
 
 /* Don't apply drag-over styles when showing preview */
 .file-drop-zone.has-preview.drag-over {
-  border: none;
-  background: transparent;
+  border: none; /* No border changes when image is already present */
+  background: transparent; /* Keep transparent background during drag over image */
 }
 
 .file-drop-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  display: flex; /* Use flexbox for content layout */
+  flex-direction: column; /* Stack drop zone elements vertically */
+  align-items: center; /* Center elements horizontally */
+  gap: 1rem; /* Add space between icon, text, and button */
 }
 
 .drop-icon {
-  font-size: 3rem;
-  opacity: 0.6;
-  color: var(--text-secondary);
+  font-size: 3rem; /* Large icon for clear visual indication */
+  opacity: 0.6; /* Reduced opacity for subtle appearance */
+  color: var(--text-secondary); /* Theme-aware secondary text color */
 }
 
 .file-drop-content p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 16px;
+  margin: 0; /* Remove default paragraph margins */
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  font-size: 16px; /* Standard font size for good readability */
 }
 
 .browse-btn {
-  background: var(--primary-orange);
-  color: var(--text-inverse);
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-  font-size: 16px;
-  min-height: 44px;
+  background: var(--primary-orange); /* Orange background matching app theme */
+  color: var(--text-inverse); /* High contrast text color for accessibility */
+  border: none; /* Remove default button border */
+  padding: 0.75rem 1.5rem; /* Comfortable padding for touch targets */
+  border-radius: 4px; /* Subtle rounded corners */
+  cursor: pointer; /* Pointer cursor to indicate clickable element */
+  font-weight: 500; /* Medium weight for better visibility */
+  transition: background-color 0.3s ease; /* Smooth color transition on hover */
+  font-size: 16px; /* Standard font size for accessibility */
+  min-height: 44px; /* Minimum height for proper touch targets */
 }
 
 .browse-btn:hover {
-  background: var(--primary-orange-dark);
+  background: var(
+    --primary-orange-dark
+  ); /* Darker orange on hover for feedback */
 }
 
 .file-info {
-  font-size: 0.85rem;
-  opacity: 0.7;
+  font-size: 0.85rem; /* Smaller text for supplementary information */
+  opacity: 0.7; /* Reduced opacity for subtle appearance */
 }
 
 .file-selected {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border-radius: 6px;
-  border: 1px solid var(--border-light);
+  display: flex; /* Use flexbox for file info layout */
+  align-items: center; /* Vertically center file info elements */
+  gap: 0.75rem; /* Space between icon, name, and size */
+  padding: 1rem; /* Comfortable padding around file info */
+  background: var(--bg-primary); /* Theme-aware background color */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  border: 1px solid var(--border-light); /* Subtle border to define container */
 }
 
 .file-icon {
-  font-size: 1.5rem;
+  font-size: 1.5rem; /* Large enough icon for clear identification */
 }
 
 .file-name {
-  font-weight: 500;
-  color: var(--text-primary);
-  flex: 1;
-  text-align: left;
+  font-weight: 500; /* Medium weight for emphasis on filename */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  flex: 1; /* Take available space, pushing size to right */
+  text-align: left; /* Left-align filename text */
 }
 
 .file-size {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  font-size: 0.9rem; /* Slightly smaller text for file size */
 }
 
 .remove-file-btn {
-  background: #d32f2f;
-  color: white;
-  border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  line-height: 1;
-  transition: background-color 0.3s ease;
+  background: #d32f2f; /* Red background for destructive action */
+  color: white; /* White text for high contrast against red */
+  border: none; /* Remove default button border */
+  width: 24px; /* Fixed width for circular button */
+  height: 24px; /* Fixed height for circular button */
+  border-radius: 50%; /* Make button perfectly circular */
+  cursor: pointer; /* Pointer cursor to indicate clickable element */
+  display: flex; /* Use flexbox for icon centering */
+  align-items: center; /* Center icon vertically */
+  justify-content: center; /* Center icon horizontally */
+  font-size: 1rem; /* Appropriate icon size for button */
+  line-height: 1; /* Prevent extra line spacing around icon */
+  transition: background-color 0.3s ease; /* Smooth color transition on hover */
 }
 
 .remove-file-btn:hover {
-  background: #b71c1c;
+  background: #b71c1c; /* Darker red on hover for feedback */
 }
 
 /* Upload Image Preview Styles */
 .file-preview-display {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  min-height: 200px;
-  background: var(--bg-primary);
-  border-radius: 4px;
-  padding: 0;
+  display: flex; /* Use flexbox for image centering */
+  justify-content: center; /* Center image horizontally */
+  align-items: center; /* Center image vertically */
+  width: 100%; /* Take full available width */
+  height: 100%; /* Take full available height */
+  min-height: 200px; /* Minimum height for proper preview area */
+  background: var(--bg-primary); /* Theme-aware background color */
+  border-radius: 4px; /* Rounded corners for consistency */
+  padding: 0; /* No padding to maximize image display area */
 }
 
 .file-preview-display .upload-image-preview {
-  max-width: 100%;
-  max-height: 80vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 4px;
+  max-width: 100%; /* Prevent image from exceeding container width */
+  max-height: 80vh; /* Limit height to 80% of viewport height */
+  width: auto; /* Allow automatic width calculation */
+  height: auto; /* Allow automatic height calculation */
+  object-fit: contain; /* Maintain aspect ratio while fitting container */
+  border-radius: 4px; /* Rounded corners for modern appearance */
 }
 
 .change-file-btn {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 0.5rem;
-  transition: all 0.3s ease;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  background: var(--bg-secondary); /* Theme-aware secondary background */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  border: 1px solid var(--border-light); /* Subtle border for definition */
+  padding: 0.5rem 1rem; /* Comfortable padding for button */
+  border-radius: 4px; /* Rounded corners for consistency */
+  cursor: pointer; /* Pointer cursor to indicate clickable element */
+  font-size: 14px; /* Standard font size for button text */
+  margin-top: 0.5rem; /* Add space above button */
+  transition: all 0.3s ease; /* Smooth transition for all hover effects */
+  display: block; /* Block display for full width centering */
+  margin-left: auto; /* Center button horizontally */
+  margin-right: auto; /* Center button horizontally */
 }
 
 .change-file-btn:hover {
-  background: var(--bg-primary);
-  border-color: var(--primary-orange);
+  background: var(--bg-primary); /* Lighter background on hover */
+  border-color: var(--primary-orange); /* Orange border on hover for emphasis */
 }
 
 /* Image Preview Styles for ImageModal */
 .image-filename {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin: 4px 0 8px 0;
-  font-style: italic;
-  text-align: left;
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  font-size: 14px; /* Smaller font size for metadata */
+  margin: 4px 0 8px 0; /* Consistent vertical spacing */
+  font-style: italic; /* Italic style to distinguish metadata */
+  text-align: left; /* Left-align text for better readability */
 }
 
 .image-date {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin: 4px 0 8px 0;
-  font-style: italic;
-  text-align: left;
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  font-size: 14px; /* Smaller font size for metadata */
+  margin: 4px 0 8px 0; /* Consistent vertical spacing */
+  font-style: italic; /* Italic style to distinguish metadata */
+  text-align: left; /* Left-align text for better readability */
 }
 
 .image-updated {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin: 4px 0 8px 0;
-  font-style: italic;
-  text-align: left;
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  font-size: 14px; /* Smaller font size for metadata */
+  margin: 4px 0 8px 0; /* Consistent vertical spacing */
+  font-style: italic; /* Italic style to distinguish metadata */
+  text-align: left; /* Left-align text for better readability */
 }
 
 /* Additional text elements in image preview info */
@@ -341,351 +347,353 @@
 .image-preview-info .image-date,
 .image-preview-info .image-updated,
 .image-preview-info p {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin: 4px 0 8px 0;
-  font-style: italic;
-  text-align: left;
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  font-size: 14px; /* Smaller font size for metadata */
+  margin: 4px 0 8px 0; /* Consistent vertical spacing */
+  font-style: italic; /* Italic style to distinguish metadata */
+  text-align: left; /* Left-align text for better readability */
 }
 
 .image-preview-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  flex: 1;
-  min-height: 400px;
-  background: transparent !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  margin-top: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
+  display: flex; /* Use flexbox for image centering */
+  justify-content: center; /* Center image horizontally */
+  align-items: center; /* Center image vertically */
+  width: 100%; /* Take full available width */
+  flex: 1; /* Grow to take available vertical space */
+  min-height: 400px; /* Minimum height for proper preview area */
+  background: transparent !important; /* Remove any background styling */
+  border-radius: 0 !important; /* Remove border radius for full image display */
+  padding: 0 !important; /* Remove padding to maximize image area */
+  border: none !important; /* Remove any border styling */
+  margin-top: 0 !important; /* Remove top margin for tight layout */
+  max-height: none !important; /* Allow unlimited height expansion */
+  overflow: visible !important; /* Show any overflow content */
 }
 
 .upload-image-preview,
 .image-preview-display {
-  max-width: 100%;
-  max-height: 80vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  max-width: 100%; /* Prevent image from exceeding container width */
+  max-height: 80vh; /* Limit height to 80% of viewport height */
+  width: auto; /* Allow automatic width calculation */
+  height: auto; /* Allow automatic height calculation */
+  object-fit: contain; /* Maintain aspect ratio while fitting container */
+  border-radius: 0 !important; /* Remove border radius for full image display */
+  box-shadow: none !important; /* Remove any shadow effects */
 }
 
 .image-preview-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  padding: 2rem;
+  display: flex; /* Use flexbox for placeholder content layout */
+  flex-direction: column; /* Stack placeholder elements vertically */
+  align-items: center; /* Center elements horizontally */
+  justify-content: center; /* Center elements vertically */
+  gap: 0.5rem; /* Small gap between placeholder elements */
+  color: var(--text-secondary); /* Theme-aware secondary text color */
+  padding: 2rem; /* Comfortable padding around placeholder content */
 }
 
 .image-preview-placeholder span {
-  font-size: 2rem;
-  opacity: 0.6;
+  font-size: 2rem; /* Large icon/text for clear placeholder indication */
+  opacity: 0.6; /* Reduced opacity for subtle appearance */
 }
 
 .image-preview-placeholder p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
+  margin: 0; /* Remove default paragraph margins */
+  font-size: 0.9rem; /* Slightly smaller text for secondary information */
+  opacity: 0.8; /* Reduced opacity for subtle appearance */
 }
 
 .image-preview-info {
-  text-align: left;
+  text-align: left; /* Left-align preview information text */
 }
 
 .image-preview-info h3 {
-  margin: 0 0 16px 0;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  font-weight: 600;
+  margin: 0 0 16px 0; /* Bottom margin for spacing below heading */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  font-size: 1.5rem; /* Large heading size for emphasis */
+  font-weight: 600; /* Semi-bold weight for visual hierarchy */
 }
 
 .image-preview-info .image-tags {
-  margin-bottom: 16px;
-  justify-content: left;
+  margin-bottom: 16px; /* Bottom margin for spacing below tags */
+  justify-content: left; /* Left-align tags instead of centering */
 }
 
 /* Form actions styling - consistent across all modal views */
 .form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding-bottom: 0.5rem;
-  padding-top: 10px;
-  margin-top: 0;
+  display: flex; /* Use flexbox for button layout */
+  justify-content: space-between; /* Spread buttons to opposite ends */
+  align-items: center; /* Vertically center buttons */
+  gap: 1rem; /* Space between buttons */
+  padding-bottom: 0.5rem; /* Bottom padding for form actions section */
+  padding-top: 10px; /* Top padding for separation from form content */
+  margin-top: 0; /* No top margin to prevent extra spacing */
 }
 
 /* Base button styling */
 .form-actions button {
-  flex: 0 0 auto;
-  min-width: 140px;
-  padding: 0.875rem 1.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-  text-transform: none;
-  letter-spacing: 0.025em;
+  flex: 0 0 auto; /* Don't grow or shrink, use intrinsic size */
+  min-width: 140px; /* Minimum width for consistent button sizing */
+  padding: 0.875rem 1.75rem; /* Generous padding for comfortable touch targets */
+  border-radius: 6px; /* Rounded corners for modern appearance */
+  cursor: pointer; /* Pointer cursor to indicate clickable element */
+  font-size: 15px; /* Standard font size for good readability */
+  font-weight: 500; /* Medium weight for better visibility */
+  transition: all 0.2s ease; /* Smooth transition for all hover effects */
+  border: 2px solid transparent; /* Transparent border for consistent sizing */
+  text-transform: none; /* Preserve original text casing */
+  letter-spacing: 0.025em; /* Slight letter spacing for improved readability */
 }
 
 /* Cancel button - dark grey background */
 .cancel-btn {
-  background: #6b7280;
-  color: white;
-  border: 2px solid #6b7280;
+  background: #6b7280; /* Grey background for secondary action */
+  color: white; /* White text for high contrast */
+  border: 2px solid #6b7280; /* Matching border color */
 }
 
 .cancel-btn:hover {
-  background: #4b5563;
-  border-color: #4b5563;
-  color: white;
+  background: #4b5563; /* Darker grey on hover for feedback */
+  border-color: #4b5563; /* Matching darker border on hover */
+  color: white; /* White text for consistency */
 }
 
 /* Submit/Upload/Save buttons - blue */
 .submit-btn {
-  background: #3b82f6;
-  color: white;
-  border: 2px solid #3b82f6;
+  background: #3b82f6; /* Blue background for primary actions */
+  color: white; /* White text for high contrast */
+  border: 2px solid #3b82f6; /* Matching border color */
 }
 
 .submit-btn:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #2563eb; /* Darker blue on hover for feedback */
+  border-color: #2563eb; /* Matching darker border on hover */
 }
 
 .submit-btn:disabled {
-  background: #9ca3af;
-  border-color: #9ca3af;
-  cursor: not-allowed;
-  opacity: 0.7;
+  background: #9ca3af; /* Grey background when disabled */
+  border-color: #9ca3af; /* Matching grey border when disabled */
+  cursor: not-allowed; /* Show not-allowed cursor when disabled */
+  opacity: 0.7; /* Reduced opacity to indicate disabled state */
 }
 
 /* Download button - green */
 .download-btn {
-  background: #10b981;
-  color: white;
-  border: 2px solid #10b981;
+  background: #10b981; /* Green background for download action */
+  color: white; /* White text for high contrast */
+  border: 2px solid #10b981; /* Matching border color */
 }
 
 .download-btn:hover {
-  background: #059669;
-  border-color: #059669;
+  background: #059669; /* Darker green on hover for feedback */
+  border-color: #059669; /* Matching darker border on hover */
 }
 
 /* Edit button - blue (same as submit) */
 .edit-btn {
-  background: #3b82f6;
-  color: white;
-  border: 2px solid #3b82f6;
+  background: #3b82f6; /* Blue background matching primary actions */
+  color: white; /* White text for high contrast */
+  border: 2px solid #3b82f6; /* Matching border color */
 }
 
 .edit-btn:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #2563eb; /* Darker blue on hover for feedback */
+  border-color: #2563eb; /* Matching darker border on hover */
 }
 
 /* Delete button - red */
 .delete-btn {
-  background: #ef4444;
-  color: white;
-  border: 2px solid #ef4444;
+  background: #ef4444; /* Red background for destructive action */
+  color: white; /* White text for high contrast */
+  border: 2px solid #ef4444; /* Matching border color */
 }
 
 .delete-btn:hover {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: #dc2626; /* Darker red on hover for feedback */
+  border-color: #dc2626; /* Matching darker border on hover */
 }
 
 .delete-btn:disabled {
-  background: #f87171;
-  border-color: #f87171;
-  cursor: not-allowed;
-  opacity: 0.7;
+  background: #f87171; /* Lighter red when disabled */
+  border-color: #f87171; /* Matching lighter border when disabled */
+  cursor: not-allowed; /* Show not-allowed cursor when disabled */
+  opacity: 0.7; /* Reduced opacity to indicate disabled state */
 }
 
 /* File preview display styling */
 .file-preview-display {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  flex: 1;
-  min-height: 400px;
-  background: transparent !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  margin-top: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
+  display: flex; /* Use flexbox for image centering */
+  justify-content: center; /* Center image horizontally */
+  align-items: center; /* Center image vertically */
+  width: 100%; /* Take full available width */
+  flex: 1; /* Grow to take available vertical space */
+  min-height: 400px; /* Minimum height for proper preview area */
+  background: transparent !important; /* Remove any background styling */
+  border-radius: 0 !important; /* Remove border radius for full image display */
+  padding: 0 !important; /* Remove padding to maximize image area */
+  border: none !important; /* Remove any border styling */
+  margin-top: 0 !important; /* Remove top margin for tight layout */
+  max-height: none !important; /* Allow unlimited height expansion */
+  overflow: visible !important; /* Show any overflow content */
 }
 
 .file-preview-display .upload-image-preview {
-  max-width: 100%;
-  max-height: 80vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  max-width: 100%; /* Prevent image from exceeding container width */
+  max-height: 80vh; /* Limit height to 80% of viewport height */
+  width: auto; /* Allow automatic width calculation */
+  height: auto; /* Allow automatic height calculation */
+  object-fit: contain; /* Maintain aspect ratio while fitting container */
+  border-radius: 0 !important; /* Remove border radius for full image display */
+  box-shadow: none !important; /* Remove any shadow effects */
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   /* Modal body scroll adjustments for mobile */
   .image-modal-preview.modal-content .modal-body {
-    max-height: calc(100vh - 100px) !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+    max-height: calc(
+      100vh - 100px
+    ) !important; /* Adjusted height for mobile screens */
+    overflow-y: auto !important; /* Allow vertical scrolling on mobile */
+    -webkit-overflow-scrolling: touch !important; /* Smooth touch scrolling on iOS */
   }
 
   /* Adjust preview content for mobile */
   .image-preview-content {
-    height: auto !important;
-    min-height: 100%;
+    height: auto !important; /* Allow automatic height calculation on mobile */
+    min-height: 100%; /* Ensure content takes full available height */
   }
 
   /* Form actions mobile styling */
   .modal-content .form-actions {
-    gap: 0.75rem !important;
-    padding-top: 0.5rem !important;
-    margin-top: 0;
-    flex-direction: row !important;
-    justify-content: space-between !important;
+    gap: 0.75rem !important; /* Reduced gap between buttons on mobile */
+    padding-top: 0.5rem !important; /* Reduced top padding for mobile */
+    margin-top: 0; /* No top margin for tight layout */
+    flex-direction: row !important; /* Keep buttons in horizontal row */
+    justify-content: space-between !important; /* Spread buttons across width */
   }
 
   .modal-content .form-actions button {
-    flex: 1 !important;
-    min-width: unset !important;
-    padding: 1rem 1.5rem !important;
-    font-size: 16px !important;
-    order: initial !important;
-    margin: 0 !important;
+    flex: 1 !important; /* Allow buttons to grow and fill available space */
+    min-width: unset !important; /* Remove minimum width constraint on mobile */
+    padding: 1rem 1.5rem !important; /* Larger padding for better touch targets */
+    font-size: 16px !important; /* Standard font size for mobile accessibility */
+    order: initial !important; /* Reset any custom ordering */
+    margin: 0 !important; /* Remove any button margins */
   }
 
   /* File upload mobile styling */
   .file-drop-zone {
-    padding: 1.5rem 1rem;
-    min-height: 100px;
-    border-radius: 8px;
-    border-width: 2px;
+    padding: 1.5rem 1rem; /* Reduced padding for mobile to save space */
+    min-height: 100px; /* Smaller minimum height for mobile */
+    border-radius: 8px; /* Maintain rounded corners */
+    border-width: 2px; /* Keep consistent border width */
   }
 
   .file-drop-zone.has-preview {
-    padding: 0;
+    padding: 0; /* No padding when showing image preview */
   }
 
   .file-drop-content {
-    gap: 0.75rem;
+    gap: 0.75rem; /* Reduced gap between elements on mobile */
   }
 
   .drop-icon {
-    font-size: 2.5rem;
+    font-size: 2.5rem; /* Smaller icon size for mobile screens */
   }
 
   .file-drop-content p {
-    font-size: 15px;
-    text-align: center;
-    line-height: 1.4;
+    font-size: 15px; /* Slightly smaller text for mobile */
+    text-align: center; /* Center-align text for better mobile layout */
+    line-height: 1.4; /* Improved line spacing for readability */
   }
 
   .browse-btn {
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 8px;
-    min-height: 48px;
-    font-weight: 600;
+    padding: 12px 24px; /* Increased padding for better touch targets */
+    font-size: 16px; /* Standard font size for mobile accessibility */
+    border-radius: 8px; /* Larger border radius for modern mobile appearance */
+    min-height: 48px; /* Minimum height for proper touch targets */
+    font-weight: 600; /* Bolder weight for better visibility on mobile */
   }
 
   /* Image preview mobile styling */
   .file-preview-display,
   .image-preview-container {
-    min-height: 200px;
-    flex: none;
+    min-height: 200px; /* Smaller minimum height for mobile */
+    flex: none; /* Don't allow container to grow on mobile */
   }
 
   .image-preview-container {
-    max-height: 60vh;
+    max-height: 60vh; /* Limit container height to 60% of viewport */
   }
 
   .upload-image-preview,
   .image-preview-display {
-    max-height: 60vh !important;
+    max-height: 60vh !important; /* Limit image height to 60% of viewport */
   }
 
   .change-file-btn {
-    padding: 0.75rem 1.25rem;
-    font-size: 15px;
-    margin-top: 0.75rem;
+    padding: 0.75rem 1.25rem; /* Adjusted padding for mobile */
+    font-size: 15px; /* Slightly smaller font for mobile */
+    margin-top: 0.75rem; /* Reduced top margin for mobile */
   }
 
   .image-preview-placeholder {
-    padding: 1.5rem;
+    padding: 1.5rem; /* Reduced padding for mobile */
   }
 
   .image-preview-placeholder span {
-    font-size: 1.5rem;
+    font-size: 1.5rem; /* Smaller placeholder icon for mobile */
   }
 }
 
 @media (max-width: 480px) {
   /* Form actions extra small mobile */
   .modal-content .form-actions {
-    padding-top: 0.75rem !important;
-    margin-top: 1rem !important;
+    padding-top: 0.75rem !important; /* Increased top padding for small screens */
+    margin-top: 1rem !important; /* Add top margin for better separation */
   }
 
   .modal-content .form-actions button {
-    padding: 0.875rem 1.25rem !important;
-    font-size: 15px !important;
+    padding: 0.875rem 1.25rem !important; /* Adjusted padding for small screens */
+    font-size: 15px !important; /* Smaller font size for very small screens */
   }
 
   /* File upload extra small mobile */
   .file-drop-zone {
-    padding: 1rem;
-    min-height: 80px;
+    padding: 1rem; /* Further reduced padding for very small screens */
+    min-height: 80px; /* Smaller minimum height for tiny screens */
   }
 
   .file-drop-zone.has-preview {
-    padding: 0;
+    padding: 0; /* No padding when showing image preview */
   }
 
   .drop-icon {
-    font-size: 2rem;
+    font-size: 2rem; /* Smaller icon for very small screens */
   }
 
   .file-drop-content p {
-    font-size: 14px;
+    font-size: 14px; /* Smaller text for very small screens */
   }
 
   /* Image preview extra small mobile */
   .file-preview-display,
   .image-preview-container {
-    min-height: 150px !important;
-    max-height: 50vh !important;
+    min-height: 150px !important; /* Even smaller minimum height for tiny screens */
+    max-height: 50vh !important; /* Limit to 50% of viewport on tiny screens */
   }
 
   .upload-image-preview,
   .image-preview-display {
-    max-height: 50vh !important;
+    max-height: 50vh !important; /* Limit image height to 50% of viewport */
   }
 
   .change-file-btn {
-    padding: 0.625rem 1rem;
-    font-size: 14px;
+    padding: 0.625rem 1rem; /* Smaller padding for tiny screens */
+    font-size: 14px; /* Smaller font size for very small screens */
   }
 
   .image-preview-placeholder {
-    padding: 1rem;
+    padding: 1rem; /* Reduced padding for very small screens */
   }
 }

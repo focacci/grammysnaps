@@ -1,537 +1,578 @@
 /* Reset and base styles */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  margin: 0; /* Remove default margin from all elements */
+  padding: 0; /* Remove default padding from all elements */
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
 }
 
 /* CSS Custom Properties - Consolidated Theme System */
 :root {
   /* Brand Colors */
-  --primary-color: #ff7f00;
-  --primary-orange: #ff7f00;
-  --primary-orange-dark: #e56f00;
-  --secondary-blue: #2196f3;
-  --secondary-blue-dark: #1976d2;
-  --success-green: #4caf50;
-  --success-green-dark: #388e3c;
+  --primary-color: #ff7f00; /* Main brand orange color */
+  --primary-orange: #ff7f00; /* Primary orange for buttons, highlights, etc. */
+  --primary-orange-dark: #e56f00; /* Darker shade of orange for hover states */
+  --secondary-blue: #2196f3; /* Secondary blue color for accents */
+  --secondary-blue-dark: #1976d2; /* Darker shade of blue for hover states */
+  --success-green: #4caf50; /* Green color for success states */
+  --success-green-dark: #388e3c; /* Darker green for hover states */
 
   /* Light Theme */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-sidebar: #f5f6fa;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --text-inverse: #ffffff;
-  --border-light: #e9ecef;
-  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-  --navbar-height: 64px;
+  --bg-primary: #ffffff; /* Main background color for light theme */
+  --bg-secondary: #f8f9fa; /* Secondary background color for cards, sections */
+  --bg-sidebar: #f5f6fa; /* Specific background color for sidebar areas */
+  --text-primary: #212529; /* Primary text color for headings and main content */
+  --text-secondary: #6c757d; /* Secondary text color for less important text */
+  --text-inverse: #ffffff; /* Inverse text color for dark backgrounds */
+  --border-light: #e9ecef; /* Light border color for separators and outlines */
+  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Medium shadow for cards and modals */
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175); /* Large shadow for dropdowns and overlays */
+  --navbar-height: 64px; /* Fixed height of the navigation bar */
 }
 
 /* Dark Mode - Only override differences */
 [data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-sidebar: #242424;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-inverse: #000000;
-  --border-light: #404040;
-  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+  --bg-primary: #1a1a1a; /* Dark primary background color */
+  --bg-secondary: #2d2d2d; /* Dark secondary background for contrast */
+  --bg-sidebar: #242424; /* Dark sidebar background color */
+  --text-primary: #ffffff; /* White text for dark backgrounds */
+  --text-secondary: #b3b3b3; /* Light gray text for secondary content */
+  --text-inverse: #000000; /* Black text for light backgrounds in dark mode */
+  --border-light: #404040; /* Dark gray borders that are visible on dark backgrounds */
+  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.4); /* Stronger shadows for dark mode */
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.5); /* Even stronger shadows for overlays */
 }
 
 /* Base Layout */
 html,
 body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  margin: 0; /* Remove default browser margins */
+  padding: 0; /* Remove default browser padding */
+  width: 100%; /* Full width of viewport */
+  height: 100%; /* Full height of viewport */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  background-color: var(
+    --bg-primary
+  ); /* Set background to theme-aware primary color */
+  color: var(--text-primary); /* Set text color to theme-aware primary text */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+    sans-serif; /* System font stack for optimal rendering across platforms */
+  transition: background-color 0.2s ease, color 0.2s ease; /* Smooth transitions when switching themes */
 }
 
 #root {
-  width: 100%;
-  height: 100%;
+  width: 100%; /* Full width to fill parent container */
+  height: 100%; /* Full height to fill parent container */
 }
 
 .app {
-  min-height: 100vh;
-  width: 100vw;
-  max-width: 100%;
-  background-color: var(--bg-primary);
+  min-height: 100vh; /* Minimum height to fill entire viewport */
+  width: 100vw; /* Full viewport width */
+  max-width: 100%; /* Prevent overflow beyond viewport */
+  background-color: var(--bg-primary); /* Theme-aware background color */
 }
 
 /* Mobile app container adjustments */
 @media (max-width: 768px) {
   .app {
-    height: 100vh;
-    overflow: hidden; /* Prevent body scroll on mobile */
-    position: relative; /* Establish positioning context */
+    height: 100vh; /* Fixed height on mobile to prevent browser UI issues */
+    overflow: hidden; /* Prevent body scroll on mobile - use internal scrolling instead */
+    position: relative; /* Establish positioning context for child elements */
   }
 
   /* Prevent unwanted body scroll behavior on mobile */
   body {
     overflow: hidden; /* Completely prevent body scroll on mobile */
-    position: fixed; /* Lock body position */
-    width: 100%;
-    height: 100%;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none; /* Prevent bounce scrolling */
+    position: fixed; /* Lock body position to prevent scrolling issues */
+    width: 100%; /* Maintain full width */
+    height: 100%; /* Maintain full height */
+    -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
+    overscroll-behavior: none; /* Prevent bounce scrolling on mobile browsers */
   }
 }
 
 /* Global Button & Input Styles */
 button {
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
+  border: none; /* Remove default button borders */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  font-weight: 600; /* Semi-bold font weight for better visibility */
+  cursor: pointer; /* Show pointer cursor on hover */
+  transition: all 0.2s ease; /* Smooth transitions for interactive states */
+  font-family: inherit; /* Use the same font as parent elements */
   /* Prevent zoom on iOS */
-  font-size: 16px;
+  font-size: 16px; /* Minimum font size to prevent iOS zoom on focus */
 }
 
 button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.6; /* Reduce opacity to show disabled state */
+  cursor: not-allowed; /* Show not-allowed cursor for disabled buttons */
 }
 
 .btn-primary {
-  background-color: var(--primary-orange);
-  color: var(--text-inverse);
-  padding: 12px 24px;
-  font-size: 16px;
+  background-color: var(
+    --primary-orange
+  ); /* Orange background for primary actions */
+  color: var(--text-inverse); /* White text for contrast */
+  padding: 12px 24px; /* Comfortable padding for clickable area */
+  font-size: 16px; /* Standard readable font size */
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-orange-dark);
+  background-color: var(
+    --primary-orange-dark
+  ); /* Darker orange on hover for feedback */
 }
 
 /* Mobile button adjustments */
 @media (max-width: 768px) {
   .btn-primary {
-    padding: 14px 20px;
-    font-size: 16px;
-    min-height: 44px; /* iOS recommended touch target size */
+    padding: 14px 20px; /* Larger padding for easier touch interaction */
+    font-size: 16px; /* Maintain 16px to prevent iOS zoom */
+    min-height: 44px; /* iOS recommended minimum touch target size */
   }
 }
 
 .btn-secondary {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  padding: 10px 20px;
-  font-size: 14px;
+  background-color: var(--bg-secondary); /* Secondary background color */
+  color: var(--text-primary); /* Primary text color for readability */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  padding: 10px 20px; /* Slightly smaller padding than primary button */
+  font-size: 14px; /* Smaller font size for secondary importance */
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--border-light);
+  background-color: var(--border-light); /* Lighter background on hover */
 }
 
 input,
 textarea {
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 16px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: border-color 0.2s ease;
+  border: 1px solid var(--border-light); /* Light border for form fields */
+  border-radius: 8px; /* Rounded corners to match button styling */
+  padding: 12px; /* Comfortable padding for text input */
+  font-size: 16px; /* Minimum size to prevent iOS zoom */
+  background-color: var(--bg-primary); /* Theme-aware background */
+  color: var(--text-primary); /* Theme-aware text color */
+  font-family: inherit; /* Use same font as rest of application */
+  transition: border-color 0.2s ease; /* Smooth border color transitions */
   /* Prevent zoom on iOS */
-  -webkit-appearance: none;
-  appearance: none;
+  -webkit-appearance: none; /* Remove iOS default styling */
+  appearance: none; /* Remove default browser styling */
 }
 
 input:focus,
 textarea:focus {
-  outline: none;
-  border-color: var(--primary-orange);
-  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
+  outline: none; /* Remove default browser focus outline */
+  border-color: var(--primary-orange); /* Orange border when focused */
+  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1); /* Orange glow effect for focus */
 }
 
 /* Mobile input adjustments */
 @media (max-width: 768px) {
   input,
   textarea {
-    padding: 14px 12px;
-    font-size: 16px; /* Prevent zoom on iOS */
-    min-height: 44px; /* iOS recommended touch target size */
+    padding: 14px 12px; /* Larger padding for easier mobile interaction */
+    font-size: 16px; /* Prevent zoom on iOS devices */
+    min-height: 44px; /* iOS recommended minimum touch target size */
   }
 }
 
 /* Navbar styles */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  margin: 0;
+  display: flex; /* Flexbox layout for navbar items */
+  justify-content: space-between; /* Space items evenly across navbar */
+  align-items: center; /* Vertically center all navbar items */
+  padding: 1rem 2rem; /* Comfortable padding around navbar content */
+  margin: 0; /* Remove any default margins */
   background: linear-gradient(
     135deg,
     var(--primary-orange),
     var(--primary-orange-dark)
-  );
-  border-bottom: 1px solid var(--primary-orange-dark);
-  box-shadow: var(--shadow-md);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000; /* Increased z-index to ensure it stays above everything */
-  width: 100%;
-  box-sizing: border-box;
-  height: var(--navbar-height);
+  ); /* Orange gradient background */
+  border-bottom: 1px solid var(--primary-orange-dark); /* Darker border at bottom */
+  box-shadow: var(--shadow-md); /* Medium shadow for depth */
+  position: fixed; /* Fixed position to stay at top during scroll */
+  top: 0; /* Position at very top of viewport */
+  left: 0; /* Align to left edge */
+  right: 0; /* Stretch to right edge */
+  z-index: 1000; /* High z-index to stay above all other content */
+  width: 100%; /* Full width of viewport */
+  box-sizing: border-box; /* Include padding in width calculation */
+  height: var(
+    --navbar-height
+  ); /* Use CSS custom property for consistent height */
 }
 
 /* Mobile navbar adjustments */
 @media (max-width: 768px) {
   .navbar {
-    padding: 0.75rem 1rem;
-    height: 56px;
+    padding: 0.75rem 1rem; /* Reduced padding for smaller screens */
+    height: 56px; /* Smaller height on mobile to save screen space */
   }
 
   :root {
-    --navbar-height: 56px;
+    --navbar-height: 56px; /* Override navbar height variable for mobile */
   }
 }
 
 .navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  display: flex; /* Flexbox for left navbar items */
+  align-items: center; /* Vertically center items */
+  gap: 20px; /* Space between left navbar items */
 }
 
 /* Mobile navbar-left adjustments */
 @media (max-width: 768px) {
   .navbar-left {
-    gap: 12px;
+    gap: 12px; /* Reduced spacing on mobile */
   }
 }
 
 .navbar-center {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 100%;
+  display: flex; /* Flexbox for center navbar items */
+  align-items: center; /* Vertically center items */
+  gap: 0; /* No gap between navigation buttons */
+  position: absolute; /* Absolute positioning to center in navbar */
+  left: 50%; /* Start at 50% from left */
+  transform: translateX(
+    -50%
+  ); /* Move back by 50% of own width to truly center */
+  height: 100%; /* Full height of navbar */
 }
 
 .nav-button {
-  background: none;
-  border: none;
-  color: var(--text-inverse);
-  font-size: 18px;
-  font-weight: 600;
-  padding: 0 32px;
-  height: 100%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 120px;
-  position: relative;
+  background: none; /* Transparent background */
+  border: none; /* No border */
+  color: var(--text-inverse); /* White text for contrast on orange navbar */
+  font-size: 18px; /* Large enough for readability */
+  font-weight: 600; /* Semi-bold for emphasis */
+  padding: 0 32px; /* Horizontal padding for comfortable click area */
+  height: 100%; /* Full height of navbar */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  border-radius: 0; /* No border radius for navbar buttons */
+  display: flex; /* Flexbox for centering content */
+  align-items: center; /* Vertically center button text */
+  justify-content: center; /* Horizontally center button text */
+  min-width: 120px; /* Minimum width for consistent button sizes */
+  position: relative; /* Relative positioning for pseudo-element */
 }
 
 /* Mobile nav-button adjustments */
 @media (max-width: 768px) {
   .nav-button {
-    font-size: 16px;
-    padding: 0 16px;
-    min-width: 80px;
+    font-size: 16px; /* Smaller font size for mobile */
+    padding: 0 16px; /* Reduced padding for mobile */
+    min-width: 80px; /* Smaller minimum width for mobile */
   }
 }
 
 @media (max-width: 480px) {
   .nav-button {
-    font-size: 14px;
-    padding: 0 12px;
-    min-width: 60px;
+    font-size: 14px; /* Even smaller font for very small screens */
+    padding: 0 12px; /* Minimal padding for small screens */
+    min-width: 60px; /* Minimal width for small screens */
   }
 }
 
 .nav-button::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background-color: var(--text-inverse);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+  content: ""; /* Empty content for pseudo-element */
+  position: absolute; /* Absolute positioning relative to button */
+  bottom: 0; /* Position at bottom of button */
+  left: 0; /* Start at left edge */
+  right: 0; /* Extend to right edge */
+  height: 3px; /* Thickness of active indicator line */
+  background-color: var(--text-inverse); /* White color for indicator */
+  transform: scaleX(0); /* Initially hidden (scale to 0 width) */
+  transition: transform 0.3s ease; /* Smooth transition when showing/hiding */
 }
 
 .nav-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-inverse);
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Subtle white overlay on hover */
+  color: var(--text-inverse); /* Maintain white text color */
 }
 
 .nav-button.active::before {
-  transform: scaleX(1);
+  transform: scaleX(1); /* Show full width indicator for active nav item */
 }
 
 .nav-button.active {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--text-inverse);
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.2
+  ); /* Stronger white overlay for active state */
+  color: var(--text-inverse); /* Maintain white text */
 }
 
 .nav-button.active:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.3
+  ); /* Even stronger overlay when hovering active item */
 }
 
 .navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: flex; /* Flexbox for right navbar items */
+  align-items: center; /* Vertically center items */
+  gap: 16px; /* Space between right navbar items */
 }
 
 /* Logo styles */
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--text-inverse);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 1.5rem; /* Large font size for brand prominence */
+  font-weight: bold; /* Bold text for brand emphasis */
+  color: var(--text-inverse); /* White text for contrast on orange navbar */
+  text-decoration: none; /* Remove underline from link */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
 }
 
 .logo:hover {
-  color: rgba(255, 255, 255, 0.9);
-  transform: scale(1.05);
+  color: rgba(255, 255, 255, 0.9); /* Slightly transparent white on hover */
+  transform: scale(1.05); /* Slight scale up on hover for feedback */
 }
 
 /* Mobile logo adjustments */
 @media (max-width: 768px) {
   .logo {
-    font-size: 1.3rem;
+    font-size: 1.3rem; /* Smaller font size for mobile screens */
   }
 
   /* Remove hover effects on mobile */
   .logo:hover {
-    color: var(--text-inverse);
-    transform: none;
+    color: var(--text-inverse); /* No color change on mobile hover */
+    transform: none; /* No transform on mobile hover */
   }
 
   /* Add click feedback on mobile */
   .logo:active {
-    color: rgba(255, 255, 255, 0.9);
-    transform: scale(1.05);
-    transition: all 0.1s ease;
+    color: rgba(255, 255, 255, 0.9); /* Brief color change on tap */
+    transform: scale(1.05); /* Brief scale on tap */
+    transition: all 0.1s ease; /* Quick transition for tap feedback */
   }
 
   /* Create a brief flash effect after click */
   .logo.clicked {
-    color: rgba(255, 255, 255, 0.9);
-    transform: scale(1.05);
-    animation: logoClickFeedback 0.5s ease-out;
+    color: rgba(255, 255, 255, 0.9); /* Color change for clicked state */
+    transform: scale(1.05); /* Scale change for clicked state */
+    animation: logoClickFeedback 0.5s ease-out; /* Animation for click feedback */
   }
 }
 
 @keyframes logoClickFeedback {
   0% {
-    transform: scale(1.05);
+    transform: scale(1.05); /* Start with scaled up state */
   }
   100% {
-    transform: scale(1);
+    transform: scale(1); /* End with normal scale */
   }
 }
 
 @media (max-width: 480px) {
   .logo {
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Even smaller font for very small screens */
   }
 }
 
 /* Profile dropdown styles */
 .profile-dropdown {
-  position: relative;
+  position: relative; /* Relative positioning for absolute dropdown positioning */
 }
 
 .profile-icon {
-  width: 42px;
-  height: 42px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--text-inverse);
+  width: 42px; /* Fixed width for consistent profile icon size */
+  height: 42px; /* Fixed height for consistent profile icon size */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.2
+  ); /* Subtle white background on orange navbar */
+  border-radius: 50%; /* Circular shape */
+  border: none; /* No border */
+  display: flex; /* Flexbox for centering content */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  color: var(--text-inverse); /* White color for icon/text */
 }
 
 .profile-icon:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.3
+  ); /* Stronger white background on hover */
+  transform: scale(1.05); /* Slight scale up on hover */
 }
 
 .profile-icon span {
-  font-size: 1rem;
+  font-size: 1rem; /* Standard font size for icon text */
 }
 
 .profile-avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: center;
+  width: 100%; /* Full width of profile icon container */
+  height: 100%; /* Full height of profile icon container */
+  border-radius: 50%; /* Circular shape to match container */
+  object-fit: cover; /* Cover the container while maintaining aspect ratio */
+  object-position: center; /* Center the image within container */
 }
 
 .profile-avatar-icon {
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 1rem; /* Standard font size for avatar icon */
+  display: flex; /* Flexbox for centering */
+  align-items: center; /* Vertically center icon */
+  justify-content: center; /* Horizontally center icon */
 }
 
 /* Mobile profile icon adjustments */
 @media (max-width: 768px) {
   .profile-icon {
-    width: 38px;
-    height: 38px;
+    width: 38px; /* Smaller width for mobile */
+    height: 38px; /* Smaller height for mobile */
   }
 
   .profile-icon span {
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Smaller font size for mobile */
   }
 
   .profile-avatar-icon {
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Smaller icon font size for mobile */
   }
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  box-shadow: var(--shadow-lg);
-  min-width: 220px;
-  z-index: 1000;
-  overflow: hidden;
+  position: absolute; /* Absolute positioning relative to profile dropdown */
+  top: 100%; /* Position below the profile icon */
+  right: 0; /* Align to right edge of profile icon */
+  margin-top: 8px; /* Small gap between icon and dropdown */
+  background: var(--bg-primary); /* Theme-aware background color */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  border-radius: 8px; /* Rounded corners to match app styling */
+  box-shadow: var(--shadow-lg); /* Large shadow for depth and separation */
+  min-width: 220px; /* Minimum width for readable dropdown items */
+  z-index: 1000; /* High z-index to appear above other content */
+  overflow: hidden; /* Hide overflow to respect border-radius */
 }
 
 .dropdown-item {
-  width: 100%;
-  padding: 16px 20px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  font-size: 15px;
-  color: var(--text-primary);
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  width: 100%; /* Full width of dropdown container */
+  padding: 16px 20px; /* Comfortable padding for click area */
+  background: none; /* Transparent background */
+  border: none; /* No border */
+  text-align: left; /* Left-align text */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  font-size: 15px; /* Readable font size */
+  color: var(--text-primary); /* Theme-aware text color */
+  transition: background-color 0.2s ease; /* Smooth background transition on hover */
+  display: flex; /* Flexbox for item layout */
+  align-items: center; /* Vertically center item content */
+  gap: 10px; /* Space between icon and text */
 }
 
 .dropdown-item:hover {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-secondary); /* Secondary background on hover */
 }
 
 .dropdown-item:not(:last-child) {
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light); /* Border between items (except last) */
 }
 
 /* Theme toggle styles */
 .dropdown-toggle-container {
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--border-light);
-  background-color: var(--bg-secondary);
+  padding: 10px 16px; /* Comfortable padding around toggle */
+  display: flex; /* Flexbox for toggle layout */
+  align-items: center; /* Vertically center toggle elements */
+  justify-content: space-between; /* Space between label and toggle */
+  border-top: 1px solid var(--border-light); /* Border to separate from dropdown items */
+  background-color: var(
+    --bg-secondary
+  ); /* Secondary background to distinguish from items */
 }
 
 .toggle-label {
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 500;
+  font-size: 13px; /* Small font size for label */
+  color: var(--text-primary); /* Theme-aware text color */
+  font-weight: 500; /* Medium font weight for readability */
 }
 
 .theme-toggle {
-  position: relative;
-  width: 40px;
-  height: 22px;
-  background-color: #e5e7eb;
-  border: none;
-  border-radius: 11px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 1px;
+  position: relative; /* Relative positioning for slider positioning */
+  width: 40px; /* Fixed width for toggle switch */
+  height: 22px; /* Fixed height for toggle switch */
+  background-color: #e5e7eb; /* Light gray background for off state */
+  border: none; /* No border */
+  border-radius: 11px; /* Rounded to create pill shape */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for state changes */
+  padding: 1px; /* Small padding for slider positioning */
 }
 
 .theme-toggle.active {
-  background-color: var(--primary-orange);
+  background-color: var(
+    --primary-orange
+  ); /* Orange background when toggle is active */
 }
 
 .toggle-slider {
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 20px;
-  height: 20px;
-  background-color: white;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  position: absolute; /* Absolute positioning within toggle */
+  top: 1px; /* Small offset from top */
+  left: 1px; /* Start position on left side */
+  width: 20px; /* Fixed width for circular slider */
+  height: 20px; /* Fixed height for circular slider */
+  background-color: white; /* White background for slider */
+  border-radius: 50%; /* Circular shape */
+  transition: all 0.3s ease; /* Smooth transition when sliding */
+  display: flex; /* Flexbox for centering icon */
+  align-items: center; /* Vertically center icon */
+  justify-content: center; /* Horizontally center icon */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
 }
 
 .theme-toggle.active .toggle-slider {
-  transform: translateX(18px);
+  transform: translateX(18px); /* Move slider to right when toggle is active */
 }
 
 .toggle-icon {
-  font-size: 10px;
-  transition: all 0.3s ease;
+  font-size: 10px; /* Small font size for toggle icon */
+  transition: all 0.3s ease; /* Smooth transition for icon changes */
 }
 
 /* Dark mode adjustments for toggle */
 [data-theme="dark"] .theme-toggle {
-  background-color: #374151;
+  background-color: #374151; /* Dark gray background for dark mode off state */
 }
 
 [data-theme="dark"] .theme-toggle.active {
-  background-color: var(--primary-orange);
+  background-color: var(
+    --primary-orange
+  ); /* Keep orange for active state in dark mode */
 }
 
 [data-theme="dark"] .toggle-slider {
-  background-color: #f9fafb;
+  background-color: #f9fafb; /* Light background for slider in dark mode */
 }
 
 /* Main content area */
 .main-content {
-  padding: 0;
-  width: 100%;
-  height: 100vh; /* Full height */
-  padding-top: var(--navbar-height); /* Push content below navbar */
-  background-color: var(--bg-primary);
-  transition: background-color 0.3s ease;
+  padding: 0; /* No padding by default */
+  width: 100%; /* Full width of container */
+  height: 100vh; /* Full viewport height */
+  padding-top: var(--navbar-height); /* Push content below fixed navbar */
+  background-color: var(--bg-primary); /* Theme-aware background */
+  transition: background-color 0.3s ease; /* Smooth background transitions */
   box-sizing: border-box; /* Include padding in height calculation */
-  display: flex; /* Make it a flex container */
+  display: flex; /* Flexbox layout for child components */
   flex-direction: column; /* Stack children vertically */
 }
 
@@ -540,44 +581,44 @@ textarea:focus {
   .main-content {
     height: calc(
       100vh - var(--navbar-height)
-    ); /* Proper height calculation on mobile */
+    ); /* Proper height calculation accounting for mobile navbar */
     /* Remove dynamic viewport height to prevent browser UI issues */
   }
 }
 
 /* Home View Styles */
 .home-view {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 60vh;
-  padding: 40px 20px;
+  display: flex; /* Flexbox for centering home content */
+  justify-content: center; /* Horizontally center content */
+  align-items: center; /* Vertically center content */
+  min-height: 60vh; /* Minimum height for good visual balance */
+  padding: 40px 20px; /* Comfortable padding around content */
 }
 
 .home-content {
-  text-align: center;
-  max-width: 600px;
+  text-align: center; /* Center-align all text content */
+  max-width: 600px; /* Maximum width for optimal reading */
 }
 
 .home-content h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  color: var(--text-primary);
+  font-size: 3rem; /* Large font size for main heading */
+  margin-bottom: 20px; /* Space below heading */
+  color: var(--text-primary); /* Theme-aware text color */
   background: linear-gradient(
     135deg,
     var(--primary-orange),
     var(--primary-orange-dark)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  ); /* Orange gradient for brand consistency */
+  -webkit-background-clip: text; /* Clip background to text (WebKit) */
+  -webkit-text-fill-color: transparent; /* Make text transparent to show gradient (WebKit) */
+  background-clip: text; /* Clip background to text (standard) */
 }
 
 .home-content p {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  margin-bottom: 30px;
-  line-height: 1.6;
+  font-size: 1.2rem; /* Larger font size for subtitle */
+  color: var(--text-secondary); /* Secondary text color */
+  margin-bottom: 30px; /* Space below paragraph */
+  line-height: 1.6; /* Comfortable line spacing */
 }
 
 .get-started-btn {
@@ -585,58 +626,58 @@ textarea:focus {
     135deg,
     var(--primary-orange),
     var(--primary-orange-dark)
-  );
-  color: var(--text-inverse);
-  border: none;
-  padding: 12px 30px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
+  ); /* Orange gradient background for CTA button */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* No border */
+  padding: 12px 30px; /* Comfortable padding for click area */
+  font-size: 18px; /* Large font size for prominence */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 8px; /* Rounded corners to match app styling */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  box-shadow: var(--shadow-md); /* Medium shadow for depth */
 }
 
 .get-started-btn:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg); /* Larger shadow on hover for lift effect */
 }
 
 .get-started-btn:active {
-  transform: translateY(0);
+  transform: translateY(0); /* Remove any transform on click */
 }
 
 /* Mobile home view adjustments */
 @media (max-width: 768px) {
   .home-view {
-    padding: 20px 16px;
-    min-height: 50vh;
+    padding: 20px 16px; /* Reduced padding for mobile screens */
+    min-height: 50vh; /* Smaller minimum height on mobile */
   }
 
   .home-content h1 {
-    font-size: 2.2rem;
-    margin-bottom: 16px;
+    font-size: 2.2rem; /* Smaller heading font size for mobile */
+    margin-bottom: 16px; /* Reduced margin for mobile */
   }
 
   .home-content p {
-    font-size: 1.1rem;
-    margin-bottom: 24px;
+    font-size: 1.1rem; /* Smaller paragraph font size for mobile */
+    margin-bottom: 24px; /* Reduced margin for mobile */
   }
 
   .get-started-btn {
-    padding: 16px 32px;
-    font-size: 18px;
-    min-height: 44px;
-    width: 100%;
-    max-width: 300px;
+    padding: 16px 32px; /* Larger padding for easier touch interaction */
+    font-size: 18px; /* Maintain readable font size */
+    min-height: 44px; /* iOS recommended touch target size */
+    width: 100%; /* Full width on mobile */
+    max-width: 300px; /* Maximum width to prevent button from being too wide */
   }
 }
 
 @media (max-width: 480px) {
   .home-content h1 {
-    font-size: 1.8rem;
+    font-size: 1.8rem; /* Even smaller heading for very small screens */
   }
 
   .home-content p {
-    font-size: 1rem;
+    font-size: 1rem; /* Standard paragraph size for very small screens */
   }
 }

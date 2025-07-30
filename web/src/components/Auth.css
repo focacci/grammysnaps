@@ -1,290 +1,318 @@
 /* Auth Modal - Simplified & Consolidated */
 .auth-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  position: fixed; /* Fixed positioning to cover entire viewport */
+  top: 0; /* Cover from top edge */
+  left: 0; /* Cover from left edge */
+  right: 0; /* Cover to right edge */
+  bottom: 0; /* Cover to bottom edge */
+  display: flex; /* Flexbox for centering modal */
+  align-items: center; /* Vertically center modal content */
+  justify-content: center; /* Horizontally center modal content */
+  z-index: 1000; /* High z-index to appear above all other content */
   /* Enable vertical scrolling only, prevent horizontal scrolling */
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 20px;
-  box-sizing: border-box;
+  overflow-y: auto; /* Allow vertical scrolling when content overflows */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  padding: 20px; /* Padding around modal for breathing room */
+  box-sizing: border-box; /* Include padding in width/height calculations */
   /* Add backdrop */
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black backdrop */
   /* Improve scroll behavior on iOS */
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
 }
 
+/* Auth modal container */
 .auth-modal {
-  background: var(--bg-primary);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 400px;
-  margin: auto;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-light);
+  background: var(--bg-primary); /* Theme background color */
+  border-radius: 12px; /* Rounded corners for modern look */
+  width: 100%; /* Full width of container */
+  max-width: 400px; /* Maximum width for desktop readability */
+  margin: auto; /* Center horizontally when smaller than max-width */
+  box-shadow: var(--shadow-lg); /* Large shadow for elevation */
+  border: 1px solid var(--border-light); /* Light border for definition */
   /* Ensure modal can shrink and grow as needed */
-  min-height: min-content;
-  max-height: calc(100vh - 40px);
-  display: flex;
-  flex-direction: column;
+  min-height: min-content; /* Minimum height based on content */
+  max-height: calc(100vh - 40px); /* Maximum height leaving space for padding */
+  display: flex; /* Flexbox for vertical layout */
+  flex-direction: column; /* Stack elements vertically */
   /* Ensure modal stays within viewport bounds */
-  position: relative;
+  position: relative; /* Positioning context for child elements */
   /* Prevent any content from overflowing horizontally */
-  overflow-x: hidden;
-  box-sizing: border-box;
+  overflow-x: hidden; /* Hide horizontal overflow */
+  box-sizing: border-box; /* Include padding/border in width calculations */
 }
 
 /* Ensure all children respect container bounds */
 .auth-modal * {
-  box-sizing: border-box;
-  max-width: 100%;
+  box-sizing: border-box; /* Include padding/border in all child elements */
+  max-width: 100%; /* Prevent any child from exceeding container width */
 }
 
+/* Auth modal header container */
 .auth-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border-light);
+  display: flex; /* Flexbox for horizontal layout */
+  justify-content: space-between; /* Space between title and close button */
+  align-items: center; /* Vertically center header content */
+  padding: 20px 24px; /* Comfortable padding around header */
+  border-bottom: 1px solid var(--border-light); /* Border separator below header */
   /* Prevent header from shrinking */
-  flex-shrink: 0;
+  flex-shrink: 0; /* Keep header at fixed size */
 }
 
+/* Auth modal title styling */
 .auth-header h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  font-weight: 600;
+  margin: 0; /* Remove default margin */
+  color: var(--text-primary); /* Theme text color */
+  font-size: 1.5rem; /* Large title font size */
+  font-weight: 600; /* Semi-bold for emphasis */
 }
 
+/* Auth modal close button styling */
 .auth-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  background: none; /* Transparent background */
+  border: none; /* Remove default button border */
+  font-size: 24px; /* Large font size for close icon */
+  color: var(--text-secondary); /* Secondary text color */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  padding: 0; /* Remove default padding */
+  width: 30px; /* Fixed width for circular button */
+  height: 30px; /* Fixed height for circular button */
+  display: flex; /* Flexbox for centering icon */
+  align-items: center; /* Vertically center icon */
+  justify-content: center; /* Horizontally center icon */
+  border-radius: 50%; /* Circular button shape */
+  transition: all 0.2s ease; /* Smooth transitions for hover effects */
 }
 
+/* Close button hover effect */
 .auth-close:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: var(--bg-secondary); /* Secondary background on hover */
+  color: var(--text-primary); /* Primary text color on hover */
 }
 
+/* Auth form container */
 .auth-form {
-  padding: 24px;
+  padding: 24px; /* Comfortable padding around form content */
   /* Allow form to scroll when content overflows */
-  overflow-y: auto;
+  overflow-y: auto; /* Enable vertical scrolling when needed */
   /* Prevent horizontal scrolling */
-  overflow-x: hidden;
+  overflow-x: hidden; /* Hide horizontal overflow */
   /* Ensure form takes up remaining space */
-  flex: 1;
+  flex: 1; /* Take remaining space after header and footer */
   /* Prevent form from shrinking below its minimum content size */
-  min-height: 0;
+  min-height: 0; /* Allow flex item to shrink below content size */
   /* Improve touch scrolling on mobile */
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
   /* Ensure proper box sizing */
-  box-sizing: border-box;
+  box-sizing: border-box; /* Include padding in width calculations */
   /* Smooth scroll behavior */
-  scroll-behavior: smooth;
+  scroll-behavior: smooth; /* Smooth scrolling animation */
 }
 
 /* Form Elements - Use Global Styles */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 20px; /* Space between form groups */
 }
 
+/* Form group label styling */
 .form-group label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--text-primary);
-  font-weight: 500;
-  font-size: 0.95rem;
+  display: block; /* Block display for full width */
+  margin-bottom: 6px; /* Space below label */
+  color: var(--text-primary); /* Theme text color */
+  font-weight: 500; /* Medium weight for emphasis */
+  font-size: 0.95rem; /* Slightly smaller than body text */
 }
 
+/* Form group input styling */
 .form-group input {
-  width: 100%;
-  box-sizing: border-box;
+  width: 100%; /* Full width input */
+  box-sizing: border-box; /* Include padding in width calculation */
   /* Ensure inputs don't cause zoom on iOS */
-  font-size: 16px;
+  font-size: 16px; /* 16px prevents zoom on iOS */
 }
 
-/* Mobile form optimizations */
+/* Mobile form responsive optimizations */
 @media (max-width: 480px) {
   .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 16px; /* Reduced margin for mobile */
   }
 
   .form-group label {
-    font-size: 0.9rem;
-    margin-bottom: 4px;
+    font-size: 0.9rem; /* Slightly smaller font for mobile */
+    margin-bottom: 4px; /* Reduced margin for mobile */
   }
 }
 
+/* Password mismatch error message styling */
 .password-mismatch-error {
-  color: #d32f2f;
-  font-size: 0.85rem;
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  color: #d32f2f; /* Red color for error indication */
+  font-size: 0.85rem; /* Small font size for error text */
+  margin-top: 6px; /* Space above error message */
+  display: flex; /* Flexbox for icon and text alignment */
+  align-items: center; /* Vertically center icon and text */
+  gap: 4px; /* Small gap between icon and text */
 }
 
+/* Dark theme password mismatch error styling */
 [data-theme="dark"] .password-mismatch-error {
-  color: #ff5252;
+  color: #ff5252; /* Lighter red for dark theme */
 }
 
+/* Field error message styling */
 .field-error {
-  color: #d32f2f;
-  font-size: 0.85rem;
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  color: #d32f2f; /* Red color for error indication */
+  font-size: 0.85rem; /* Small font size for error text */
+  margin-top: 6px; /* Space above error message */
+  display: flex; /* Flexbox for icon and text alignment */
+  align-items: center; /* Vertically center icon and text */
+  gap: 4px; /* Small gap between icon and text */
 }
 
+/* Dark theme field error styling */
 [data-theme="dark"] .field-error {
-  color: #ff5252;
+  color: #ff5252; /* Lighter red for dark theme */
 }
 
+/* Auth error message container styling */
 .auth-error {
-  background: rgba(244, 67, 54, 0.1);
-  border: 1px solid rgba(244, 67, 54, 0.3);
-  color: #d32f2f;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
+  background: rgba(244, 67, 54, 0.1); /* Light red background for error */
+  border: 1px solid rgba(244, 67, 54, 0.3); /* Red border for error indication */
+  color: #d32f2f; /* Dark red text for error */
+  padding: 12px 16px; /* Comfortable padding around error message */
+  border-radius: 8px; /* Rounded corners for modern look */
+  margin-bottom: 20px; /* Space below error message */
+  font-size: 0.9rem; /* Slightly smaller font for error text */
 }
 
+/* Dark theme auth error styling */
 [data-theme="dark"] .auth-error {
-  background: rgba(244, 67, 54, 0.15);
-  border-color: rgba(244, 67, 54, 0.4);
-  color: #ff5252;
+  background: rgba(
+    244,
+    67,
+    54,
+    0.15
+  ); /* Slightly more opacity for dark theme */
+  border-color: rgba(244, 67, 54, 0.4); /* Stronger border for dark theme */
+  color: #ff5252; /* Lighter red for dark theme */
 }
 
+/* Auth submit button styling */
 .auth-submit {
-  width: 100%;
-  padding: 12px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 20px;
+  width: 100%; /* Full width button */
+  padding: 12px; /* Comfortable padding for button */
+  background: var(--primary-color); /* Primary theme color */
+  color: white; /* White text for contrast */
+  border: none; /* Remove default button border */
+  border-radius: 8px; /* Rounded corners for modern look */
+  font-size: 16px; /* Standard font size, prevents iOS zoom */
+  font-weight: 600; /* Semi-bold for emphasis */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.2s ease; /* Smooth transitions for hover effects */
+  margin-bottom: 20px; /* Space below submit button */
 }
 
+/* Submit button hover effect */
 .auth-submit:hover:not(:disabled) {
-  background: #388e3c;
+  background: #388e3c; /* Darker green on hover */
 }
 
+/* Submit button disabled state */
 .auth-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.6; /* Reduced opacity when disabled */
+  cursor: not-allowed; /* Not-allowed cursor when disabled */
 }
 
+/* Auth switch section for toggling between login/register */
 .auth-switch {
-  text-align: center;
-  padding: 16px;
-  border-top: 1px solid var(--border-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center; /* Center-align text content */
+  padding: 16px; /* Padding around switch section */
+  border-top: 1px solid var(--border-light); /* Top border separator */
+  display: flex; /* Flexbox for centering content */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
   /* Prevent switch section from shrinking */
-  flex-shrink: 0;
+  flex-shrink: 0; /* Keep switch section at fixed size */
 }
 
+/* Auth switch text styling */
 .auth-switch p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
+  margin: 0; /* Remove default margin */
+  color: var(--text-secondary); /* Secondary text color */
+  font-size: 0.95rem; /* Slightly smaller than body text */
 }
 
+/* Auth switch button for toggling between modes */
 .auth-switch-btn {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-weight: 600;
-  text-decoration: underline;
-  font-size: inherit;
+  background: none; /* Transparent background */
+  border: none; /* Remove default button border */
+  color: var(--primary-color); /* Primary color for link-like appearance */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  font-weight: 600; /* Semi-bold for emphasis */
+  text-decoration: underline; /* Underline for link-like appearance */
+  font-size: inherit; /* Inherit font size from parent */
 }
 
+/* Auth switch button hover effect */
 .auth-switch-btn:hover {
-  color: #388e3c;
+  color: #388e3c; /* Darker green on hover */
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness for auth overlay and modal */
 @media (max-width: 480px) {
   .auth-overlay {
     /* Reduce padding on very small screens */
-    padding: 10px;
+    padding: 10px; /* Reduced padding for small mobile screens */
     /* On mobile, align to top when keyboard appears */
-    align-items: flex-start;
+    align-items: flex-start; /* Align modal to top for keyboard compatibility */
     /* Add top padding to prevent modal from touching the top */
-    padding-top: 20px;
+    padding-top: 20px; /* Space from top of screen */
   }
 
   .auth-modal {
-    border-radius: 8px;
+    border-radius: 8px; /* Smaller border radius for mobile */
     /* Use more of the screen width on mobile */
-    width: 100%;
-    max-width: none;
+    width: 100%; /* Full width on mobile */
+    max-width: none; /* Remove width constraint */
     /* Adjust max height for mobile with some breathing room */
-    max-height: calc(100vh - 40px);
+    max-height: calc(100vh - 40px); /* Account for mobile browser UI */
     /* Ensure minimum space for mobile keyboards */
-    min-height: auto;
+    min-height: auto; /* Allow natural height sizing */
     /* Ensure modal never exceeds viewport width */
-    max-width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px); /* Prevent horizontal overflow */
   }
 
   .auth-header,
   .auth-form {
-    padding: 16px;
+    padding: 16px; /* Reduced padding for mobile */
   }
 
   .auth-header h2 {
-    font-size: 1.3rem;
+    font-size: 1.3rem; /* Smaller title font for mobile */
   }
 
   .auth-switch {
-    padding: 12px 16px;
+    padding: 12px 16px; /* Reduced padding for mobile */
   }
 }
 
 /* Very small screens (mobile landscape or small phones) */
 @media (max-width: 380px) {
   .auth-overlay {
-    padding: 5px;
-    padding-top: 10px;
+    padding: 5px; /* Minimal padding for very small screens */
+    padding-top: 10px; /* Small top padding to prevent touching edge */
   }
 
   .auth-modal {
-    max-height: calc(100vh - 20px);
+    max-height: calc(
+      100vh - 20px
+    ); /* Less breathing room for very small screens */
     /* Ensure modal never exceeds viewport width on very small screens */
-    max-width: calc(100vw - 10px);
+    max-width: calc(100vw - 10px); /* Prevent overflow on tiny screens */
   }
 
   .auth-header,
   .auth-form,
   .auth-switch {
-    padding: 12px;
+    padding: 12px; /* Compact padding for very small screens */
   }
 }
 
@@ -292,143 +320,154 @@
 @media (max-height: 600px) {
   .auth-overlay {
     /* When screen height is limited (keyboard open), align to top */
-    align-items: flex-start;
-    padding-top: 10px;
+    align-items: flex-start; /* Top alignment when screen height is constrained */
+    padding-top: 10px; /* Minimal top padding when height is limited */
   }
 
   .auth-modal {
     /* Use almost full height when screen is short */
-    max-height: calc(100vh - 20px);
+    max-height: calc(
+      100vh - 20px
+    ); /* Maximum available height minus minimal margins */
   }
 }
 
 /* Family Input Styles */
 .family-input-container {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  display: flex; /* Flexbox for horizontal layout */
+  gap: 8px; /* Space between input and button */
+  margin-bottom: 8px; /* Space below container */
   /* Ensure container doesn't overflow */
-  width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
+  width: 100%; /* Full width container */
+  box-sizing: border-box; /* Include padding in width calculations */
+  overflow: hidden; /* Hide any overflow content */
 }
 
+/* Family input field styling */
 .family-input-container input {
-  flex: 1;
+  flex: 1; /* Take remaining space after button */
   /* Ensure consistent font size with other inputs */
-  font-size: 16px;
+  font-size: 16px; /* 16px prevents iOS zoom */
   /* Prevent input from overflowing */
-  min-width: 0;
-  box-sizing: border-box;
+  min-width: 0; /* Allow input to shrink below content width */
+  box-sizing: border-box; /* Include padding in width calculations */
 }
 
+/* Add family button styling */
 .add-family-btn {
-  background: var(--primary-color);
-  color: var(--text-inverse);
-  border: none;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  background: var(--primary-color); /* Primary theme color */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 12px 16px; /* Comfortable padding for button */
+  border-radius: 8px; /* Rounded corners for modern look */
+  font-size: 14px; /* Small font size for compact button */
+  font-weight: 600; /* Semi-bold for emphasis */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.2s ease; /* Smooth transitions for hover effects */
+  white-space: nowrap; /* Prevent text wrapping */
   /* Prevent button from shrinking too much */
-  flex-shrink: 0;
-  min-height: 44px; /* iOS touch target */
+  flex-shrink: 0; /* Keep button at fixed size */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Add family button hover effect */
 .add-family-btn:hover:not(:disabled) {
-  background: #388e3c;
+  background: #388e3c; /* Darker green on hover */
 }
 
+/* Add family button disabled state */
 .add-family-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.5; /* Reduced opacity when disabled */
+  cursor: not-allowed; /* Not-allowed cursor when disabled */
 }
 
-/* Mobile family input optimizations */
+/* Mobile family input responsive optimizations */
 @media (max-width: 480px) {
   .family-input-container {
-    gap: 6px;
+    gap: 6px; /* Reduced gap for mobile */
   }
 
   .add-family-btn {
-    padding: 14px 12px;
-    font-size: 16px;
-    min-height: 48px;
+    padding: 14px 12px; /* Adjusted padding for mobile */
+    font-size: 16px; /* Larger font size for mobile readability */
+    min-height: 48px; /* Larger touch target for mobile */
   }
 }
 
+/* Family list container for displaying added families */
 .family-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  display: flex; /* Flexbox for flexible layout */
+  flex-wrap: wrap; /* Allow items to wrap to new lines */
+  gap: 8px; /* Space between family items */
+  margin-top: 8px; /* Space above family list */
 }
 
+/* Individual family item styling */
 .family-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  padding: 4px 8px;
-  font-size: 14px;
+  display: flex; /* Flexbox for horizontal layout */
+  align-items: center; /* Vertically center content */
+  gap: 6px; /* Space between text and remove button */
+  background: var(--bg-secondary); /* Secondary background color */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  border-radius: 16px; /* Pill-shaped border radius */
+  padding: 4px 8px; /* Compact padding for pill shape */
+  font-size: 14px; /* Small font size for compact display */
 }
 
+/* Family item text styling */
 .family-item span {
-  color: var(--text-primary);
+  color: var(--text-primary); /* Theme text color */
 }
 
+/* Remove family button styling */
 .remove-family-btn {
-  background: #d32f2f;
-  color: white;
-  border: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  line-height: 1;
-  transition: background-color 0.2s ease;
+  background: #d32f2f; /* Red background for remove action */
+  color: white; /* White text for contrast */
+  border: none; /* Remove default button border */
+  width: 18px; /* Fixed width for circular button */
+  height: 18px; /* Fixed height for circular button */
+  border-radius: 50%; /* Circular button shape */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  display: flex; /* Flexbox for centering content */
+  align-items: center; /* Vertically center icon/text */
+  justify-content: center; /* Horizontally center icon/text */
+  font-size: 12px; /* Small font size for compact button */
+  line-height: 1; /* Tight line height for centering */
+  transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
+/* Remove family button hover effect */
 .remove-family-btn:hover {
-  background: #b71c1c;
+  background: #b71c1c; /* Darker red on hover */
 }
 
 /* Mobile touch improvements for Auth component */
 @media (max-width: 768px) {
-  /* Improve all form elements */
+  /* Improve all form elements for mobile touch interaction */
   .auth-form input,
   .auth-form select {
-    padding: 14px 12px;
-    font-size: 16px;
-    min-height: 48px;
-    -webkit-appearance: none;
-    appearance: none;
+    padding: 14px 12px; /* Increased padding for better touch targets */
+    font-size: 16px; /* 16px prevents iOS zoom */
+    min-height: 48px; /* Larger touch target for mobile */
+    -webkit-appearance: none; /* Remove default iOS styling */
+    appearance: none; /* Remove default browser styling */
   }
 
   .auth-form button {
-    min-height: 48px;
-    padding: 14px 24px;
-    font-size: 16px;
+    min-height: 48px; /* Larger touch target for mobile */
+    padding: 14px 24px; /* Increased padding for mobile */
+    font-size: 16px; /* Larger font size for mobile readability */
   }
 
   .family-item {
-    padding: 8px 12px;
-    font-size: 16px;
-    min-height: 36px;
+    padding: 8px 12px; /* Increased padding for mobile */
+    font-size: 16px; /* Larger font size for mobile readability */
+    min-height: 36px; /* Larger touch target for mobile */
   }
 
   .remove-family-btn {
-    width: 24px;
-    height: 24px;
-    font-size: 14px;
+    width: 24px; /* Larger button for mobile */
+    height: 24px; /* Larger button for mobile */
+    font-size: 14px; /* Larger font size for mobile */
   }
 }

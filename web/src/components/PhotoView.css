@@ -1,697 +1,740 @@
 /* PhotoView - Optimized Styles */
 .photo-view {
-  width: 100%;
-  height: 100%;
+  width: 100%; /* Take full width of parent container */
+  height: 100%; /* Take full height of parent container */
   flex: 1; /* Take up remaining space in flex container */
-  background-color: var(--bg-primary);
+  background-color: var(
+    --bg-primary
+  ); /* Theme-aware primary background color */
 }
 
 /* Mobile body scroll prevention */
 @media (max-width: 768px) {
   .photo-view {
-    overflow: hidden; /* Prevent any scrolling at the top level */
-    height: 100%;
+    overflow: hidden; /* Prevent any scrolling at the top level on mobile */
+    height: 100%; /* Maintain full height on mobile */
     /* Ensure we don't create scroll conflicts */
-    position: relative;
+    position: relative; /* Establish positioning context for child elements */
   }
 }
 
 /* Prevent body scroll when modal is open */
 body.modal-open {
-  overflow: hidden;
+  overflow: hidden; /* Disable body scrolling when modal is displayed */
   /* Prevent scrolling on mobile */
-  touch-action: none;
+  touch-action: none; /* Disable touch gestures that cause scrolling */
   /* Prevent bounce effect on iOS */
-  position: fixed;
-  width: 100%;
+  position: fixed; /* Lock body position to prevent scroll */
+  width: 100%; /* Maintain full width when position is fixed */
 }
 
 /* Reset body scroll prevention on desktop */
 @media (min-width: 769px) {
   body.modal-open {
-    position: static;
-    touch-action: auto;
+    position: static; /* Reset to normal positioning on desktop */
+    touch-action: auto; /* Re-enable touch actions on desktop */
   }
 }
 
 /* Loading and Error States */
 .loading-container,
 .error-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 80px);
+  display: flex; /* Use flexbox for centering content */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  height: calc(100vh - 80px); /* Full viewport height minus navbar */
 }
 
 .loading-spinner {
-  font-size: 1.2rem;
-  color: var(--primary-orange);
+  font-size: 1.2rem; /* Large font size for visibility */
+  color: var(--primary-orange); /* Orange color for brand consistency */
 }
 
 .error-message {
-  text-align: center;
-  padding: 2rem;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-light);
+  text-align: center; /* Center-align all text in error message */
+  padding: 2rem; /* Comfortable padding around error content */
+  background: var(--bg-primary); /* Theme-aware background */
+  border-radius: 8px; /* Rounded corners for modern appearance */
+  box-shadow: var(--shadow-md); /* Medium shadow for depth */
+  border: 1px solid var(--border-light); /* Light border for definition */
 }
 
 .error-message h3 {
-  color: #d32f2f;
-  margin-bottom: 1rem;
+  color: #d32f2f; /* Red color for error emphasis */
+  margin-bottom: 1rem; /* Space below error heading */
 }
 
 .error-message p {
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
+  color: var(--text-secondary); /* Secondary text color for description */
+  margin-bottom: 1.5rem; /* Space below error description */
 }
 
 .error-message button {
-  background-color: var(--primary-orange);
-  color: var(--text-inverse);
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
+  background-color: var(
+    --primary-orange
+  ); /* Orange background for retry button */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 0.75rem 1.5rem; /* Comfortable padding for click area */
+  border-radius: 4px; /* Slightly rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  font-size: 1rem; /* Standard readable font size */
 }
 
 .error-message button:hover {
-  background-color: var(--primary-orange-dark);
+  background-color: var(--primary-orange-dark); /* Darker orange on hover */
 }
 
 /* Content layout */
 .content-layout {
-  display: flex;
+  display: flex; /* Use flexbox for side-by-side layout */
   height: 100%; /* Use full height of parent container */
-  width: 100%;
-  position: relative;
+  width: 100%; /* Use full width of parent container */
+  position: relative; /* Establish positioning context for absolute children */
 }
 
 /* Mobile content layout adjustments */
 @media (max-width: 768px) {
   .content-layout {
-    height: 100%;
-    flex-direction: row; /* Keep side-by-side layout */
+    height: 100%; /* Maintain full height on mobile */
+    flex-direction: row; /* Keep side-by-side layout even on mobile */
     overflow: hidden; /* Prevent main viewport scroll on mobile */
   }
 }
 
 /* Filter Sidebar */
 .filter-sidebar {
-  width: 300px;
-  background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border-light);
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  width: 300px; /* Fixed width for sidebar on desktop */
+  background-color: var(--bg-sidebar); /* Sidebar-specific background color */
+  border-right: 1px solid var(--border-light); /* Right border to separate from main content */
+  padding: 1rem; /* Comfortable padding around sidebar content */
+  display: flex; /* Flexbox layout for sidebar content */
+  flex-direction: column; /* Stack sidebar elements vertically */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth theme transitions */
 }
 
 /* Mobile sidebar optimizations */
 @media (max-width: 768px) {
   .filter-sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 300px;
-    height: 100%;
-    z-index: 50;
-    box-shadow: var(--shadow-lg);
-    transform: translateX(-100%);
+    position: absolute; /* Overlay sidebar on mobile */
+    top: 0; /* Position at top of container */
+    left: 0; /* Position at left edge */
+    width: 300px; /* Maintain fixed width on mobile */
+    height: 100%; /* Full height of container */
+    z-index: 50; /* High z-index to appear above main content */
+    box-shadow: var(--shadow-lg); /* Large shadow for overlay effect */
+    transform: translateX(-100%); /* Initially hidden off-screen to the left */
     transition: transform 0.3s ease, background-color 0.3s ease,
-      border-color 0.3s ease;
-    display: flex;
-    flex-direction: column;
+      border-color 0.3s ease; /* Smooth slide transition */
+    display: flex; /* Maintain flexbox layout */
+    flex-direction: column; /* Maintain vertical stacking */
   }
 
   .filter-sidebar:not(.collapsed-mobile) {
-    transform: translateX(0);
+    transform: translateX(0); /* Slide in when not collapsed */
   }
 
   .filter-sidebar.collapsed-mobile {
-    transform: translateX(-100%);
+    transform: translateX(-100%); /* Slide out when collapsed */
   }
 
   /* Ensure filter sections scroll properly on mobile */
   .filter-sections {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining to parent */
   }
 } /* Mobile sidebar toggle button */
 .mobile-sidebar-toggle {
-  display: none;
-  background: var(--primary-orange);
-  color: var(--text-inverse);
-  border: none;
-  border-radius: 4px;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1;
-  transition: background-color 0.2s ease;
-  width: 100%;
-  min-height: 44px; /* iOS touch target */
+  display: none; /* Hidden by default on desktop */
+  background: var(--primary-orange); /* Orange background for visibility */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  border-radius: 4px; /* Slightly rounded corners */
+  padding: 0.75rem 1rem; /* Comfortable padding for touch interaction */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  font-size: 0.9rem; /* Slightly smaller font size */
+  font-weight: 600; /* Semi-bold for emphasis */
+  line-height: 1; /* Tight line height for compact button */
+  transition: background-color 0.2s ease; /* Smooth color transition */
+  width: 100%; /* Full width by default */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Mobile sidebar toggle hover effect */
 .mobile-sidebar-toggle:hover {
-  background: var(--primary-orange-dark);
+  background: var(--primary-orange-dark); /* Darker orange on hover */
 }
 
-/* Mobile sidebar toggle display */
+/* Mobile sidebar toggle display and positioning on mobile devices */
 @media (max-width: 768px) {
-  /* Toggle button in sidebar header */
+  /* Toggle button in sidebar header - fixed positioning */
   .filter-sidebar .mobile-sidebar-toggle {
-    display: block;
-    position: relative;
-    width: auto;
-    padding: 8px 12px;
-    border-radius: 6px;
-    z-index: auto;
-    box-shadow: none;
+    display: block; /* Show the toggle button on mobile */
+    position: relative; /* Relative positioning within sidebar */
+    width: auto; /* Auto width for inline content */
+    padding: 8px 12px; /* Compact padding for header placement */
+    border-radius: 6px; /* Rounded corners for modern look */
+    z-index: auto; /* Standard z-index for header element */
+    box-shadow: none; /* No shadow needed in sidebar header */
   }
 
-  /* Toggle button in upload controls (inline) */
+  /* Toggle button in upload controls - inline display */
   .image-grid-container .mobile-sidebar-toggle {
-    display: block;
-    position: static;
-    width: auto;
-    min-width: 48px;
-    padding: 12px;
-    border-radius: 8px;
-    z-index: auto;
-    box-shadow: var(--shadow-sm);
+    display: block; /* Show the toggle button on mobile */
+    position: static; /* Static positioning for normal flow */
+    width: auto; /* Auto width for content */
+    min-width: 48px; /* Minimum touch target size */
+    padding: 12px; /* Generous padding for touch interaction */
+    border-radius: 8px; /* Rounded corners for modern look */
+    z-index: auto; /* Standard z-index for inline element */
+    box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
   }
 }
+
+/* Sidebar header container */
 .sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  flex-shrink: 0;
+  display: flex; /* Flexbox for header layout */
+  justify-content: space-between; /* Space between title and controls */
+  align-items: center; /* Vertically center items */
+  margin-bottom: 0.75rem; /* Space below header */
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
+/* Sidebar header title */
 .sidebar-header h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.1rem;
+  margin: 0; /* Remove default margin */
+  color: var(--text-primary); /* Use theme text color */
+  font-size: 1.1rem; /* Slightly larger than body text */
 }
 
-/* Sidebar content container */
+/* Sidebar content container - main scrollable area */
 .sidebar-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  display: flex; /* Flexbox for vertical layout */
+  flex-direction: column; /* Stack children vertically */
+  flex: 1; /* Take remaining space after header */
   min-height: 0; /* Allow flex items to shrink below content size */
 }
 
-/* Create Tag Section */
+/* Create Tag Section container */
 .create-tag-section {
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
+  margin-bottom: 1rem; /* Space below section */
+  padding-bottom: 0.75rem; /* Padding at bottom for visual separation */
+  border-bottom: 1px solid var(--border-light); /* Light border separator */
+  flex-shrink: 0; /* Prevent section from shrinking */
 }
 
+/* Create tag button styling */
 .create-tag-btn {
   background: linear-gradient(
     135deg,
     var(--success-green),
     var(--success-green-dark)
-  );
-  color: var(--text-inverse);
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
-  width: 100%;
-  min-height: 44px; /* iOS touch target */
+  ); /* Green gradient background for positive action */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 8px 16px; /* Comfortable padding for button */
+  font-size: 14px; /* Readable font size */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 6px; /* Rounded corners for modern look */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for all properties */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
+  width: 100%; /* Full width button */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Create tag button hover effect */
 .create-tag-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: linear-gradient(135deg, var(--success-green-dark), #2e7d32);
+  box-shadow: var(--shadow-md); /* Enhanced shadow on hover */
+  background: linear-gradient(
+    135deg,
+    var(--success-green-dark),
+    #2e7d32
+  ); /* Darker gradient on hover */
 }
 
+/* Create tag button active state */
 .create-tag-btn:active {
-  transform: translateY(0);
+  transform: translateY(0); /* Reset any transform on active state */
 }
 
-/* Mobile create-tag-btn adjustments */
+/* Mobile create-tag-btn responsive adjustments */
 @media (max-width: 768px) {
   .create-tag-btn {
-    padding: 12px 16px;
-    font-size: 16px;
-    min-height: 48px;
+    padding: 12px 16px; /* Increased padding for better touch targets */
+    font-size: 16px; /* Larger font size for mobile readability */
+    min-height: 48px; /* Larger minimum height for touch targets */
   }
 }
 
-/* Filter Sections */
+/* Filter Sections container styling */
 .filter-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  display: flex; /* Flexbox for vertical layout */
+  flex-direction: column; /* Stack sections vertically */
+  gap: 0.75rem; /* Space between filter sections */
+  overflow-y: auto; /* Allow vertical scrolling when content overflows */
+  flex: 1; /* Take remaining space in sidebar */
+  min-height: 0; /* Allow flex item to shrink below content size */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
 }
 
 /* Hide scrollbar on desktop while keeping scroll functionality */
 @media (min-width: 769px) {
   .filter-sections {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar in Internet Explorer 10+ */
   }
 
   .filter-sections::-webkit-scrollbar {
-    display: none; /* Safari and Chrome */
+    display: none; /* Hide scrollbar in Safari and Chrome */
   }
 }
 
+/* Individual filter section styling */
 .filter-section {
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  border: 1px solid var(--border-light); /* Light border around section */
+  border-radius: 8px; /* Rounded corners for modern look */
+  background: var(--bg-primary); /* Theme background color */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
 }
 
+/* Nested filter section styling (sub-sections) */
 .filter-section .filter-section {
-  border: none;
-  border-radius: 0;
-  margin-left: 0;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-light);
+  border: none; /* Remove border for nested sections */
+  border-radius: 0; /* Remove border radius for nested sections */
+  margin-left: 0; /* No left margin for nested sections */
+  background: var(--bg-secondary); /* Secondary background for hierarchy */
+  border-top: 1px solid var(--border-light); /* Top border separator */
 }
 
+/* Section header button styling */
 .section-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  transition: background-color 0.2s ease;
+  width: 100%; /* Full width header */
+  display: flex; /* Flexbox for content alignment */
+  align-items: center; /* Vertically center content */
+  gap: 0.5rem; /* Space between icon and text */
+  padding: 0.6rem 0.75rem; /* Comfortable padding for clickable area */
+  background: none; /* Transparent background */
+  border: none; /* Remove default button border */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  font-size: 0.95rem; /* Slightly smaller than body text */
+  font-weight: 600; /* Semi-bold for emphasis */
+  color: var(--text-primary); /* Theme text color */
+  transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
-/* Family-level headers (top level) */
+/* Family-level headers (top level) styling */
 .filter-section > .section-header {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--primary-orange);
-  padding: 0.5rem 0.75rem;
-  background-color: rgba(255, 152, 0, 0.05);
-  border-bottom: 1px solid rgba(255, 152, 0, 0.1);
+  font-size: 0.85rem; /* Smaller font for top-level headers */
+  font-weight: 700; /* Bold for hierarchy emphasis */
+  color: var(--primary-orange); /* Orange color for top-level sections */
+  padding: 0.5rem 0.75rem; /* Slightly reduced padding for top-level */
+  background-color: rgba(255, 152, 0, 0.05); /* Light orange background tint */
+  border-bottom: 1px solid rgba(255, 152, 0, 0.1); /* Subtle orange border */
 }
 
+/* Family-level header hover effect */
 .filter-section > .section-header:hover {
-  background-color: rgba(255, 152, 0, 0.1);
+  background-color: rgba(255, 152, 0, 0.1); /* Slightly more orange on hover */
 }
 
+/* General section header hover effect */
 .section-header:hover {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-secondary); /* Secondary background on hover */
 }
 
+/* Nested section headers (sub-level) styling */
 .filter-section .filter-section .section-header {
-  font-size: 0.85rem;
-  padding: 0.4rem 0.75rem;
-  background-color: transparent;
+  font-size: 0.85rem; /* Consistent font size for sub-headers */
+  padding: 0.4rem 0.75rem; /* Reduced padding for sub-headers */
+  background-color: transparent; /* Transparent background for sub-headers */
 }
 
+/* Nested section header hover effect */
 .filter-section .filter-section .section-header:hover {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-tertiary); /* Tertiary background on hover */
 }
 
+/* Section caret/arrow icon styling */
 .section-caret {
-  font-size: 0.8rem;
-  transition: transform 0.2s ease;
-  color: var(--primary-orange);
+  font-size: 0.8rem; /* Small icon size */
+  transition: transform 0.2s ease; /* Smooth rotation transition */
+  color: var(--primary-orange); /* Orange color for visibility */
 }
 
-/* Family-level carets */
+/* Family-level carets (top-level sections) */
 .filter-section > .section-header .section-caret {
-  color: var(--primary-orange);
-  font-weight: bold;
+  color: var(--primary-orange); /* Orange color for family-level carets */
+  font-weight: bold; /* Bold weight for emphasis */
 }
 
+/* Collapsed state caret rotation */
 .section-caret.collapsed {
-  transform: rotate(-90deg);
+  transform: rotate(-90deg); /* Rotate 90 degrees when collapsed */
 }
 
+/* Section title text styling */
 .section-title {
-  flex: 1;
-  text-align: left;
+  flex: 1; /* Take remaining space after caret */
+  text-align: left; /* Left-align text */
 }
 
+/* Filter list container */
 .filter-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  display: flex; /* Flexbox for vertical layout */
+  flex-direction: column; /* Stack filter items vertically */
+  gap: 0.25rem; /* Small gap between filter items */
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem; /* Consistent padding around list */
 }
 
+/* Individual filter item container */
 .filter-item {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  position: relative;
-  justify-content: space-between;
-  min-height: 44px; /* iOS touch target */
+  display: flex; /* Flexbox for horizontal layout */
+  align-items: center; /* Vertically center content */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  padding: 0.75rem; /* Comfortable padding for clickable area */
+  border-radius: 6px; /* Rounded corners for modern look */
+  transition: all 0.2s ease; /* Smooth transitions for all properties */
+  border: 1px solid transparent; /* Transparent border for hover effects */
+  position: relative; /* Positioning context for pseudo-elements */
+  justify-content: space-between; /* Space between label and count */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
 /* Only show hover effects on devices that support hovering */
 @media (hover: hover) {
   .filter-item:hover {
-    background-color: var(--bg-secondary);
-    border-color: var(--border-light);
+    background-color: var(--bg-secondary); /* Secondary background on hover */
+    border-color: var(--border-light); /* Light border on hover */
   }
 
   .filter-item.selected:hover {
-    background-color: var(--primary-orange-dark);
-    border-color: var(--primary-orange-dark);
+    background-color: var(
+      --primary-orange-dark
+    ); /* Darker orange when selected and hovered */
+    border-color: var(--primary-orange-dark); /* Matching border color */
   }
 }
 
+/* Selected filter item styling */
 .filter-item.selected {
-  background-color: var(--primary-orange);
-  color: var(--text-inverse);
-  border-color: var(--primary-orange-dark);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--primary-orange); /* Orange background when selected */
+  color: var(--text-inverse); /* White text for contrast */
+  border-color: var(--primary-orange-dark); /* Darker orange border */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
 }
 
-/* Mobile filter item adjustments */
+/* Mobile filter item responsive adjustments */
 @media (max-width: 768px) {
   .filter-item {
-    padding: 1rem 0.75rem;
-    min-height: 48px; /* Larger touch target for mobile */
+    padding: 1rem 0.75rem; /* Increased padding for better touch targets */
+    min-height: 48px; /* Larger minimum height for mobile touch targets */
   }
 
   .filter-label {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 1rem; /* Larger font size for mobile readability */
+    font-weight: 500; /* Medium weight for mobile */
   }
 }
 
+/* Filter label text styling */
 .filter-label {
-  font-weight: 500;
-  color: inherit;
-  flex: 1;
-  text-align: left;
+  font-weight: 500; /* Medium weight for readability */
+  color: inherit; /* Inherit color from parent element */
+  flex: 1; /* Take remaining space after actions */
+  text-align: left; /* Left-align text */
 }
 
+/* Filter item actions container */
 .filter-item-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: flex; /* Flexbox for horizontal layout */
+  align-items: center; /* Vertically center actions */
+  gap: 0.5rem; /* Space between action buttons */
   opacity: 1; /* Always visible for touch devices */
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease; /* Smooth opacity transition */
 }
 
 /* Only show hover effects for edit buttons on devices that support hovering */
 @media (hover: hover) {
   .filter-item-actions {
-    opacity: 0; /* Hidden by default on hover devices */
+    opacity: 0; /* Hidden by default on hover-capable devices */
   }
 
   .filter-item:hover .filter-item-actions {
-    opacity: 1;
+    opacity: 1; /* Show actions when hovering over filter item */
   }
 }
 
+/* Edit tag button styling */
 .edit-tag-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: none; /* Transparent background */
+  border: none; /* Remove default button border */
+  color: var(--text-secondary); /* Secondary text color */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  padding: 0.25rem; /* Small padding for clickable area */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 14px; /* Small font size for icon/text */
+  transition: all 0.2s ease; /* Smooth transitions */
+  display: flex; /* Flexbox for content centering */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
 }
 
 /* Only show hover effects for edit buttons on devices that support hovering */
 @media (hover: hover) {
   .edit-tag-btn:hover {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
+    background-color: var(--bg-secondary); /* Secondary background on hover */
+    color: var(--text-primary); /* Primary text color on hover */
   }
 }
 
-/* Image Grid Container */
+/* Image Grid Container - main content area */
 .image-grid-container {
-  flex: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
-  background-color: var(--bg-primary);
-  transition: background-color 0.3s ease;
+  flex: 1; /* Take remaining space after sidebar */
+  padding: 1.5rem; /* Generous padding around content */
+  overflow-y: auto; /* Allow vertical scrolling when content overflows */
+  background-color: var(--bg-primary); /* Theme background color */
+  transition: background-color 0.3s ease; /* Smooth background transition */
 }
 
-/* Mobile image grid container adjustments */
+/* Mobile image grid container responsive adjustments */
 @media (max-width: 768px) {
   .image-grid-container {
-    width: 100%;
-    padding: 1rem;
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal scroll */
-    min-height: 0; /* Allow flex item to shrink */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    width: 100%; /* Full width on mobile */
+    padding: 1rem; /* Reduced padding for mobile */
+    flex: 1; /* Take remaining space */
+    overflow-y: auto; /* Allow vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+    min-height: 0; /* Allow flex item to shrink below content size */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
     overscroll-behavior: contain; /* Prevent scroll chaining to parent */
     /* Extra bottom padding to prevent cutoff from mobile browser UI */
     padding-bottom: 2rem; /* Increased to ensure content is visible */
     /* Ensure scroll container has defined boundaries */
-    position: relative;
+    position: relative; /* Positioning context for child elements */
     /* Ensure scroll starts at top */
-    scroll-behavior: smooth;
+    scroll-behavior: smooth; /* Smooth scrolling behavior */
   }
 }
 
+/* Small mobile device adjustments */
 @media (max-width: 480px) {
   .image-grid-container {
-    padding: 0.75rem;
+    padding: 0.75rem; /* Further reduced padding for small screens */
     /* Extra bottom padding for small mobile screens to prevent cutoff */
     padding-bottom: 2.5rem; /* More space to avoid mobile browser UI */
   }
 }
 
-/* Upload Section */
+/* Upload Section container */
 .upload-section {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 2rem; /* Space below upload section */
+  padding-bottom: 1.5rem; /* Padding at bottom for visual separation */
+  border-bottom: 2px solid var(--border-light); /* Strong border separator */
 }
 
+/* Upload controls layout */
 .upload-controls {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  flex-wrap: wrap;
+  display: flex; /* Flexbox for horizontal layout */
+  align-items: center; /* Vertically center controls */
+  gap: 2rem; /* Space between upload controls */
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
+/* Main upload button styling */
 .upload-btn-main {
-  background: #2196f3;
-  color: var(--text-inverse);
-  border: none;
-  padding: 16px 32px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
-  min-width: 200px;
-  min-height: 44px; /* iOS touch target */
+  background: #2196f3; /* Blue background for primary action */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 16px 32px; /* Generous padding for prominent button */
+  font-size: 18px; /* Large font size for importance */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 8px; /* Rounded corners for modern look */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for all properties */
+  box-shadow: var(--shadow-md); /* Medium shadow for elevation */
+  min-width: 200px; /* Minimum width for consistency */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Upload button hover effect */
 .upload-btn-main:hover {
-  box-shadow: var(--shadow-lg);
-  background: #1976d2;
+  box-shadow: var(--shadow-lg); /* Larger shadow on hover */
+  background: #1976d2; /* Darker blue on hover */
 }
 
+/* Upload button active state */
 .upload-btn-main:active {
-  transform: translateY(0);
+  transform: translateY(0); /* Reset any transform on active state */
 }
 
-/* Mobile upload section adjustments */
+/* Mobile upload section responsive adjustments */
 @media (max-width: 768px) {
   .upload-section {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    margin-bottom: 1.5rem; /* Reduced margin for mobile */
+    padding-bottom: 1rem; /* Reduced padding for mobile */
   }
 
   .upload-controls {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: row; /* Keep horizontal layout on mobile */
+    align-items: center; /* Vertically center controls */
+    gap: 1rem; /* Reduced gap for mobile */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
   }
 
   .upload-btn-main {
-    flex: 1;
-    min-width: 150px;
-    padding: 18px 24px;
-    font-size: 18px;
-    min-height: 48px;
+    flex: 1; /* Take available space */
+    min-width: 150px; /* Reduced minimum width for mobile */
+    padding: 18px 24px; /* Adjusted padding for mobile */
+    font-size: 18px; /* Consistent font size */
+    min-height: 48px; /* Larger touch target for mobile */
   }
 
   /* Mobile filter toggle button in upload controls */
   .image-grid-container .mobile-sidebar-toggle {
-    position: static;
-    flex-shrink: 0;
-    min-width: 48px;
-    padding: 18px 12px;
-    margin: 0;
-    order: -1; /* Put it before the upload button */
+    position: static; /* Static positioning for normal flow */
+    flex-shrink: 0; /* Prevent button from shrinking */
+    min-width: 48px; /* Minimum touch target size */
+    padding: 18px 12px; /* Consistent padding with upload button */
+    margin: 0; /* Reset margins */
+    order: -1; /* Put it before the upload button in flex order */
   }
 }
 
 /* Extra small mobile adjustments - only for very narrow screens */
 @media (max-width: 380px) {
   .upload-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+    flex-direction: column; /* Stack controls vertically on very small screens */
+    align-items: stretch; /* Stretch items to full width */
+    gap: 0.75rem; /* Reduced gap for vertical layout */
   }
 
   .upload-btn-main {
-    width: 100%;
+    width: 100%; /* Full width on very small screens */
     order: 0; /* Reset order for vertical layout */
   }
 
   .image-grid-container .mobile-sidebar-toggle {
-    width: 100%;
+    width: 100%; /* Full width toggle button */
     order: -1; /* Keep it above upload button */
-    text-align: center;
+    text-align: center; /* Center-align text */
   }
 
   .family-filter {
-    width: 100%;
-    order: 1; /* Put family filter last */
+    width: 100%; /* Full width family filter */
+    order: 1; /* Put family filter last in vertical stack */
   }
 }
 
 /* Medium mobile portrait adjustments - keep horizontal layout */
 @media (max-width: 480px) and (min-width: 381px) {
   .upload-controls {
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-wrap: wrap; /* Allow wrapping for medium mobile */
+    gap: 0.75rem; /* Reduced gap for tighter layout */
   }
 
   .image-grid-container .mobile-sidebar-toggle {
     order: -1; /* Keep toggle before upload button */
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent button from shrinking */
   }
 
   .upload-btn-main {
-    flex: 1;
-    min-width: 140px;
+    flex: 1; /* Take available space */
+    min-width: 140px; /* Reduced minimum width for medium mobile */
   }
 
   .family-filter {
-    width: 100%;
-    order: 1; /* Put family filter on new line */
+    width: 100%; /* Full width family filter */
+    order: 1; /* Put family filter on new line below buttons */
   }
 }
 
-/* Family Filter */
+/* Family Filter container */
 .family-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: flex; /* Flexbox for horizontal layout */
+  align-items: center; /* Vertically center label and dropdown */
+  gap: 0.5rem; /* Space between label and dropdown */
 }
 
+/* Family filter label styling */
 .family-filter label {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 1rem;
+  font-weight: 500; /* Medium weight for emphasis */
+  color: var(--text-primary); /* Theme text color */
+  font-size: 1rem; /* Standard font size */
 }
 
+/* Family dropdown select styling */
 .family-dropdown {
-  padding: 8px 12px;
-  border: 2px solid var(--border-medium);
-  border-radius: 6px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 150px;
-  min-height: 44px; /* iOS touch target */
+  padding: 8px 12px; /* Comfortable padding for dropdown */
+  border: 2px solid var(--border-medium); /* Medium border for definition */
+  border-radius: 6px; /* Rounded corners for modern look */
+  background: var(--bg-secondary); /* Secondary background color */
+  color: var(--text-primary); /* Theme text color */
+  font-size: 0.95rem; /* Slightly smaller than body text */
+  font-weight: 500; /* Medium weight for readability */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.2s ease; /* Smooth transitions for all properties */
+  min-width: 150px; /* Minimum width for consistency */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Family dropdown focus state */
 .family-dropdown:focus {
-  outline: none;
-  border-color: var(--primary-orange);
-  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1);
+  outline: none; /* Remove default focus outline */
+  border-color: var(--primary-orange); /* Orange border when focused */
+  box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1); /* Orange focus ring */
 }
 
+/* Family dropdown hover effect */
 .family-dropdown:hover {
-  border-color: var(--border-dark);
+  border-color: var(--border-dark); /* Darker border on hover */
 }
 
-/* Mobile family filter adjustments */
+/* Mobile family filter responsive adjustments */
 @media (max-width: 768px) {
   .family-filter {
-    justify-content: space-between;
-    width: 100%;
+    justify-content: space-between; /* Space between label and dropdown */
+    width: 100%; /* Full width on mobile */
   }
 
   .family-filter label {
-    font-size: 1rem;
-    flex-shrink: 0;
+    font-size: 1rem; /* Consistent font size on mobile */
+    flex-shrink: 0; /* Prevent label from shrinking */
   }
 
   .family-dropdown {
-    flex: 1;
-    min-width: auto;
-    font-size: 1rem;
-    padding: 12px;
-    min-height: 48px;
+    flex: 1; /* Take remaining space after label */
+    min-width: auto; /* Remove minimum width constraint */
+    font-size: 1rem; /* Larger font size for mobile readability */
+    padding: 12px; /* Increased padding for better touch targets */
+    min-height: 48px; /* Larger touch target for mobile */
   }
 }
 
 /* Mobile backdrop for sidebar overlay */
 .sidebar-backdrop {
-  display: none;
+  display: none; /* Hidden by default on desktop */
 }
 
+/* Mobile sidebar backdrop styling */
 @media (max-width: 768px) {
   .sidebar-backdrop {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 40;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    display: block; /* Show backdrop on mobile when needed */
+    position: absolute; /* Absolute positioning to overlay content */
+    top: 0; /* Cover full height from top */
+    left: 0; /* Cover full width from left */
+    right: 0; /* Cover full width to right */
+    bottom: 0; /* Cover full height to bottom */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+    z-index: 40; /* High z-index to appear above content */
+    opacity: 0; /* Hidden by default */
+    visibility: hidden; /* Hidden by default */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth fade transitions */
   }
 
   .sidebar-backdrop.visible {
-    opacity: 1;
-    visibility: visible;
+    opacity: 1; /* Fully visible when active */
+    visibility: visible; /* Make visible when active */
   }
 }
 
@@ -699,873 +742,989 @@ body.modal-open {
 @media (max-width: 768px) {
   /* Sidebar content maintains flex layout on mobile */
   .sidebar-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: visible;
+    display: flex; /* Maintain flexbox layout */
+    flex-direction: column; /* Stack children vertically */
+    flex: 1; /* Take remaining space */
+    min-height: 0; /* Allow shrinking below content size */
+    overflow: visible; /* Allow content to be visible */
   }
 
   .sidebar-content.hidden-mobile {
-    opacity: 1;
-    visibility: visible;
-    max-height: none;
-    padding: inherit;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    opacity: 1; /* Keep content fully visible */
+    visibility: visible; /* Ensure content is visible */
+    max-height: none; /* Remove height constraints */
+    padding: inherit; /* Use inherited padding */
+    display: flex; /* Maintain flexbox layout */
+    flex-direction: column; /* Stack children vertically */
+    flex: 1; /* Take remaining space */
+    min-height: 0; /* Allow shrinking below content size */
   }
 }
 
-/* Empty State */
+/* Empty State container when no images are found */
 .empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: var(--text-muted);
-  font-size: 1.1rem;
+  display: flex; /* Flexbox for centering content */
+  align-items: center; /* Vertically center text */
+  justify-content: center; /* Horizontally center text */
+  height: 200px; /* Fixed height for empty state */
+  color: var(--text-muted); /* Muted text color for subtle appearance */
+  font-size: 1.1rem; /* Slightly larger font for visibility */
 }
 
-/* Image Grid */
+/* Image Grid - main photo gallery layout */
 .image-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 280px);
-  gap: 1.5rem;
-  justify-content: start;
+  display: grid; /* CSS Grid for image layout */
+  grid-template-columns: repeat(
+    auto-fill,
+    280px
+  ); /* Auto-fill columns with 280px width */
+  gap: 1.5rem; /* Space between grid items */
+  justify-content: start; /* Align grid to start of container */
   margin-bottom: 2rem; /* Base padding below last row */
 }
 
-/* Mobile image grid adjustments */
+/* Mobile image grid responsive adjustments */
 @media (max-width: 768px) {
   .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    justify-content: center;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(200px, 1fr)
+    ); /* Responsive columns */
+    gap: 1rem; /* Reduced gap for mobile */
+    justify-content: center; /* Center grid on mobile */
   }
 }
 
+/* Small mobile image grid adjustments */
 @media (max-width: 480px) {
   .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(150px, 1fr)
+    ); /* Smaller columns */
+    gap: 0.75rem; /* Further reduced gap */
     margin-bottom: 1.5rem; /* Additional space at bottom for small mobile */
   }
 }
 
+/* Very small mobile image grid adjustments */
 @media (max-width: 360px) {
   .image-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
+    grid-template-columns: 1fr 1fr; /* Fixed two-column layout */
+    gap: 0.5rem; /* Minimal gap for very small screens */
     margin-bottom: 2rem; /* Extra space for very small screens */
   }
 }
 
-/* Image Cards */
+/* Image Cards - individual photo containers */
 .image-card {
-  background: var(--bg-primary);
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  border: 1px solid var(--border-light);
-  cursor: pointer;
+  background: var(--bg-primary); /* Theme background color */
+  border-radius: 8px; /* Rounded corners for modern look */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
+  overflow: hidden; /* Hide content that extends beyond borders */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  cursor: pointer; /* Pointer cursor indicating clickability */
   transition: transform 0.2s ease, box-shadow 0.2s ease,
-    background-color 0.3s ease;
+    background-color 0.3s ease; /* Smooth transitions for interactions */
 }
 
+/* Image card hover effect */
 .image-card:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg); /* Enhanced shadow on hover */
 }
 
+/* Image container within each card */
 .image-container {
-  height: 200px;
-  overflow: hidden;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 200px; /* Fixed height for consistent grid layout */
+  overflow: hidden; /* Hide image overflow */
+  background: var(--bg-secondary); /* Fallback background color */
+  display: flex; /* Flexbox for image centering */
+  align-items: center; /* Vertically center image */
+  justify-content: center; /* Horizontally center image */
 }
 
+/* Image display within container */
 .image-display {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.2s ease;
+  width: 100%; /* Full width of container */
+  height: 100%; /* Full height of container */
+  object-fit: cover; /* Cover container while maintaining aspect ratio */
+  transition: transform 0.2s ease; /* Smooth scale transition on hover */
 }
 
+/* Image hover zoom effect */
 .image-card:hover .image-display {
-  transform: scale(1.05);
+  transform: scale(1.05); /* Slight zoom on hover */
 }
 
+/* Image placeholder for loading/missing images */
 .image-placeholder {
-  height: 200px;
+  height: 200px; /* Match image container height */
   background: linear-gradient(
     135deg,
     var(--bg-secondary) 0%,
     var(--bg-tertiary) 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  color: var(--text-muted);
-  transition: background 0.3s ease;
+  ); /* Gradient background for visual interest */
+  display: flex; /* Flexbox for centering content */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  font-size: 3rem; /* Large icon/text size */
+  color: var(--text-muted); /* Muted color for placeholder */
+  transition: background 0.3s ease; /* Smooth background transition */
 }
 
+/* Image info section below image */
 .image-info {
-  padding: 1rem 0.5rem;
+  padding: 1rem 0.5rem; /* Padding around image information */
 }
 
+/* Image title styling */
 .image-info h4 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-  font-size: 1rem;
+  margin: 0 0 0.5rem 0; /* Remove top margin, add bottom margin */
+  color: var(--text-primary); /* Theme text color */
+  font-size: 1rem; /* Standard font size */
 }
 
+/* Image tags container */
 .image-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
+  display: flex; /* Flexbox for tag layout */
+  flex-wrap: wrap; /* Allow tags to wrap to next line */
+  gap: 0.25rem; /* Small gap between tags */
 }
 
+/* Individual tag chip styling */
 .tag-chip {
-  background-color: var(--primary-orange);
-  color: var(--text-inverse);
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  background-color: var(--primary-orange); /* Orange background for tags */
+  color: var(--text-inverse); /* White text for contrast */
+  padding: 0.25rem 0.5rem; /* Compact padding for chips */
+  border-radius: 12px; /* Rounded pill shape */
+  font-size: 0.75rem; /* Small font size for chips */
+  font-weight: 500; /* Medium weight for readability */
 }
 
+/* No tags placeholder text */
 .no-tags {
-  color: var(--text-muted);
-  font-style: italic;
-  font-size: 0.75rem;
+  color: var(--text-muted); /* Muted color for placeholder */
+  font-style: italic; /* Italic styling for placeholder text */
+  font-size: 0.75rem; /* Small font size */
 }
 
-/* Modal Styles */
+/* Modal Styles - full-screen image viewer */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
-  backdrop-filter: blur(2px);
+  position: fixed; /* Fixed positioning to cover viewport */
+  top: 0; /* Cover from top */
+  left: 0; /* Cover from left */
+  right: 0; /* Cover to right */
+  bottom: 0; /* Cover to bottom */
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black backdrop */
+  display: flex; /* Flexbox for centering modal */
+  justify-content: center; /* Horizontally center modal */
+  align-items: center; /* Vertically center modal */
+  z-index: 1000; /* High z-index to appear above all content */
+  padding: 1rem; /* Padding around modal */
+  backdrop-filter: blur(2px); /* Subtle blur effect for backdrop */
   /* Prevent background scrolling */
-  overscroll-behavior: contain;
+  overscroll-behavior: contain; /* Prevent scroll chaining */
 }
 
+/* Modal content container */
 .modal-content {
-  background: var(--bg-primary);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
-  position: relative;
+  background: var(--bg-primary); /* Theme background color */
+  border-radius: 12px; /* Rounded corners for modern look */
+  width: 100%; /* Full width of container */
+  max-width: 600px; /* Maximum width for desktop */
+  max-height: 85vh; /* Maximum height relative to viewport */
+  overflow-y: auto; /* Allow vertical scrolling if content overflows */
+  box-shadow: var(--shadow-lg); /* Large shadow for elevation */
+  border: 1px solid var(--border-light); /* Light border for definition */
+  transition: all 0.3s ease; /* Smooth transitions for modal animations */
+  position: relative; /* Positioning context for child elements */
   /* Ensure modal content is above everything */
-  z-index: 1001;
+  z-index: 1001; /* Higher z-index than overlay */
 }
 
-/* Mobile modal optimizations */
+/* Mobile modal responsive optimizations */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: 0;
-    align-items: flex-start;
+    padding: 0; /* Remove padding on mobile */
+    align-items: flex-start; /* Align to top on mobile */
     /* Use full viewport height accounting for mobile browser bars */
-    height: 100vh;
+    height: 100vh; /* Standard viewport height */
     height: 100dvh; /* Dynamic viewport height for mobile browsers */
     /* Prevent scrolling through modal */
-    touch-action: none;
-    overflow: hidden;
+    touch-action: none; /* Disable touch scrolling on overlay */
+    overflow: hidden; /* Hide overflow on mobile */
   }
 
   .modal-content {
-    width: 100%;
-    max-width: none;
+    width: 100%; /* Full width on mobile */
+    max-width: none; /* Remove width constraint */
     /* Account for mobile browser UI and safe areas */
-    height: 100vh;
-    height: 100dvh;
-    max-height: none;
-    border-radius: 0;
-    margin: 0;
+    height: 100vh; /* Standard viewport height */
+    height: 100dvh; /* Dynamic viewport height */
+    max-height: none; /* Remove height constraint */
+    border-radius: 0; /* Remove border radius for full-screen */
+    margin: 0; /* Remove margins */
     /* Prevent content from going behind browser UI */
-    padding-bottom: env(safe-area-inset-bottom, 20px);
-    display: flex;
-    flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom, 20px); /* Safe area padding */
+    display: flex; /* Flexbox layout for mobile */
+    flex-direction: column; /* Stack elements vertically */
     /* Ensure smooth scrolling */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining */
   }
 }
 
+/* Modal header with title and close button */
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
-  background: var(--bg-primary);
-  z-index: 1002;
-  gap: 16px;
+  display: flex; /* Flexbox for header layout */
+  justify-content: space-between; /* Space between title and close button */
+  align-items: center; /* Vertically center header content */
+  padding: 20px 24px; /* Padding around header content */
+  border-bottom: 1px solid var(--border-light); /* Border separator */
+  position: sticky; /* Sticky positioning to stay at top when scrolling */
+  top: 0; /* Stick to top of modal */
+  background: var(--bg-primary); /* Theme background to hide content behind */
+  z-index: 1002; /* Higher z-index than modal content */
+  gap: 16px; /* Space between header elements */
   /* Ensure header stays above modal content */
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px); /* Backdrop blur for visual separation */
 }
 
+/* Modal header title styling */
 .modal-header h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  flex-shrink: 0;
+  margin: 0; /* Remove default margin */
+  color: var(--text-primary); /* Theme text color */
+  font-size: 1.5rem; /* Large title font size */
+  flex-shrink: 0; /* Prevent title from shrinking */
 }
 
+/* Modal header left section */
 .modal-header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-  min-width: 0;
+  display: flex; /* Flexbox for left section layout */
+  align-items: center; /* Vertically center content */
+  gap: 16px; /* Space between left section elements */
+  flex: 1; /* Take remaining space */
+  min-width: 0; /* Allow flex item to shrink below content size */
 }
 
+/* Modal body content area */
 .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px;
+  flex: 1; /* Take remaining space after header */
+  overflow-y: auto; /* Allow vertical scrolling */
+  padding: 20px 24px; /* Padding around body content */
   /* Ensure content doesn't scroll behind sticky elements */
-  position: relative;
+  position: relative; /* Positioning context for child elements */
   /* Add bottom padding for mobile safe areas when content scrolls to bottom */
-  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  padding-bottom: max(
+    20px,
+    env(safe-area-inset-bottom, 20px)
+  ); /* Safe area padding */
 }
 
-/* Mobile modal body optimizations */
+/* Mobile modal body responsive optimizations */
 @media (max-width: 768px) {
   .modal-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 20px;
+    flex: 1; /* Take remaining space */
+    overflow-y: auto; /* Allow vertical scrolling */
+    padding: 16px 20px; /* Reduced padding for mobile */
     /* Prevent scrolling issues on mobile */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining */
     /* Account for sticky header and mobile browser UI */
-    min-height: 0;
+    min-height: 0; /* Allow flex item to shrink */
     /* Ensure proper bottom padding for mobile browser UI */
-    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    padding-bottom: max(
+      20px,
+      env(safe-area-inset-bottom, 20px)
+    ); /* Safe area padding */
 
     /* Hide scrollbar on mobile */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar in Internet Explorer 10+ */
   }
 
   /* Hide scrollbar for WebKit browsers (Safari, Chrome) on mobile */
   .modal-body::-webkit-scrollbar {
-    display: none;
+    display: none; /* Hide scrollbar in Safari and Chrome */
   }
 }
 
+/* Modal header right section */
 .modal-header-right {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  display: flex; /* Flexbox for right section layout */
+  align-items: center; /* Vertically center content */
+  flex-shrink: 0; /* Prevent right section from shrinking */
 }
 
-/* Mobile modal header optimizations */
+/* Mobile modal header responsive optimizations */
 @media (max-width: 768px) {
   .modal-header {
-    padding: 16px 20px;
-    flex-wrap: nowrap;
-    border-radius: 0;
-    gap: 12px;
+    padding: 16px 20px; /* Reduced padding for mobile */
+    flex-wrap: nowrap; /* Prevent header elements from wrapping */
+    border-radius: 0; /* Remove border radius for full-screen */
+    gap: 12px; /* Reduced gap for mobile */
     /* Account for mobile status bar */
-    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    padding-top: max(
+      16px,
+      env(safe-area-inset-top, 0px)
+    ); /* Safe area padding */
     /* Stronger background on mobile */
-    background: var(--bg-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
+    background: var(--bg-primary); /* Solid background for mobile */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Shadow for separation */
+    flex-shrink: 0; /* Prevent header from shrinking */
   }
 
   .modal-header h2 {
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* Smaller title font for mobile */
   }
 
   .modal-header-left {
-    gap: 12px;
-    min-width: 0;
-    flex: 1;
+    gap: 12px; /* Reduced gap for mobile */
+    min-width: 0; /* Allow shrinking below content size */
+    flex: 1; /* Take remaining space */
   }
 }
 
+/* Small mobile modal header adjustments */
 @media (max-width: 480px) {
   .modal-header {
-    padding: 12px 16px;
-    gap: 8px;
+    padding: 12px 16px; /* Further reduced padding for small mobile */
+    gap: 8px; /* Smaller gap for compact layout */
   }
 
   .modal-header h2 {
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Smaller title font for small mobile */
   }
 
   .modal-header-left {
-    gap: 8px;
+    gap: 8px; /* Smaller gap for small mobile */
   }
 }
 
+/* Close button styling */
 .close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  background: none; /* Transparent background */
+  border: none; /* Remove default button border */
+  font-size: 24px; /* Large font size for close icon */
+  color: var(--text-secondary); /* Secondary text color */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  padding: 4px; /* Small padding around icon */
+  width: 32px; /* Fixed width for circular button */
+  height: 32px; /* Fixed height for circular button */
+  display: flex; /* Flexbox for centering icon */
+  align-items: center; /* Vertically center icon */
+  justify-content: center; /* Horizontally center icon */
+  border-radius: 50%; /* Circular button shape */
+  transition: all 0.2s ease; /* Smooth transitions for hover effects */
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
 
+/* Close button hover effect */
 .close-btn:hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  background-color: var(--bg-secondary); /* Secondary background on hover */
+  color: var(--text-primary); /* Primary text color on hover */
 }
 
-/* Mobile close button optimization */
+/* Mobile close button responsive optimization */
 @media (max-width: 768px) {
   .close-btn {
-    font-size: 20px;
-    width: 36px;
-    height: 36px;
-    padding: 6px;
+    font-size: 20px; /* Slightly smaller icon for mobile */
+    width: 36px; /* Larger touch target for mobile */
+    height: 36px; /* Larger touch target for mobile */
+    padding: 6px; /* Increased padding for touch */
   }
 }
 
+/* Small mobile close button adjustments */
 @media (max-width: 480px) {
   .close-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
-    padding: 4px;
+    width: 32px; /* Smaller button for compact layout */
+    height: 32px; /* Smaller button for compact layout */
+    font-size: 18px; /* Smaller icon for small mobile */
+    padding: 4px; /* Reduced padding for compact layout */
   }
 }
 
+/* Tag type select dropdown styling */
 .tag-type-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 2px solid var(--border-light);
-  border-radius: 6px;
-  font-size: 16px;
-  transition: border-color 0.2s ease, background-color 0.3s ease;
-  box-sizing: border-box;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  cursor: pointer;
-  min-height: 44px;
+  width: 100%; /* Full width select */
+  padding: 10px 12px; /* Comfortable padding */
+  border: 2px solid var(--border-light); /* Light border */
+  border-radius: 6px; /* Rounded corners */
+  font-size: 16px; /* Standard font size */
+  transition: border-color 0.2s ease, background-color 0.3s ease; /* Smooth transitions */
+  box-sizing: border-box; /* Include padding in width calculation */
+  background-color: var(--bg-primary); /* Theme background color */
+  color: var(--text-primary); /* Theme text color */
+  cursor: pointer; /* Pointer cursor for dropdown */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Tag type select focus state */
 .tag-type-select:focus {
-  outline: none;
-  border-color: var(--primary-orange);
+  outline: none; /* Remove default focus outline */
+  border-color: var(--primary-orange); /* Orange border when focused */
 }
 
-/* Mobile tag type select optimizations */
+/* Mobile tag type select responsive optimizations */
 @media (max-width: 768px) {
   .tag-type-select {
-    padding: 14px 16px;
-    font-size: 16px;
-    border-radius: 8px;
-    min-height: 48px;
-    border-width: 2px;
+    padding: 14px 16px; /* Increased padding for mobile */
+    font-size: 16px; /* Consistent font size for mobile */
+    border-radius: 8px; /* Larger border radius for modern look */
+    min-height: 48px; /* Larger touch target for mobile */
+    border-width: 2px; /* Consistent border width */
   }
 }
 
+/* Tag selection container */
 .tag-selection {
   /* Remove height constraints to allow natural expansion */
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  padding: 16px;
-  background-color: var(--bg-primary);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  border: 1px solid var(--border-light); /* Light border around selection area */
+  border-radius: 6px; /* Rounded corners */
+  padding: 16px; /* Padding around tag selection content */
+  background-color: var(--bg-primary); /* Theme background color */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
 }
 
-/* Mobile tag selection optimizations */
+/* Mobile tag selection responsive optimizations */
 @media (max-width: 768px) {
   .tag-selection {
     /* Remove height constraints for mobile too */
-    padding: 12px;
-    border-radius: 8px;
+    padding: 12px; /* Reduced padding for mobile */
+    border-radius: 8px; /* Larger border radius for modern mobile look */
   }
 }
 
+/* Tag group container */
 .tag-group {
-  margin-bottom: 20px;
+  margin-bottom: 20px; /* Space between tag groups */
 }
 
+/* Remove margin from last tag group */
 .tag-group:last-child {
-  margin-bottom: 0;
+  margin-bottom: 0; /* No margin after last group */
 }
 
+/* Tag group title styling */
 .tag-group h4 {
-  margin: 0 0 12px 0;
-  color: var(--primary-orange);
-  font-size: 1rem;
-  font-weight: 600;
+  margin: 0 0 12px 0; /* Remove top margin, add bottom margin */
+  color: var(--primary-orange); /* Orange color for group headers */
+  font-size: 1rem; /* Standard font size */
+  font-weight: 600; /* Semi-bold for emphasis */
 }
 
-/* Mobile tag group optimizations */
+/* Mobile tag group responsive optimizations */
 @media (max-width: 768px) {
   .tag-group {
-    margin-bottom: 16px;
+    margin-bottom: 16px; /* Reduced margin for mobile */
   }
 
   .tag-group h4 {
-    margin: 0 0 8px 0;
-    font-size: 1rem;
-    font-weight: 600;
+    margin: 0 0 8px 0; /* Reduced bottom margin for mobile */
+    font-size: 1rem; /* Consistent font size */
+    font-weight: 600; /* Consistent font weight */
   }
 }
 
+/* Tag checkboxes grid layout */
 .tag-checkboxes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
+  display: grid; /* CSS Grid for checkbox layout */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(180px, 1fr)
+  ); /* Responsive columns */
+  gap: 8px; /* Space between checkbox items */
 }
 
-/* Mobile tag checkboxes optimizations */
+/* Mobile tag checkboxes responsive optimizations */
 @media (max-width: 768px) {
   .tag-checkboxes {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(140px, 1fr)
+    ); /* Smaller columns for mobile */
+    gap: 6px; /* Reduced gap for mobile */
   }
 }
 
+/* Small mobile tag checkboxes adjustments */
 @media (max-width: 480px) {
   .tag-checkboxes {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr; /* Fixed two-column layout */
+    gap: 8px; /* Consistent gap for small mobile */
   }
 }
 
+/* Very small mobile tag checkboxes adjustments */
 @media (max-width: 360px) {
   .tag-checkboxes {
-    grid-template-columns: 1fr;
-    gap: 6px;
+    grid-template-columns: 1fr; /* Single column for very small screens */
+    gap: 6px; /* Minimal gap for very small screens */
   }
 }
 
+/* Individual tag checkbox styling */
 .tag-checkbox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  background-color: var(--bg-primary);
-  text-align: center;
-  font-size: 14px;
-  min-height: 44px;
+  display: flex; /* Flexbox for content centering */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  padding: 8px 12px; /* Comfortable padding for touch interaction */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.2s ease; /* Smooth transitions for all properties */
+  color: var(--text-primary); /* Theme text color */
+  border: 1px solid var(--border-light); /* Light border */
+  background-color: var(--bg-primary); /* Theme background color */
+  text-align: center; /* Center-align text */
+  font-size: 14px; /* Small font size for checkboxes */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Tag checkbox hover effect */
 .tag-checkbox:hover {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-medium);
+  background-color: var(--bg-secondary); /* Secondary background on hover */
+  border-color: var(--border-medium); /* Medium border on hover */
 }
 
+/* Selected tag checkbox styling */
 .tag-checkbox.selected {
-  background-color: var(--secondary-blue);
-  color: var(--text-inverse);
-  border-color: var(--secondary-blue-dark);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--secondary-blue); /* Blue background when selected */
+  color: var(--text-inverse); /* White text for contrast */
+  border-color: var(
+    --secondary-blue-dark
+  ); /* Darker blue border when selected */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
 }
 
+/* Selected tag checkbox hover effect */
 .tag-checkbox.selected:hover {
-  background-color: var(--secondary-blue-dark);
-  border-color: var(--secondary-blue-dark);
+  background-color: var(
+    --secondary-blue-dark
+  ); /* Darker blue on hover when selected */
+  border-color: var(--secondary-blue-dark); /* Matching border color */
 }
 
-/* Mobile tag checkbox optimizations */
+/* Mobile tag checkbox responsive optimizations */
 @media (max-width: 768px) {
   .tag-checkbox {
-    padding: 12px 8px;
-    font-size: 15px;
-    min-height: 48px;
-    border-radius: 8px;
-    font-weight: 500;
+    padding: 12px 8px; /* Adjusted padding for mobile */
+    font-size: 15px; /* Slightly larger font for mobile readability */
+    min-height: 48px; /* Larger touch target for mobile */
+    border-radius: 8px; /* Larger border radius for modern mobile look */
+    font-weight: 500; /* Medium font weight for mobile */
   }
 }
 
+/* Small mobile tag checkbox adjustments */
 @media (max-width: 480px) {
   .tag-checkbox {
-    padding: 14px 8px;
-    font-size: 16px;
-    min-height: 50px;
+    padding: 14px 8px; /* Increased padding for better touch targets */
+    font-size: 16px; /* Larger font size for small mobile readability */
+    min-height: 50px; /* Larger touch target for small mobile */
   }
 }
 
+/* Family selection grid layout */
 .family-selection {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
-  margin-top: 8px;
+  display: grid; /* CSS Grid for family selection layout */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(180px, 1fr)
+  ); /* Responsive columns */
+  gap: 8px; /* Space between family items */
+  margin-top: 8px; /* Space above family selection */
 }
 
-/* Mobile family selection optimizations */
+/* Mobile family selection responsive optimizations */
 @media (max-width: 768px) {
   .family-selection {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 6px;
-    margin-top: 8px;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(140px, 1fr)
+    ); /* Smaller columns for mobile */
+    gap: 6px; /* Reduced gap for mobile */
+    margin-top: 8px; /* Consistent top margin */
   }
 }
 
+/* Small mobile family selection adjustments */
 @media (max-width: 480px) {
   .family-selection {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr; /* Fixed two-column layout for small mobile */
+    gap: 8px; /* Consistent gap for small mobile */
   }
 }
 
+/* Very small mobile family selection adjustments */
 @media (max-width: 360px) {
   .family-selection {
-    grid-template-columns: 1fr;
-    gap: 6px;
+    grid-template-columns: 1fr; /* Single column for very small screens */
+    gap: 6px; /* Minimal gap for very small screens */
   }
 }
 
+/* Individual family checkbox styling */
 .family-checkbox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  background-color: var(--bg-primary);
-  text-align: center;
-  font-size: 14px;
-  min-height: 44px;
+  display: flex; /* Flexbox for content centering */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  padding: 8px 12px; /* Comfortable padding for touch interaction */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.2s ease; /* Smooth transitions for all properties */
+  color: var(--text-primary); /* Theme text color */
+  border: 1px solid var(--border-light); /* Light border */
+  background-color: var(--bg-primary); /* Theme background color */
+  text-align: center; /* Center-align text */
+  font-size: 14px; /* Small font size for checkboxes */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Family checkbox hover effect */
 .family-checkbox:hover {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-medium);
+  background-color: var(--bg-secondary); /* Secondary background on hover */
+  border-color: var(--border-medium); /* Medium border on hover */
 }
 
+/* Selected family checkbox styling */
 .family-checkbox.selected {
-  background-color: #ff8c00;
-  color: white;
-  border-color: #e67e00;
-  box-shadow: var(--shadow-sm);
+  background-color: #ff8c00; /* Orange background when selected */
+  color: white; /* White text for contrast */
+  border-color: #e67e00; /* Darker orange border when selected */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
 }
 
+/* Selected family checkbox hover effect */
 .family-checkbox.selected:hover {
-  background-color: #e67e00;
-  border-color: #cc7000;
+  background-color: #e67e00; /* Darker orange on hover when selected */
+  border-color: #cc7000; /* Even darker orange border on hover */
 }
 
-/* Mobile family checkbox optimizations */
+/* Mobile family checkbox responsive optimizations */
 @media (max-width: 768px) {
   .family-checkbox {
-    padding: 12px 8px;
-    font-size: 15px;
-    min-height: 48px;
-    border-radius: 8px;
-    font-weight: 500;
+    padding: 12px 8px; /* Adjusted padding for mobile */
+    font-size: 15px; /* Slightly larger font for mobile readability */
+    min-height: 48px; /* Larger touch target for mobile */
+    border-radius: 8px; /* Larger border radius for modern mobile look */
+    font-weight: 500; /* Medium font weight for mobile */
   }
 }
 
+/* Small mobile family checkbox adjustments */
 @media (max-width: 480px) {
   .family-checkbox {
-    padding: 14px 8px;
-    font-size: 16px;
-    min-height: 50px;
+    padding: 14px 8px; /* Increased padding for better touch targets */
+    font-size: 16px; /* Larger font size for small mobile readability */
+    min-height: 50px; /* Larger touch target for small mobile */
   }
 }
 
+/* Empty families message when no families are available */
 .empty-families-message {
-  width: 100%;
-  padding: 16px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text-secondary);
-  font-style: italic;
-  text-align: center;
-  box-sizing: border-box;
+  width: 100%; /* Full width message */
+  padding: 16px; /* Comfortable padding around message */
+  background-color: var(
+    --bg-secondary
+  ); /* Secondary background for differentiation */
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 6px; /* Rounded corners */
+  color: var(--text-secondary); /* Secondary text color for subtle appearance */
+  font-style: italic; /* Italic styling for informational message */
+  text-align: center; /* Center-align text */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
+/* Upload error message styling */
 .upload-error-message {
-  padding: 12px;
-  margin-top: 8px;
-  background-color: #fee;
-  border: 1px solid #fcc;
-  border-radius: 6px;
-  color: #c33;
-  font-size: 14px;
+  padding: 12px; /* Padding around error message */
+  margin-top: 8px; /* Space above error message */
+  background-color: #fee; /* Light red background for error */
+  border: 1px solid #fcc; /* Red border for error indication */
+  border-radius: 6px; /* Rounded corners */
+  color: #c33; /* Dark red text for error */
+  font-size: 14px; /* Small font size for error messages */
 }
 
+/* Form actions container at bottom of modal */
 .form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 20px;
+  display: flex; /* Flexbox for horizontal layout */
+  justify-content: space-between; /* Space between left and right actions */
+  align-items: center; /* Vertically center action buttons */
+  gap: 12px; /* Space between action elements */
+  margin-top: 24px; /* Space above form actions */
+  padding-top: 20px; /* Padding at top for visual separation */
   /* Remove border-top divider */
   /* border-top: 1px solid var(--border-light); */
   /* Remove sticky positioning for single scroll area */
-  position: static;
-  background: transparent;
-  z-index: auto;
+  position: static; /* Static positioning for normal flow */
+  background: transparent; /* Transparent background */
+  z-index: auto; /* Standard z-index */
   /* Remove backdrop filter */
-  backdrop-filter: none;
-  flex-shrink: 0;
+  backdrop-filter: none; /* No backdrop filter needed */
+  flex-shrink: 0; /* Prevent actions from shrinking */
 }
 
+/* Form actions right section */
 .form-actions-right {
-  display: flex;
-  gap: 12px;
+  display: flex; /* Flexbox for right section layout */
+  gap: 12px; /* Space between right section buttons */
 }
 
 /* Mobile form actions are now handled by ImageModal.css for consistency */
 
+/* Delete button styling */
 .delete-btn {
-  background: linear-gradient(135deg, #f44336, #d32f2f);
-  color: var(--text-inverse);
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
-  min-height: 44px;
+  background: linear-gradient(
+    135deg,
+    #f44336,
+    #d32f2f
+  ); /* Red gradient for delete action */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 10px 20px; /* Comfortable padding for button */
+  font-size: 16px; /* Standard font size */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for all properties */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Delete button hover effect */
 .delete-btn:hover:not(:disabled) {
-  box-shadow: var(--shadow-md);
-  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  box-shadow: var(--shadow-md); /* Enhanced shadow on hover */
+  background: linear-gradient(
+    135deg,
+    #d32f2f,
+    #b71c1c
+  ); /* Darker red gradient on hover */
 }
 
+/* Delete button disabled state */
 .delete-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  opacity: 0.6; /* Reduced opacity when disabled */
+  cursor: not-allowed; /* Not-allowed cursor when disabled */
+  transform: none; /* No transform when disabled */
+  box-shadow: none; /* No shadow when disabled */
 }
 
-/* Mobile delete button optimizations */
+/* Mobile delete button responsive optimizations */
 @media (max-width: 768px) {
   .delete-btn {
-    padding: 14px 20px;
-    font-size: 16px;
-    min-height: 48px;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: 14px 20px; /* Increased padding for mobile */
+    font-size: 16px; /* Consistent font size for mobile */
+    min-height: 48px; /* Larger touch target for mobile */
+    border-radius: 8px; /* Larger border radius for modern mobile look */
+    font-weight: 600; /* Consistent font weight */
   }
 }
 
+/* Cancel button styling */
 .cancel-btn {
-  background: none;
-  border: 2px solid var(--border-medium);
-  color: var(--text-secondary);
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 44px;
+  background: none; /* Transparent background */
+  border: 2px solid var(--border-medium); /* Medium border for definition */
+  color: var(--text-secondary); /* Secondary text color */
+  padding: 10px 20px; /* Comfortable padding for button */
+  font-size: 16px; /* Standard font size */
+  font-weight: 500; /* Medium font weight */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.2s ease; /* Smooth transitions for all properties */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Cancel button hover effect */
 .cancel-btn:hover {
-  border-color: var(--border-dark);
-  color: var(--text-primary);
+  border-color: var(--border-dark); /* Darker border on hover */
+  color: var(--text-primary); /* Primary text color on hover */
 }
 
-/* Mobile cancel button optimizations */
+/* Mobile cancel button responsive optimizations */
 @media (max-width: 768px) {
   .cancel-btn {
-    padding: 14px 20px;
-    font-size: 16px;
-    min-height: 48px;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: 14px 20px; /* Increased padding for mobile */
+    font-size: 16px; /* Consistent font size for mobile */
+    min-height: 48px; /* Larger touch target for mobile */
+    border-radius: 8px; /* Larger border radius for modern mobile look */
+    font-weight: 600; /* Consistent font weight */
   }
 }
 
+/* Submit button styling */
 .submit-btn {
   background: linear-gradient(
     135deg,
     var(--secondary-blue),
     var(--secondary-blue-dark)
-  );
-  color: var(--text-inverse);
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
-  min-height: 44px;
+  ); /* Blue gradient for primary action */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 10px 20px; /* Comfortable padding for button */
+  font-size: 16px; /* Standard font size */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for all properties */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
+  min-height: 44px; /* iOS recommended touch target size */
 }
 
+/* Submit button hover effect */
 .submit-btn:hover:not(:disabled) {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md); /* Enhanced shadow on hover */
 }
 
+/* Submit button disabled state */
 .submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  opacity: 0.6; /* Reduced opacity when disabled */
+  cursor: not-allowed; /* Not-allowed cursor when disabled */
+  transform: none; /* No transform when disabled */
+  box-shadow: none; /* No shadow when disabled */
 }
 
-/* Mobile submit button optimizations */
+/* Mobile submit button responsive optimizations */
 @media (max-width: 768px) {
   .submit-btn {
-    padding: 14px 20px;
-    font-size: 16px;
-    min-height: 48px;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: 14px 20px; /* Increased padding for mobile */
+    font-size: 16px; /* Consistent font size for mobile */
+    min-height: 48px; /* Larger touch target for mobile */
+    border-radius: 8px; /* Larger border radius for modern mobile look */
+    font-weight: 600; /* Consistent font weight */
   }
 }
 
+/* Modal header actions container */
 .modal-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  display: flex; /* Flexbox for actions layout */
+  align-items: center; /* Vertically center actions */
+  gap: 12px; /* Space between action buttons */
+  flex-shrink: 0; /* Prevent actions from shrinking */
 }
 
-/* Mobile modal header actions optimizations */
+/* Mobile modal header actions responsive optimizations */
 @media (max-width: 768px) {
   .modal-header-actions {
-    gap: 8px;
-    flex-wrap: nowrap;
+    gap: 8px; /* Reduced gap for mobile */
+    flex-wrap: nowrap; /* Prevent actions from wrapping */
   }
 }
 
+/* Small mobile modal header actions adjustments */
 @media (max-width: 480px) {
   .modal-header-actions {
-    gap: 6px;
+    gap: 6px; /* Further reduced gap for small mobile */
   }
 }
 
+/* Edit button styling */
 .edit-btn {
   background: linear-gradient(
     135deg,
     var(--secondary-blue),
     var(--secondary-blue-dark)
-  );
-  color: var(--text-inverse);
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
-  min-height: 40px;
-  white-space: nowrap;
+  ); /* Blue gradient for edit action */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 8px 16px; /* Compact padding for header button */
+  font-size: 14px; /* Smaller font size for compact header */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for all properties */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
+  min-height: 40px; /* Compact touch target for header */
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
+/* Edit button hover effect */
 .edit-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: linear-gradient(135deg, var(--secondary-blue-dark), #1565c0);
+  box-shadow: var(--shadow-md); /* Enhanced shadow on hover */
+  background: linear-gradient(
+    135deg,
+    var(--secondary-blue-dark),
+    #1565c0
+  ); /* Darker blue on hover */
 }
 
-/* Mobile edit button optimizations */
+/* Mobile edit button responsive optimizations */
 @media (max-width: 768px) {
   .edit-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    min-height: 36px;
-    border-radius: 6px;
+    padding: 6px 12px; /* Reduced padding for mobile */
+    font-size: 13px; /* Slightly smaller font for mobile */
+    min-height: 36px; /* Smaller touch target for mobile header */
+    border-radius: 6px; /* Consistent border radius */
   }
 }
 
+/* Small mobile edit button adjustments */
 @media (max-width: 480px) {
   .edit-btn {
-    padding: 6px 10px;
-    font-size: 12px;
-    min-height: 32px;
+    padding: 6px 10px; /* Further reduced padding for small mobile */
+    font-size: 12px; /* Smaller font for compact layout */
+    min-height: 32px; /* Compact touch target for small mobile */
   }
 }
 
+/* Download button styling */
 .download-btn {
   background: linear-gradient(
     135deg,
     var(--success-green),
     var(--success-green-dark)
-  );
-  color: var(--text-inverse);
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
-  min-height: 40px;
-  white-space: nowrap;
+  ); /* Green gradient for download action */
+  color: var(--text-inverse); /* White text for contrast */
+  border: none; /* Remove default button border */
+  padding: 8px 16px; /* Compact padding for header button */
+  font-size: 14px; /* Smaller font size for compact header */
+  font-weight: 600; /* Semi-bold for emphasis */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: all 0.3s ease; /* Smooth transitions for all properties */
+  box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
+  min-height: 40px; /* Compact touch target for header */
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
+/* Download button hover effect */
 .download-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: linear-gradient(135deg, var(--success-green-dark), #2e7d32);
+  box-shadow: var(--shadow-md); /* Enhanced shadow on hover */
+  background: linear-gradient(
+    135deg,
+    var(--success-green-dark),
+    #2e7d32
+  ); /* Darker green on hover */
 }
 
-/* Mobile download button optimizations */
+/* Mobile download button responsive optimizations */
 @media (max-width: 768px) {
   .download-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    min-height: 36px;
-    border-radius: 6px;
+    padding: 6px 12px; /* Reduced padding for mobile */
+    font-size: 13px; /* Slightly smaller font for mobile */
+    min-height: 36px; /* Smaller touch target for mobile header */
+    border-radius: 6px; /* Consistent border radius */
   }
 }
 
+/* Small mobile download button adjustments */
 @media (max-width: 480px) {
   .download-btn {
-    padding: 6px 10px;
-    font-size: 12px;
-    min-height: 32px;
+    padding: 6px 10px; /* Further reduced padding for small mobile */
+    font-size: 12px; /* Smaller font for compact layout */
+    min-height: 32px; /* Compact touch target for small mobile */
   }
 }
 
-/* Focus improvements for keyboard navigation */
+/* Focus improvements for keyboard navigation and accessibility */
 @media (max-width: 768px) {
   button:focus,
   .filter-item:focus,
   input:focus,
   select:focus,
   textarea:focus {
-    outline: 3px solid var(--primary-orange);
-    outline-offset: 2px;
+    outline: 3px solid var(--primary-orange); /* Orange outline for focus visibility */
+    outline-offset: 2px; /* Offset outline for better visibility */
   }
 }
