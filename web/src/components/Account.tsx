@@ -1046,9 +1046,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
                       </div>
                       <div className="family-group-details">
                         <div className="family-group-info">
-                          <span className="member-count">
-                            👥 {family.member_count} members
-                          </span>
                           <span className="family-id-container">
                             <button
                               className="copy-id-btn"
@@ -1095,13 +1092,16 @@ function Account({ user, onUserUpdate }: AccountProps) {
                               </span>
                             )}
                           </span>
+                          <span className="member-count">
+                            👥 {family.member_count}
+                          </span>
                         </div>
                         <div className="family-group-actions">
                           <button
                             className="action-btn view-btn"
                             onClick={() => handleViewMembers(family)}
                           >
-                            View Members
+                            View
                           </button>
                           {family.user_role === "owner" && (
                             <button

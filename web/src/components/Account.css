@@ -346,7 +346,7 @@
 
 .family-group-info {
   display: flex; /* Use flexbox for info layout */
-  flex-direction: column; /* Stack info elements vertically */
+  flex-direction: row; /* Stack info elements vertically */
   gap: 0.5rem; /* Add consistent spacing between info items */
 }
 
@@ -1090,7 +1090,7 @@
   }
 
   .profile-section {
-    padding: 0.25rem; /* Reduced padding for mobile profile section */
+    padding: 0.5rem; /* Reduced padding for mobile profile section */
   }
 
   .user-info {
@@ -1126,6 +1126,7 @@
   .family-group-details {
     flex-direction: column; /* Stack details vertically on mobile */
     align-items: flex-start; /* Left-align stacked details */
+    gap: 0.5rem; /* Reduced gap between info and actions on mobile */
   }
 
   .family-group-actions {
@@ -1139,6 +1140,10 @@
   .family-group-card:hover {
     border-color: var(--border-light); /* Reset border color on mobile */
     box-shadow: none; /* Remove hover shadow on mobile */
+  }
+
+  .family-group-header {
+    margin-bottom: 0.5rem; /* Reduced bottom margin for header on mobile */
   }
 
   /* Settings grid */
@@ -1165,7 +1170,14 @@
   .action-btn,
   .view-btn,
   .manage-btn,
-  .leave-btn,
+  .leave-btn {
+    height: 30px; /* Shorter height for more compact mobile buttons */
+    padding: 0.1rem 0.375rem; /* More compact padding for shorter buttons */
+    font-size: 12px; /* Smaller font size to fit shorter height */
+    box-sizing: border-box; /* Include padding in width calculation */
+    width: 30%; /* Allow buttons to size based on content */
+  }
+
   .join-family-btn,
   .create-family-btn,
   .create-family-btn-footer {
@@ -1300,15 +1312,7 @@
 
 /* Small Mobile Styles (480px and below) */
 @media (max-width: 480px) {
-  /* Enhanced touch targets for small screens */
-  .action-btn,
-  .view-btn,
-  .manage-btn,
-  .leave-btn {
-    min-height: 48px; /* Larger minimum height for very small screens */
-    padding: 12px 16px; /* Maintained padding for touch targets */
-    font-size: 14px; /* Slightly smaller font for very small screens */
-  }
+  /* Note: action-btn styles inherit from main mobile styles above for consistency */
 
   .setting-item {
     min-height: 48px; /* Larger minimum height for setting items */
