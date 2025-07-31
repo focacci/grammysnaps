@@ -1175,9 +1175,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
         title="Create Family Group"
         onClose={handleCloseCreateFamilyModal}
         onRightAction={handleCreateFamilySubmit}
-        rightButtonText={
-          createFamilyLoading ? "Creating..." : "Create Family Group"
-        }
+        rightButtonText={createFamilyLoading ? "Creating..." : "Create"}
         rightButtonDisabled={createFamilyLoading}
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
@@ -1211,8 +1209,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
         mode="view"
         title="Join Family Group"
         onClose={handleCloseJoinFamilyModal}
+        onRightAction={handleJoinFamilySubmit}
+        rightButtonText={joinFamilyLoading ? "Joining..." : "Join"}
+        rightButtonDisabled={joinFamilyLoading}
         showLeftButton={false}
-        showRightButton={false}
         maxWidth="500px"
       >
         <div className="form-group">
