@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import "./Modal.css";
 import "./Modal.css";
 
@@ -86,7 +87,7 @@ const Modal: React.FC<ModalProps> = ({
 
   const isFormMode = mode === "form";
 
-  return (
+  const modalContent = (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div
         className={`modal-content ${mode === "preview" ? "modal-preview" : ""}`}
@@ -209,6 +210,9 @@ const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  // Use createPortal to render modal outside component tree
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;
