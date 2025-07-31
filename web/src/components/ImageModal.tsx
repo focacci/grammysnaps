@@ -1,5 +1,5 @@
 import React from "react";
-import "./ImageModal.css";
+import Modal from "./Modal";
 
 export type ImageModalMode = "create" | "preview" | "edit";
 
@@ -42,112 +42,47 @@ const ImageModal: React.FC<ImageModalProps> = ({
   onSelectDifferentPhoto,
   onBack,
 }) => {
-  if (!isOpen) return null;
+  const modalMode = mode === "preview" ? "preview" : "form";
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    (onRightAction as (e: React.FormEvent) => void | Promise<void>)(e);
-  };
-
-  const handleButtonClick = () => {
-    (onRightAction as () => void)();
-  };
+  const headerSection = (
+    <>
+      {imageSection}
+      {showSelectDifferentButton && onSelectDifferentPhoto && (
+        <button
+          type="button"
+          className="additional-btn"
+          onClick={onSelectDifferentPhoto}
+        >
+          Select Different Photo
+        </button>
+      )}
+    </>
+  );
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div
-        className={`modal-content ${
-          mode === "preview" ? "image-modal-preview" : ""
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header">
-          <div className="modal-header-left">
-            {mode === "edit" && onBack && (
-              <button
-                className="back-btn"
-                onClick={onBack}
-                title="Back to preview"
-              >
-                ←
-              </button>
-            )}
-            <h2>{title}</h2>
-          </div>
-          <button className="close-btn" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        <div className="modal-body">
-          {mode === "create" || mode === "edit" ? (
-            <form onSubmit={handleFormSubmit} className="upload-form">
-              <div className="form-content">
-                <div className="form-group">
-                  {imageSection}
-                  {showSelectDifferentButton && onSelectDifferentPhoto && (
-                    <button
-                      type="button"
-                      className="change-file-btn"
-                      onClick={onSelectDifferentPhoto}
-                    >
-                      Select Different Photo
-                    </button>
-                  )}
-                </div>
-                {children}
-              </div>
-              <div className="form-actions">
-                <button
-                  type="button"
-                  onClick={onLeftAction}
-                  disabled={leftButtonDisabled}
-                  className={leftButtonClass}
-                >
-                  {leftButtonText}
-                </button>
-                <button
-                  type="submit"
-                  disabled={rightButtonDisabled}
-                  className={rightButtonClass}
-                >
-                  {rightButtonText}
-                </button>
-              </div>
-            </form>
-          ) : (
-            // Preview mode
-            <div className="image-preview-content">
-              {imageSection}
-              {children}
-              <div className="form-actions">
-                <button
-                  type="button"
-                  onClick={onLeftAction}
-                  disabled={leftButtonDisabled}
-                  className={leftButtonClass}
-                >
-                  {leftButtonText}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleButtonClick}
-                  disabled={rightButtonDisabled}
-                  className={rightButtonClass}
-                >
-                  {rightButtonText}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <Modal
+      isOpen={isOpen}
+      mode={modalMode}
+      title={title}
+      onClose={onClose}
+      onLeftAction={onLeftAction}
+      onRightAction={onRightAction}
+      leftButtonText={leftButtonText}
+      rightButtonText={rightButtonText}
+      leftButtonDisabled={leftButtonDisabled}
+      rightButtonDisabled={rightButtonDisabled}
+      leftButtonClass={leftButtonClass}
+      rightButtonClass={rightButtonClass}
+      headerSection={headerSection}
+      onBack={onBack}
+      maxWidth="600px"
+      showAdditionalButton={showSelectDifferentButton}
+      onAdditionalAction={onSelectDifferentPhoto}
+      additionalButtonText="Select Different Photo"
+      additionalButtonClass="additional-btn"
+    >
+      {children}
+    </Modal>
   );
 };
 

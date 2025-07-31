@@ -1,7 +1,7 @@
-/* ImageModal.css - Styles for the reusable image modal component */
+/* Modal.css - Styles for the reusable modal component */
 
 /* Modal overlay and basic structure inherit from PhotoView.css */
-/* This file only contains specific overrides or additions for the ImageModal component */
+/* This file only contains specific overrides or additions for the Modal component */
 
 /* Hide scrollbars on desktop for all modal content */
 @media (min-width: 769px) {
@@ -17,8 +17,8 @@
   }
 }
 
-/* Image preview content layout for preview mode - flex for full height */
-.image-preview-content {
+/* Modal preview content layout for preview mode - flex for full height */
+.modal-preview-content {
   display: flex; /* Use flexbox for vertical layout arrangement */
   flex-direction: column; /* Stack content vertically (title, image, etc.) */
   gap: 0.5rem; /* Reduced gap between title and photo for compact presentation */
@@ -29,32 +29,32 @@
   -ms-overflow-style: none; /* Internet Explorer 10+ scrollbar hiding */
 }
 
-.image-preview-content::-webkit-scrollbar {
+.modal-preview-content::-webkit-scrollbar {
   display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
 /* Preview mode specific styles - override PhotoView.css modal header layout */
-.image-modal-preview.modal-content .modal-header {
+.modal-preview.modal-content .modal-header {
   justify-content: flex-start !important; /* Align header content to left instead of center */
 }
 
-.image-modal-preview.modal-content .modal-header .modal-header-left {
+.modal-preview.modal-content .modal-header .modal-header-left {
   flex: none !important; /* Don't allow left section to grow and take extra space */
   margin-right: auto !important; /* Push close button to far right using auto margin */
 }
 
-.image-modal-preview.modal-content .modal-header .modal-header-left h2 {
+.modal-preview.modal-content .modal-header .modal-header-left h2 {
   text-align: left !important; /* Left-align the heading text for better UX */
   margin: 0 !important; /* Remove default heading margins for clean spacing */
 }
 
-.image-modal-preview.modal-content .modal-header .close-btn {
+.modal-preview.modal-content .modal-header .close-btn {
   margin-left: auto !important; /* Push close button to right side using flexbox */
   flex-shrink: 0 !important; /* Prevent close button from shrinking */
 }
 
 /* Reduce top padding in modal body for preview mode */
-.image-modal-preview.modal-content .modal-body {
+.modal-preview.modal-content .modal-body {
   padding-top: 1rem !important; /* Reduced top padding for more compact preview layout */
   overflow-y: auto !important; /* Allow vertical scrolling when content exceeds container */
   max-height: calc(
@@ -65,12 +65,12 @@
   -ms-overflow-style: none !important; /* Internet Explorer 10+ scrollbar hiding */
 }
 
-.image-modal-preview.modal-content .modal-body::-webkit-scrollbar {
+.modal-preview.modal-content .modal-body::-webkit-scrollbar {
   display: none !important; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
-/* Form content layout for create/edit modes - flex for full height */
-.upload-form {
+/* Form content layout for form modes - flex for full height */
+.modal-form {
   display: flex; /* Use flexbox layout for form organization */
   flex-direction: column; /* Stack form elements vertically */
   height: 100%; /* Take full available height within modal */
@@ -79,7 +79,7 @@
   -ms-overflow-style: none; /* Internet Explorer 10+ scrollbar hiding */
 }
 
-.upload-form::-webkit-scrollbar {
+.modal-form::-webkit-scrollbar {
   display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
@@ -97,11 +97,12 @@
   display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
-/* First form group (image section) should take available space */
-.form-content .form-group:first-child {
+/* First form group (header section) should take available space if present */
+.form-content
+  .form-group:first-child:has(.file-drop-zone, .image-preview-container) {
   flex: 1; /* Allow first form group to expand and take available vertical space */
-  display: flex; /* Use flexbox for internal layout of image section */
-  flex-direction: column; /* Stack image elements vertically */
+  display: flex; /* Use flexbox for internal layout of header section */
+  flex-direction: column; /* Stack header elements vertically */
 }
 
 /* Back button styling */
@@ -149,7 +150,7 @@
   }
 }
 
-/* File Upload Styles for ImageModal */
+/* File Upload Styles for Modal */
 .file-drop-zone {
   border: 2px dashed var(--border-light); /* Dashed border to indicate drop area */
   border-radius: 8px; /* Rounded corners for modern appearance */
@@ -297,7 +298,8 @@
   border-radius: 4px; /* Rounded corners for modern appearance */
 }
 
-.change-file-btn {
+.change-file-btn,
+.additional-btn {
   background: var(--bg-secondary); /* Theme-aware secondary background */
   color: var(--text-primary); /* Theme-aware primary text color */
   border: 1px solid var(--border-light); /* Subtle border for definition */
@@ -312,12 +314,13 @@
   margin-right: auto; /* Center button horizontally */
 }
 
-.change-file-btn:hover {
+.change-file-btn:hover,
+.additional-btn:hover {
   background: var(--bg-primary); /* Lighter background on hover */
   border-color: var(--primary-orange); /* Orange border on hover for emphasis */
 }
 
-/* Image Preview Styles for ImageModal */
+/* Image Preview Styles for Modal */
 .image-filename {
   color: var(--text-secondary); /* Theme-aware secondary text color */
   font-size: 14px; /* Smaller font size for metadata */
@@ -421,12 +424,24 @@
 /* Form actions styling - consistent across all modal views */
 .form-actions {
   display: flex; /* Use flexbox for button layout */
-  justify-content: space-between; /* Spread buttons to opposite ends */
-  align-items: center; /* Vertically center buttons */
-  gap: 1rem; /* Space between buttons */
+  flex-direction: column; /* Stack main actions and delete button vertically */
+  gap: 1rem; /* Space between action rows */
   padding-bottom: 0.5rem; /* Bottom padding for form actions section */
   padding-top: 10px; /* Top padding for separation from form content */
   margin-top: 0; /* No top margin to prevent extra spacing */
+}
+
+.form-actions-main {
+  display: flex; /* Use flexbox for button layout */
+  justify-content: space-between; /* Spread buttons to opposite ends */
+  align-items: center; /* Vertically center buttons */
+  gap: 1rem; /* Space between buttons */
+}
+
+.form-actions-delete {
+  display: flex; /* Use flexbox for delete button layout */
+  justify-content: center; /* Center delete button */
+  align-items: center; /* Vertically center delete button */
 }
 
 /* Base button styling */
@@ -501,22 +516,352 @@
 }
 
 /* Delete button - red */
-.delete-btn {
+.delete-btn,
+.delete-family-btn {
   background: #ef4444; /* Red background for destructive action */
   color: white; /* White text for high contrast */
   border: 2px solid #ef4444; /* Matching border color */
 }
 
-.delete-btn:hover {
+.delete-btn:hover,
+.delete-family-btn:hover {
   background: #dc2626; /* Darker red on hover for feedback */
   border-color: #dc2626; /* Matching darker border on hover */
 }
 
-.delete-btn:disabled {
+.delete-btn:disabled,
+.delete-family-btn:disabled {
   background: #f87171; /* Lighter red when disabled */
   border-color: #f87171; /* Matching lighter border when disabled */
   cursor: not-allowed; /* Show not-allowed cursor when disabled */
   opacity: 0.7; /* Reduced opacity to indicate disabled state */
+}
+
+/* Auth styles compatibility for Account modals */
+.auth-error {
+  background: rgba(239, 68, 68, 0.1); /* Light red background */
+  color: #dc2626; /* Dark red text */
+  padding: 0.75rem; /* Padding around error message */
+  border-radius: 6px; /* Rounded corners */
+  border: 1px solid rgba(239, 68, 68, 0.3); /* Light red border */
+  margin: 0.75rem 0; /* Vertical margin */
+  font-size: 14px; /* Standard font size */
+  text-align: center; /* Center-align error text */
+}
+
+.auth-success {
+  background: rgba(16, 185, 129, 0.1); /* Light green background */
+  color: #059669; /* Dark green text */
+  padding: 0.75rem; /* Padding around success message */
+  border-radius: 6px; /* Rounded corners */
+  border: 1px solid rgba(16, 185, 129, 0.3); /* Light green border */
+  margin: 0.75rem 0; /* Vertical margin */
+  font-size: 14px; /* Standard font size */
+  text-align: center; /* Center-align success text */
+}
+
+.loading-state {
+  text-align: center; /* Center-align loading text */
+  color: var(--text-secondary); /* Secondary text color */
+  padding: 1rem; /* Padding around loading text */
+  font-style: italic; /* Italic text for loading state */
+}
+
+.form-divider {
+  margin: 1.5rem 0; /* Vertical margin for divider */
+  text-align: center; /* Center-align divider text */
+  position: relative; /* Positioning context for pseudo-elements */
+}
+
+.form-divider::before {
+  content: ""; /* Empty content for line */
+  position: absolute; /* Absolute positioning */
+  top: 50%; /* Center vertically */
+  left: 0; /* Start from left */
+  right: 0; /* Extend to right */
+  height: 1px; /* Thin line */
+  background: var(--border-light); /* Light border color */
+  z-index: 1; /* Behind text */
+}
+
+.form-divider span {
+  background: var(--bg-primary); /* Background to hide line behind text */
+  padding: 0 1rem; /* Horizontal padding */
+  color: var(--text-secondary); /* Secondary text color */
+  font-size: 14px; /* Smaller font size */
+  position: relative; /* Above the line */
+  z-index: 2; /* Above line */
+}
+
+.password-input-container {
+  position: relative; /* Positioning context for toggle button */
+  display: flex; /* Flexbox layout */
+  align-items: center; /* Vertically center content */
+}
+
+.password-input-container input {
+  flex: 1; /* Take available space */
+  padding-right: 3rem; /* Space for toggle button */
+}
+
+.password-toggle {
+  position: absolute; /* Absolute positioning */
+  right: 0.5rem; /* Right margin */
+  background: none; /* Transparent background */
+  border: none; /* No border */
+  cursor: pointer; /* Pointer cursor */
+  padding: 0.25rem; /* Small padding */
+  font-size: 1rem; /* Standard font size */
+  color: var(--text-secondary); /* Secondary text color */
+  border-radius: 4px; /* Rounded corners */
+  transition: color 0.2s ease; /* Smooth color transition */
+}
+
+.password-toggle:hover {
+  color: var(--text-primary); /* Primary text color on hover */
+}
+
+/* Family modal specific styles */
+.family-manage-content {
+  display: flex; /* Flexbox layout */
+  flex-direction: column; /* Stack sections vertically */
+  gap: 2rem; /* Space between sections */
+}
+
+.add-member-section {
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 1.5rem; /* Padding around content */
+  background: var(--bg-secondary); /* Secondary background */
+}
+
+.add-member-section h3 {
+  margin: 0 0 1rem 0; /* Bottom margin only */
+  color: var(--text-primary); /* Primary text color */
+  font-size: 1.2rem; /* Larger font size */
+}
+
+.add-member-form {
+  display: flex; /* Flexbox layout */
+  gap: 0.5rem; /* Space between input and button */
+  align-items: flex-end; /* Align to bottom */
+}
+
+.add-member-form .form-group {
+  flex: 1; /* Take available space */
+  margin: 0; /* No margin */
+}
+
+.add-member-form input {
+  width: 100%; /* Full width */
+  padding: 0.75rem; /* Padding inside input */
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 6px; /* Rounded corners */
+  font-size: 16px; /* Standard font size */
+  background: var(--bg-primary); /* Primary background */
+  color: var(--text-primary); /* Primary text color */
+}
+
+.add-member-form button {
+  padding: 0.75rem 1.5rem; /* Padding inside button */
+  background: var(--primary-orange); /* Orange background */
+  color: white; /* White text */
+  border: none; /* No border */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor */
+  font-size: 16px; /* Standard font size */
+  font-weight: 500; /* Medium weight */
+  transition: background-color 0.2s ease; /* Smooth background transition */
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.add-member-form button:hover {
+  background: var(--primary-orange-dark); /* Darker orange on hover */
+}
+
+.add-member-form button:disabled {
+  background: #9ca3af; /* Grey background when disabled */
+  cursor: not-allowed; /* Not-allowed cursor when disabled */
+}
+
+.members-section {
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 1.5rem; /* Padding around content */
+  background: var(--bg-primary); /* Primary background */
+}
+
+.members-section h3 {
+  margin: 0 0 1rem 0; /* Bottom margin only */
+  color: var(--text-primary); /* Primary text color */
+  font-size: 1.2rem; /* Larger font size */
+}
+
+.members-list {
+  display: flex; /* Flexbox layout */
+  flex-direction: column; /* Stack members vertically */
+  gap: 0.75rem; /* Space between members */
+}
+
+.member-row {
+  display: flex; /* Flexbox layout */
+  align-items: center; /* Vertically center content */
+  gap: 1rem; /* Space between avatar, info, and actions */
+  padding: 1rem; /* Padding around member */
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  background: var(--bg-secondary); /* Secondary background */
+}
+
+.member-avatar {
+  flex-shrink: 0; /* Don't shrink avatar */
+}
+
+.avatar-placeholder {
+  display: flex; /* Flexbox for centering */
+  align-items: center; /* Vertically center */
+  justify-content: center; /* Horizontally center */
+  width: 40px; /* Fixed width */
+  height: 40px; /* Fixed height */
+  border-radius: 50%; /* Circular shape */
+  background: var(--primary-orange); /* Orange background */
+  color: white; /* White text */
+  font-weight: 600; /* Bold text */
+  font-size: 14px; /* Smaller font size */
+}
+
+.member-info {
+  flex: 1; /* Take available space */
+  min-width: 0; /* Allow shrinking */
+}
+
+.member-name {
+  font-weight: 600; /* Bold name */
+  color: var(--text-primary); /* Primary text color */
+  margin-bottom: 0.25rem; /* Small bottom margin */
+  display: flex; /* Flexbox for badges */
+  align-items: center; /* Vertically center */
+  gap: 0.5rem; /* Space between name and badges */
+}
+
+.member-email {
+  color: var(--text-secondary); /* Secondary text color */
+  font-size: 14px; /* Smaller font size */
+  margin-bottom: 0.25rem; /* Small bottom margin */
+}
+
+.member-birthday {
+  color: var(--text-secondary); /* Secondary text color */
+  font-size: 14px; /* Smaller font size */
+}
+
+.owner-badge,
+.current-user-badge {
+  padding: 0.125rem 0.375rem; /* Small padding */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 12px; /* Small font size */
+  font-weight: 500; /* Medium weight */
+}
+
+.owner-badge {
+  background: rgba(255, 215, 0, 0.2); /* Light gold background */
+  color: #d97706; /* Dark gold text */
+}
+
+.current-user-badge {
+  background: rgba(59, 130, 246, 0.2); /* Light blue background */
+  color: #2563eb; /* Dark blue text */
+}
+
+.member-actions {
+  flex-shrink: 0; /* Don't shrink actions */
+}
+
+.remove-btn {
+  padding: 0.5rem 1rem; /* Padding inside button */
+  background: #ef4444; /* Red background */
+  color: white; /* White text */
+  border: none; /* No border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor */
+  font-size: 14px; /* Smaller font size */
+  font-weight: 500; /* Medium weight */
+  transition: background-color 0.2s ease; /* Smooth background transition */
+}
+
+.remove-btn:hover {
+  background: #dc2626; /* Darker red on hover */
+}
+
+.family-preview {
+  margin-top: 1rem; /* Top margin */
+  padding: 1rem; /* Padding around preview */
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  background: var(--bg-secondary); /* Secondary background */
+}
+
+.family-preview h3 {
+  margin: 0 0 1rem 0; /* Bottom margin only */
+  color: var(--text-primary); /* Primary text color */
+}
+
+.family-group-card {
+  background: var(--bg-primary); /* Primary background */
+  border: 1px solid var(--border-light); /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 1rem; /* Padding around card */
+  margin-bottom: 1rem; /* Bottom margin */
+}
+
+.family-group-header {
+  margin-bottom: 0.5rem; /* Bottom margin */
+}
+
+.family-group-name {
+  margin: 0; /* No margin */
+  color: var(--text-primary); /* Primary text color */
+  font-size: 1.1rem; /* Larger font size */
+  font-weight: 600; /* Bold text */
+}
+
+.family-group-details {
+  color: var(--text-secondary); /* Secondary text color */
+  font-size: 14px; /* Smaller font size */
+}
+
+.family-id-container {
+  display: inline-block; /* Inline block for styling */
+}
+
+.family-id-display {
+  font-family: monospace; /* Monospace font for ID */
+  background: rgba(59, 130, 246, 0.1); /* Light blue background */
+  padding: 0.25rem 0.5rem; /* Small padding */
+  border-radius: 4px; /* Rounded corners */
+  color: #2563eb; /* Blue text */
+}
+
+.auth-submit {
+  width: 100%; /* Full width */
+  padding: 0.875rem; /* Padding inside button */
+  background: var(--primary-orange); /* Orange background */
+  color: white; /* White text */
+  border: none; /* No border */
+  border-radius: 6px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor */
+  font-size: 16px; /* Standard font size */
+  font-weight: 600; /* Bold text */
+  transition: background-color 0.2s ease; /* Smooth background transition */
+}
+
+.auth-submit:hover {
+  background: var(--primary-orange-dark); /* Darker orange on hover */
+}
+
+.auth-submit:disabled {
+  background: #9ca3af; /* Grey background when disabled */
+  cursor: not-allowed; /* Not-allowed cursor when disabled */
 }
 
 /* File preview display styling */
@@ -549,7 +894,7 @@
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   /* Modal body scroll adjustments for mobile */
-  .image-modal-preview.modal-content .modal-body {
+  .modal-preview.modal-content .modal-body {
     max-height: calc(
       100vh - 100px
     ) !important; /* Adjusted height for mobile screens */
@@ -558,16 +903,20 @@
   }
 
   /* Adjust preview content for mobile */
-  .image-preview-content {
+  .modal-preview-content {
     height: auto !important; /* Allow automatic height calculation on mobile */
     min-height: 100%; /* Ensure content takes full available height */
   }
 
   /* Form actions mobile styling */
   .modal-content .form-actions {
-    gap: 0.75rem !important; /* Reduced gap between buttons on mobile */
+    gap: 0.75rem !important; /* Reduced gap between action rows on mobile */
     padding-top: 0.5rem !important; /* Reduced top padding for mobile */
     margin-top: 0; /* No top margin for tight layout */
+  }
+
+  .modal-content .form-actions-main {
+    gap: 0.75rem !important; /* Reduced gap between buttons on mobile */
     flex-direction: row !important; /* Keep buttons in horizontal row */
     justify-content: space-between !important; /* Spread buttons across width */
   }
@@ -631,7 +980,8 @@
     max-height: 60vh !important; /* Limit image height to 60% of viewport */
   }
 
-  .change-file-btn {
+  .change-file-btn,
+  .additional-btn {
     padding: 0.75rem 1.25rem; /* Adjusted padding for mobile */
     font-size: 15px; /* Slightly smaller font for mobile */
     margin-top: 0.75rem; /* Reduced top margin for mobile */
@@ -688,7 +1038,8 @@
     max-height: 50vh !important; /* Limit image height to 50% of viewport */
   }
 
-  .change-file-btn {
+  .change-file-btn,
+  .additional-btn {
     padding: 0.625rem 1rem; /* Smaller padding for tiny screens */
     font-size: 14px; /* Smaller font size for very small screens */
   }

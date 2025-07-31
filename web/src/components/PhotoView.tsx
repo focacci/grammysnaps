@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./PhotoView.css";
-import ImageModal from "./ImageModal";
+import Modal from "./Modal";
 
 // Type definitions
 interface User {
@@ -1130,9 +1130,9 @@ function PhotoView({ user }: PhotoViewProps) {
       </div>
 
       {/* Upload Modal */}
-      <ImageModal
+      <Modal
         isOpen={showUploadModal}
-        mode="create"
+        mode="form"
         title="Upload New Image"
         onClose={closeModal}
         onLeftAction={closeModal}
@@ -1144,13 +1144,13 @@ function PhotoView({ user }: PhotoViewProps) {
         rightButtonDisabled={
           uploading || !uploadFile || familyGroups.length === 0
         }
-        showSelectDifferentButton={
-          uploadFile && uploadFilePreviewUrl ? true : false
-        }
-        onSelectDifferentPhoto={() =>
+        showAdditionalButton={uploadFile && uploadFilePreviewUrl ? true : false}
+        onAdditionalAction={() =>
           document.getElementById("file-input")?.click()
         }
-        imageSection={
+        additionalButtonText="Select Different Photo"
+        additionalButtonClass="additional-btn"
+        headerSection={
           <>
             <div
               className={`file-drop-zone ${dragOver ? "drag-over" : ""} ${
@@ -1365,97 +1365,74 @@ function PhotoView({ user }: PhotoViewProps) {
               ))}
           </div>
         </div>
-      </ImageModal>
+      </Modal>
 
       {/* Create Tag Modal */}
-      {showCreateTagModal && (
-        <div className="modal-overlay" onClick={closeCreateTagModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Create New Tag</h2>
-              <button className="close-btn" onClick={closeCreateTagModal}>
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleCreateTagSubmit} className="upload-form">
-                <div className="form-group">
-                  <label htmlFor="tagName">Tag Name:</label>
-                  <input
-                    id="tagName"
-                    type="text"
-                    value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
-                    placeholder="Enter tag name"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="tagType">Tag Type:</label>
-                  <select
-                    id="tagType"
-                    value={newTagType}
-                    onChange={(e) =>
-                      setNewTagType(
-                        e.target.value as
-                          | "Person"
-                          | "Location"
-                          | "Event"
-                          | "Time"
-                      )
-                    }
-                    className="tag-type-select"
-                  >
-                    <option value="Person">Person</option>
-                    <option value="Location">Location</option>
-                    <option value="Event">Event</option>
-                    <option value="Time">Time</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="tagFamily">Family:</label>
-                  <select
-                    id="tagFamily"
-                    value={newTagFamilyId}
-                    onChange={(e) => setNewTagFamilyId(e.target.value)}
-                    className="tag-type-select"
-                    required
-                  >
-                    <option value="">Select a family</option>
-                    {familyGroups.map((family) => (
-                      <option key={family.id} value={family.id}>
-                        {family.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-actions">
-                  <button
-                    type="button"
-                    onClick={closeCreateTagModal}
-                    className="cancel-btn"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={creatingTag}
-                    className="submit-btn"
-                  >
-                    {creatingTag ? "Creating..." : "Create Tag"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+      <Modal
+        isOpen={showCreateTagModal}
+        mode="form"
+        title="Create New Tag"
+        onClose={closeCreateTagModal}
+        onLeftAction={closeCreateTagModal}
+        onRightAction={handleCreateTagSubmit}
+        leftButtonText="Cancel"
+        rightButtonText={creatingTag ? "Creating..." : "Create Tag"}
+        rightButtonDisabled={creatingTag}
+        leftButtonClass="cancel-btn"
+        rightButtonClass="submit-btn"
+      >
+        <div className="form-group">
+          <label htmlFor="tagName">Tag Name:</label>
+          <input
+            id="tagName"
+            type="text"
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+            placeholder="Enter tag name"
+            required
+          />
         </div>
-      )}
+
+        <div className="form-group">
+          <label htmlFor="tagType">Tag Type:</label>
+          <select
+            id="tagType"
+            value={newTagType}
+            onChange={(e) =>
+              setNewTagType(
+                e.target.value as "Person" | "Location" | "Event" | "Time"
+              )
+            }
+            className="tag-type-select"
+          >
+            <option value="Person">Person</option>
+            <option value="Location">Location</option>
+            <option value="Event">Event</option>
+            <option value="Time">Time</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="tagFamily">Family:</label>
+          <select
+            id="tagFamily"
+            value={newTagFamilyId}
+            onChange={(e) => setNewTagFamilyId(e.target.value)}
+            className="tag-type-select"
+            required
+          >
+            <option value="">Select a family</option>
+            {familyGroups.map((family) => (
+              <option key={family.id} value={family.id}>
+                {family.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Modal>
 
       {/* Image Preview Modal */}
-      <ImageModal
+      <Modal
         isOpen={showImageModal && selectedImage !== null && !isEditingImage}
         mode="preview"
         title="Preview"
@@ -1466,7 +1443,8 @@ function PhotoView({ user }: PhotoViewProps) {
         rightButtonText="Edit"
         leftButtonClass="download-btn"
         rightButtonClass="edit-btn"
-        imageSection={
+        maxWidth="600px"
+        headerSection={
           selectedImage && selectedImage.s3_url ? (
             <div className="image-preview-container">
               <img
@@ -1517,12 +1495,12 @@ function PhotoView({ user }: PhotoViewProps) {
             )}
           </div>
         )}
-      </ImageModal>
+      </Modal>
 
       {/* Image Edit Modal */}
-      <ImageModal
+      <Modal
         isOpen={showImageModal && selectedImage !== null && isEditingImage}
-        mode="edit"
+        mode="form"
         title="Edit"
         onClose={closeImageModal}
         onLeftAction={handleDeleteImage}
@@ -1534,7 +1512,8 @@ function PhotoView({ user }: PhotoViewProps) {
         leftButtonClass="delete-btn"
         rightButtonClass="submit-btn"
         onBack={handleEditToggle}
-        imageSection={
+        maxWidth="600px"
+        headerSection={
           selectedImage && selectedImage.s3_url ? (
             <div className="image-preview-container">
               <img
@@ -1690,104 +1669,76 @@ function PhotoView({ user }: PhotoViewProps) {
               ))}
           </div>
         </div>
-      </ImageModal>
+      </Modal>
 
       {/* Edit Tag Modal */}
-      {showEditTagModal && editingTag && (
-        <div className="modal-overlay" onClick={closeEditTagModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Edit Tag</h2>
-              <button className="close-btn" onClick={closeEditTagModal}>
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleEditTagSubmit} className="upload-form">
-                <div className="form-group">
-                  <label htmlFor="editTagName">Tag Name:</label>
-                  <input
-                    id="editTagName"
-                    type="text"
-                    value={editTagName}
-                    onChange={(e) => setEditTagName(e.target.value)}
-                    placeholder="Enter tag name"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="editTagType">Tag Type:</label>
-                  <select
-                    id="editTagType"
-                    value={editTagType}
-                    onChange={(e) =>
-                      setEditTagType(
-                        e.target.value as
-                          | "Person"
-                          | "Location"
-                          | "Event"
-                          | "Time"
-                      )
-                    }
-                    className="tag-type-select"
-                  >
-                    <option value="Person">Person</option>
-                    <option value="Location">Location</option>
-                    <option value="Event">Event</option>
-                    <option value="Time">Time</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="editTagFamily">Family:</label>
-                  <select
-                    id="editTagFamily"
-                    value={editTagFamilyId}
-                    onChange={(e) => setEditTagFamilyId(e.target.value)}
-                    className="tag-type-select"
-                    required
-                  >
-                    <option value="">Select a family</option>
-                    {familyGroups.map((family) => (
-                      <option key={family.id} value={family.id}>
-                        {family.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-actions">
-                  <button
-                    type="button"
-                    onClick={handleDeleteTag}
-                    disabled={deletingTag}
-                    className="delete-btn"
-                  >
-                    {deletingTag ? "Deleting..." : "Delete Tag"}
-                  </button>
-                  <div className="form-actions-right">
-                    <button
-                      type="button"
-                      onClick={closeEditTagModal}
-                      className="cancel-btn"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={savingTag}
-                      className="submit-btn"
-                    >
-                      {savingTag ? "Saving..." : "Save Changes"}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
+      <Modal
+        isOpen={showEditTagModal && editingTag !== null}
+        mode="form"
+        title="Edit Tag"
+        onClose={closeEditTagModal}
+        onLeftAction={closeEditTagModal}
+        onRightAction={handleEditTagSubmit}
+        leftButtonText="Cancel"
+        rightButtonText={savingTag ? "Saving..." : "Save Changes"}
+        rightButtonDisabled={savingTag}
+        leftButtonClass="cancel-btn"
+        rightButtonClass="submit-btn"
+        showDeleteButton={true}
+        onDeleteAction={handleDeleteTag}
+        deleteButtonText={deletingTag ? "Deleting..." : "Delete Tag"}
+        deleteButtonDisabled={deletingTag}
+        deleteButtonClass="delete-btn"
+      >
+        <div className="form-group">
+          <label htmlFor="editTagName">Tag Name:</label>
+          <input
+            id="editTagName"
+            type="text"
+            value={editTagName}
+            onChange={(e) => setEditTagName(e.target.value)}
+            placeholder="Enter tag name"
+            required
+          />
         </div>
-      )}
+
+        <div className="form-group">
+          <label htmlFor="editTagType">Tag Type:</label>
+          <select
+            id="editTagType"
+            value={editTagType}
+            onChange={(e) =>
+              setEditTagType(
+                e.target.value as "Person" | "Location" | "Event" | "Time"
+              )
+            }
+            className="tag-type-select"
+          >
+            <option value="Person">Person</option>
+            <option value="Location">Location</option>
+            <option value="Event">Event</option>
+            <option value="Time">Time</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="editTagFamily">Family:</label>
+          <select
+            id="editTagFamily"
+            value={editTagFamilyId}
+            onChange={(e) => setEditTagFamilyId(e.target.value)}
+            className="tag-type-select"
+            required
+          >
+            <option value="">Select a family</option>
+            {familyGroups.map((family) => (
+              <option key={family.id} value={family.id}>
+                {family.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Modal>
     </div>
   );
 }

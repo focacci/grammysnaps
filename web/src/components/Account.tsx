@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import "./Account.css";
 import authService from "../services/auth.service";
 import { API_BASE_URL } from "../services/api.service";
-import ImageModal from "./ImageModal";
+import Modal from "./Modal";
 
 // Type definitions
 interface User {
@@ -1169,515 +1169,455 @@ function Account({ user, onUserUpdate }: AccountProps) {
       </div>
 
       {/* Create Family Modal */}
-      {showCreateFamilyModal && (
-        <div className="auth-overlay">
-          <div className="auth-modal">
-            <div className="auth-header">
-              <h2>Create Family Group</h2>
-              <button
-                className="auth-close"
-                onClick={handleCloseCreateFamilyModal}
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateFamilySubmit} className="auth-form">
-              <div className="form-group">
-                <label htmlFor="familyName">Family Name *</label>
-                <input
-                  type="text"
-                  id="familyName"
-                  value={createFamilyForm.name}
-                  onChange={(e) =>
-                    setCreateFamilyForm({
-                      ...createFamilyForm,
-                      name: e.target.value,
-                    })
-                  }
-                  required
-                  placeholder="Enter your family group name"
-                />
-              </div>
-
-              {createFamilyError && (
-                <div className="auth-error">{createFamilyError}</div>
-              )}
-
-              <button
-                type="submit"
-                className="auth-submit"
-                disabled={createFamilyLoading}
-              >
-                {createFamilyLoading ? "Creating..." : "Create Family Group"}
-              </button>
-            </form>
-          </div>
+      <Modal
+        isOpen={showCreateFamilyModal}
+        mode="form"
+        title="Create Family Group"
+        onClose={handleCloseCreateFamilyModal}
+        onRightAction={handleCreateFamilySubmit}
+        rightButtonText={
+          createFamilyLoading ? "Creating..." : "Create Family Group"
+        }
+        rightButtonDisabled={createFamilyLoading}
+        leftButtonClass="cancel-btn"
+        rightButtonClass="submit-btn"
+        showLeftButton={false}
+      >
+        <div className="form-group">
+          <label htmlFor="familyName">Family Name *</label>
+          <input
+            type="text"
+            id="familyName"
+            value={createFamilyForm.name}
+            onChange={(e) =>
+              setCreateFamilyForm({
+                ...createFamilyForm,
+                name: e.target.value,
+              })
+            }
+            required
+            placeholder="Enter your family group name"
+          />
         </div>
-      )}
+
+        {createFamilyError && (
+          <div className="auth-error">{createFamilyError}</div>
+        )}
+      </Modal>
 
       {/* Join Family Modal */}
-      {showJoinFamilyModal && (
-        <div className="auth-overlay">
-          <div className="auth-modal join-family-modal">
-            <div className="auth-header">
-              <h2>Join Family Group</h2>
-              <button
-                className="auth-close"
-                onClick={handleCloseJoinFamilyModal}
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="auth-form">
-              <div className="form-group">
-                <label htmlFor="familyId">Family ID *</label>
-                <input
-                  type="text"
-                  id="familyId"
-                  value={joinFamilyId}
-                  onChange={handleJoinFamilyIdChange}
-                  placeholder="Enter the family ID to join"
-                />
-              </div>
-
-              {joinFamilyError && (
-                <div className="auth-error">{joinFamilyError}</div>
-              )}
-
-              {loadingJoinFamilyInfo && (
-                <div className="loading-state">
-                  Loading family information...
-                </div>
-              )}
-
-              {joinFamilyInfo && (
-                <div className="family-preview">
-                  <h3>Family Information</h3>
-                  <div className="family-group-card">
-                    <div className="family-group-header">
-                      <h3 className="family-group-name">
-                        {joinFamilyInfo.name}
-                      </h3>
-                    </div>
-                    <div className="family-group-details">
-                      <div className="family-group-info">
-                        <span className="family-id-container">
-                          <span className="family-id-display">
-                            {joinFamilyInfo.id}
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    className="auth-submit"
-                    onClick={handleJoinFamilySubmit}
-                    disabled={joinFamilyLoading}
-                  >
-                    {joinFamilyLoading ? "Joining..." : "Join Family"}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+      <Modal
+        isOpen={showJoinFamilyModal}
+        mode="view"
+        title="Join Family Group"
+        onClose={handleCloseJoinFamilyModal}
+        showLeftButton={false}
+        showRightButton={false}
+        maxWidth="500px"
+      >
+        <div className="form-group">
+          <label htmlFor="familyId">Family ID *</label>
+          <input
+            type="text"
+            id="familyId"
+            value={joinFamilyId}
+            onChange={handleJoinFamilyIdChange}
+            placeholder="Enter the family ID to join"
+          />
         </div>
-      )}
+
+        {joinFamilyError && <div className="auth-error">{joinFamilyError}</div>}
+
+        {loadingJoinFamilyInfo && (
+          <div className="loading-state">Loading family information...</div>
+        )}
+
+        {joinFamilyInfo && (
+          <div className="family-preview">
+            <h3>Family Information</h3>
+            <div className="family-group-card">
+              <div className="family-group-header">
+                <h3 className="family-group-name">{joinFamilyInfo.name}</h3>
+              </div>
+              <div className="family-group-details">
+                <div className="family-group-info">
+                  <span className="family-id-container">
+                    <span className="family-id-display">
+                      {joinFamilyInfo.id}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="auth-submit"
+              onClick={handleJoinFamilySubmit}
+              disabled={joinFamilyLoading}
+            >
+              {joinFamilyLoading ? "Joining..." : "Join Family"}
+            </button>
+          </div>
+        )}
+      </Modal>
 
       {/* Manage Family Modal */}
-      {showManageFamilyModal && selectedFamily && (
-        <div className="auth-overlay">
-          <div className="auth-modal family-manage-modal">
-            <div className="auth-header">
-              <h2>Manage {selectedFamily.name}</h2>
-              <div className="modal-header-actions">
-                {/* Temporarily show button for all users to debug */}
-                {selectedFamily.owner_id === user.id && (
-                  <button
-                    className="delete-family-btn"
-                    onClick={handleDeleteFamily}
-                    disabled={deleteFamilyLoading}
-                    title={`Delete Family (Role: ${selectedFamily.user_role})`}
-                  >
-                    {deleteFamilyLoading ? "Deleting..." : "🗑️ Delete Family"}
-                  </button>
-                )}
+      <Modal
+        isOpen={showManageFamilyModal && selectedFamily !== null}
+        mode="view"
+        title={`Manage ${selectedFamily?.name || "Family"}`}
+        onClose={handleCloseManageFamilyModal}
+        showLeftButton={false}
+        showRightButton={false}
+        showDeleteButton={selectedFamily?.owner_id === user.id}
+        onDeleteAction={handleDeleteFamily}
+        deleteButtonText={
+          deleteFamilyLoading ? "Deleting..." : "🗑️ Delete Family"
+        }
+        deleteButtonDisabled={deleteFamilyLoading}
+        deleteButtonClass="delete-family-btn"
+        maxWidth="700px"
+      >
+        <div className="family-manage-content">
+          {/* Related Families Section */}
+          <div className="add-member-section">
+            <h3>Related Families</h3>
+
+            {relatedFamilyError && (
+              <div className="auth-error">{relatedFamilyError}</div>
+            )}
+
+            {/* Add Related Family Form */}
+            <form onSubmit={handleAddRelatedFamily} className="add-member-form">
+              <div className="form-group">
+                <input
+                  type="text"
+                  value={addRelatedFamilyId}
+                  onChange={(e) => setAddRelatedFamilyId(e.target.value)}
+                  placeholder="Enter family ID to add relation"
+                  required
+                  disabled={addRelatedFamilyLoading}
+                />
                 <button
-                  className="auth-close"
-                  onClick={handleCloseManageFamilyModal}
+                  type="submit"
+                  disabled={
+                    addRelatedFamilyLoading || !addRelatedFamilyId.trim()
+                  }
                 >
-                  ×
+                  {addRelatedFamilyLoading ? "Adding..." : "Add Relation"}
                 </button>
               </div>
-            </div>
+            </form>
 
-            <div className="family-manage-content">
-              {/* Related Families Section */}
-              <div className="add-member-section">
-                <h3>Related Families</h3>
-
-                {relatedFamilyError && (
-                  <div className="auth-error">{relatedFamilyError}</div>
-                )}
-
-                {/* Add Related Family Form */}
-                <form
-                  onSubmit={handleAddRelatedFamily}
-                  className="add-member-form"
-                >
-                  <div className="form-group">
-                    <input
-                      type="text"
-                      value={addRelatedFamilyId}
-                      onChange={(e) => setAddRelatedFamilyId(e.target.value)}
-                      placeholder="Enter family ID to add relation"
-                      required
-                      disabled={addRelatedFamilyLoading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={
-                        addRelatedFamilyLoading || !addRelatedFamilyId.trim()
-                      }
-                    >
-                      {addRelatedFamilyLoading ? "Adding..." : "Add Relation"}
-                    </button>
-                  </div>
-                </form>
-
-                {/* Related Families List */}
-                {loadingRelatedFamilies ? (
-                  <div className="loading-state">
-                    <p>Loading related families...</p>
-                  </div>
-                ) : relatedFamilies.length > 0 ? (
-                  <div className="members-list" style={{ marginTop: "1rem" }}>
-                    {relatedFamilies.map((relatedFamily) => (
-                      <div key={relatedFamily.id} className="member-row">
-                        <div className="member-avatar">
-                          <span className="avatar-placeholder">👨‍👩‍👧‍👦</span>
-                        </div>
-                        <div className="member-info">
-                          <div className="member-name">
-                            {relatedFamily.name}
-                          </div>
-                          <div className="member-email">
-                            👥 {relatedFamily.member_count} members
-                          </div>
-                          <div className="member-birthday">
-                            📅 Created {formatDate(relatedFamily.created_at)}
-                          </div>
-                        </div>
-                        <div className="member-actions">
-                          <button
-                            className="remove-btn"
-                            onClick={() =>
-                              handleRemoveRelatedFamily(relatedFamily.id)
-                            }
-                          >
-                            Remove
-                          </button>
-                        </div>
+            {/* Related Families List */}
+            {loadingRelatedFamilies ? (
+              <div className="loading-state">
+                <p>Loading related families...</p>
+              </div>
+            ) : relatedFamilies.length > 0 ? (
+              <div className="members-list" style={{ marginTop: "1rem" }}>
+                {relatedFamilies.map((relatedFamily) => (
+                  <div key={relatedFamily.id} className="member-row">
+                    <div className="member-avatar">
+                      <span className="avatar-placeholder">👨‍👩‍👧‍👦</span>
+                    </div>
+                    <div className="member-info">
+                      <div className="member-name">{relatedFamily.name}</div>
+                      <div className="member-email">
+                        👥 {relatedFamily.member_count} members
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p
-                    style={{ margin: "1rem 0", color: "var(--text-secondary)" }}
-                  >
-                    No related families yet.
-                  </p>
-                )}
-              </div>
-
-              {/* Add Member Section */}
-              <div className="add-member-section">
-                <h3>Add New Member</h3>
-                <form onSubmit={handleAddMember} className="add-member-form">
-                  <div className="form-group">
-                    <input
-                      type="email"
-                      value={addMemberEmail}
-                      onChange={(e) => setAddMemberEmail(e.target.value)}
-                      placeholder="Enter email address to add member"
-                      required
-                      disabled={addMemberLoading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={addMemberLoading || !addMemberEmail.trim()}
-                    >
-                      {addMemberLoading ? "Adding..." : "Add Member"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Members List Section */}
-              <div className="members-section">
-                <h3>Family Members ({familyMembers.length})</h3>
-
-                {manageFamilyError && (
-                  <div className="auth-error">{manageFamilyError}</div>
-                )}
-
-                {loadingMembers ? (
-                  <div className="loading-state">
-                    <p>Loading family members...</p>
-                  </div>
-                ) : (
-                  <div className="members-list">
-                    {familyMembers.map((member) => (
-                      <div key={member.id} className="member-row">
-                        <div className="member-avatar">
-                          <span className="avatar-placeholder">
-                            {member.first_name[0]}
-                            {member.last_name[0]}
-                          </span>
-                        </div>
-
-                        <div className="member-info">
-                          <div className="member-name">
-                            {member.first_name} {member.last_name}
-                            {member.role === "owner" && (
-                              <span className="owner-badge">👑 Owner</span>
-                            )}
-                            {member.id === user.id && (
-                              <span className="current-user-badge">👤 You</span>
-                            )}
-                          </div>
-                          <div className="member-email">{member.email}</div>
-                          <div className="member-birthday">
-                            🎂{" "}
-                            {member.birthday
-                              ? formatBirthday(member.birthday) || "Unknown"
-                              : "Unknown"}
-                          </div>
-                        </div>
-
-                        <div className="member-actions">
-                          {member.role !== "owner" && (
-                            <button
-                              className="remove-btn"
-                              onClick={() => handleRemoveMember(member.id)}
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
+                      <div className="member-birthday">
+                        📅 Created {formatDate(relatedFamily.created_at)}
                       </div>
-                    ))}
+                    </div>
+                    <div className="member-actions">
+                      <button
+                        className="remove-btn"
+                        onClick={() =>
+                          handleRemoveRelatedFamily(relatedFamily.id)
+                        }
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            </div>
+            ) : (
+              <p style={{ margin: "1rem 0", color: "var(--text-secondary)" }}>
+                No related families yet.
+              </p>
+            )}
           </div>
-        </div>
-      )}
 
-      {/* View Members Modal */}
-      {showViewMembersModal && viewMembersFamily && (
-        <div className="auth-overlay">
-          <div className="auth-modal family-manage-modal">
-            <div className="auth-header">
-              <h2>{viewMembersFamily.name} Members</h2>
-              <button
-                className="auth-close"
-                onClick={handleCloseViewMembersModal}
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="family-manage-content">
-              {/* Members List Section */}
-              <div className="members-section">
-                <h3>Family Members ({viewMembersList.length})</h3>
-
-                {loadingViewMembers ? (
-                  <div className="loading-state">
-                    <p>Loading family members...</p>
-                  </div>
-                ) : (
-                  <div className="members-list">
-                    {viewMembersList.map((member) => (
-                      <div key={member.id} className="member-row">
-                        <div className="member-avatar">
-                          <span className="avatar-placeholder">
-                            {member.first_name[0]}
-                            {member.last_name[0]}
-                          </span>
-                        </div>
-
-                        <div className="member-info">
-                          <div className="member-name">
-                            {member.first_name} {member.last_name}
-                            {member.role === "owner" && (
-                              <span className="owner-badge">👑 Owner</span>
-                            )}
-                            {member.id === user.id && (
-                              <span className="current-user-badge">👤 You</span>
-                            )}
-                          </div>
-                          <div className="member-email">{member.email}</div>
-                          <div className="member-birthday">
-                            🎂{" "}
-                            {member.birthday
-                              ? formatBirthday(member.birthday) || "Unknown"
-                              : "Unknown"}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Security Settings Modal */}
-      {showSecurityModal && (
-        <div className="auth-overlay">
-          <div className="auth-modal">
-            <div className="auth-header">
-              <h2>Security & Privacy Settings</h2>
-              <button className="auth-close" onClick={handleCloseSecurityModal}>
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleSecurityFormSubmit} className="auth-form">
+          {/* Add Member Section */}
+          <div className="add-member-section">
+            <h3>Add New Member</h3>
+            <form onSubmit={handleAddMember} className="add-member-form">
               <div className="form-group">
-                <label htmlFor="securityEmail">Email Address *</label>
                 <input
                   type="email"
-                  id="securityEmail"
-                  value={securityForm.email}
-                  onChange={(e) =>
-                    setSecurityForm({ ...securityForm, email: e.target.value })
-                  }
+                  value={addMemberEmail}
+                  onChange={(e) => setAddMemberEmail(e.target.value)}
+                  placeholder="Enter email address to add member"
                   required
-                  placeholder="Enter your email address"
+                  disabled={addMemberLoading}
                 />
+                <button
+                  type="submit"
+                  disabled={addMemberLoading || !addMemberEmail.trim()}
+                >
+                  {addMemberLoading ? "Adding..." : "Add Member"}
+                </button>
               </div>
-
-              <div className="form-divider">
-                <span>Change Password</span>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="currentPassword">Current Password</label>
-                <div className="password-input-container">
-                  <input
-                    type={showPasswords.current ? "text" : "password"}
-                    id="currentPassword"
-                    value={securityForm.current_password}
-                    onChange={(e) =>
-                      setSecurityForm({
-                        ...securityForm,
-                        current_password: e.target.value,
-                      })
-                    }
-                    placeholder="Enter your current password"
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => togglePasswordVisibility("current")}
-                    tabIndex={-1}
-                  >
-                    {showPasswords.current ? "👁️" : "👁️‍🗨️"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="newPassword">New Password</label>
-                <div className="password-input-container">
-                  <input
-                    type={showPasswords.new ? "text" : "password"}
-                    id="newPassword"
-                    value={securityForm.new_password}
-                    onChange={(e) =>
-                      setSecurityForm({
-                        ...securityForm,
-                        new_password: e.target.value,
-                      })
-                    }
-                    placeholder="Enter your new password (minimum 6 characters)"
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => togglePasswordVisibility("new")}
-                    tabIndex={-1}
-                  >
-                    {showPasswords.new ? "👁️" : "👁️‍🗨️"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm New Password</label>
-                <div className="password-input-container">
-                  <input
-                    type={showPasswords.confirm ? "text" : "password"}
-                    id="confirmPassword"
-                    value={securityForm.confirm_password}
-                    onChange={(e) =>
-                      setSecurityForm({
-                        ...securityForm,
-                        confirm_password: e.target.value,
-                      })
-                    }
-                    placeholder="Confirm your new password"
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => togglePasswordVisibility("confirm")}
-                    tabIndex={-1}
-                  >
-                    {showPasswords.confirm ? "👁️" : "👁️‍🗨️"}
-                  </button>
-                </div>
-              </div>
-
-              {securityError && (
-                <div className="auth-error">{securityError}</div>
-              )}
-
-              {securitySuccess && (
-                <div className="auth-success">
-                  Security settings updated successfully! 🎉
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="auth-submit"
-                disabled={securityLoading || securitySuccess}
-              >
-                {securityLoading
-                  ? "Updating..."
-                  : securitySuccess
-                  ? "Success!"
-                  : "Update Security Settings"}
-              </button>
             </form>
           </div>
+
+          {/* Members List Section */}
+          <div className="members-section">
+            <h3>Family Members ({familyMembers.length})</h3>
+
+            {manageFamilyError && (
+              <div className="auth-error">{manageFamilyError}</div>
+            )}
+
+            {loadingMembers ? (
+              <div className="loading-state">
+                <p>Loading family members...</p>
+              </div>
+            ) : (
+              <div className="members-list">
+                {familyMembers.map((member) => (
+                  <div key={member.id} className="member-row">
+                    <div className="member-avatar">
+                      <span className="avatar-placeholder">
+                        {member.first_name[0]}
+                        {member.last_name[0]}
+                      </span>
+                    </div>
+
+                    <div className="member-info">
+                      <div className="member-name">
+                        {member.first_name} {member.last_name}
+                        {member.role === "owner" && (
+                          <span className="owner-badge">👑 Owner</span>
+                        )}
+                        {member.id === user.id && (
+                          <span className="current-user-badge">👤 You</span>
+                        )}
+                      </div>
+                      <div className="member-email">{member.email}</div>
+                      <div className="member-birthday">
+                        🎂{" "}
+                        {member.birthday
+                          ? formatBirthday(member.birthday) || "Unknown"
+                          : "Unknown"}
+                      </div>
+                    </div>
+
+                    <div className="member-actions">
+                      {member.role !== "owner" && (
+                        <button
+                          className="remove-btn"
+                          onClick={() => handleRemoveMember(member.id)}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </Modal>
+
+      {/* View Members Modal */}
+      <Modal
+        isOpen={showViewMembersModal && viewMembersFamily !== null}
+        mode="view"
+        title={`${viewMembersFamily?.name || "Family"} Members`}
+        onClose={handleCloseViewMembersModal}
+        showLeftButton={false}
+        showRightButton={false}
+        maxWidth="600px"
+      >
+        <div className="family-manage-content">
+          {/* Members List Section */}
+          <div className="members-section">
+            <h3>Family Members ({viewMembersList.length})</h3>
+
+            {loadingViewMembers ? (
+              <div className="loading-state">
+                <p>Loading family members...</p>
+              </div>
+            ) : (
+              <div className="members-list">
+                {viewMembersList.map((member) => (
+                  <div key={member.id} className="member-row">
+                    <div className="member-avatar">
+                      <span className="avatar-placeholder">
+                        {member.first_name[0]}
+                        {member.last_name[0]}
+                      </span>
+                    </div>
+
+                    <div className="member-info">
+                      <div className="member-name">
+                        {member.first_name} {member.last_name}
+                        {member.role === "owner" && (
+                          <span className="owner-badge">👑 Owner</span>
+                        )}
+                        {member.id === user.id && (
+                          <span className="current-user-badge">👤 You</span>
+                        )}
+                      </div>
+                      <div className="member-email">{member.email}</div>
+                      <div className="member-birthday">
+                        🎂{" "}
+                        {member.birthday
+                          ? formatBirthday(member.birthday) || "Unknown"
+                          : "Unknown"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Security Settings Modal */}
+      <Modal
+        isOpen={showSecurityModal}
+        mode="form"
+        title="Security & Privacy Settings"
+        onClose={handleCloseSecurityModal}
+        onRightAction={handleSecurityFormSubmit}
+        rightButtonText={
+          securityLoading
+            ? "Updating..."
+            : securitySuccess
+            ? "Success!"
+            : "Update Security Settings"
+        }
+        rightButtonDisabled={securityLoading || securitySuccess}
+        leftButtonClass="cancel-btn"
+        rightButtonClass="submit-btn"
+        showLeftButton={false}
+      >
+        <div className="form-group">
+          <label htmlFor="securityEmail">Email Address *</label>
+          <input
+            type="email"
+            id="securityEmail"
+            value={securityForm.email}
+            onChange={(e) =>
+              setSecurityForm({ ...securityForm, email: e.target.value })
+            }
+            required
+            placeholder="Enter your email address"
+          />
+        </div>
+
+        <div className="form-divider">
+          <span>Change Password</span>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="currentPassword">Current Password</label>
+          <div className="password-input-container">
+            <input
+              type={showPasswords.current ? "text" : "password"}
+              id="currentPassword"
+              value={securityForm.current_password}
+              onChange={(e) =>
+                setSecurityForm({
+                  ...securityForm,
+                  current_password: e.target.value,
+                })
+              }
+              placeholder="Enter your current password"
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => togglePasswordVisibility("current")}
+              tabIndex={-1}
+            >
+              {showPasswords.current ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="newPassword">New Password</label>
+          <div className="password-input-container">
+            <input
+              type={showPasswords.new ? "text" : "password"}
+              id="newPassword"
+              value={securityForm.new_password}
+              onChange={(e) =>
+                setSecurityForm({
+                  ...securityForm,
+                  new_password: e.target.value,
+                })
+              }
+              placeholder="Enter your new password (minimum 6 characters)"
+              minLength={6}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => togglePasswordVisibility("new")}
+              tabIndex={-1}
+            >
+              {showPasswords.new ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="confirmPassword">Confirm New Password</label>
+          <div className="password-input-container">
+            <input
+              type={showPasswords.confirm ? "text" : "password"}
+              id="confirmPassword"
+              value={securityForm.confirm_password}
+              onChange={(e) =>
+                setSecurityForm({
+                  ...securityForm,
+                  confirm_password: e.target.value,
+                })
+              }
+              placeholder="Confirm your new password"
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => togglePasswordVisibility("confirm")}
+              tabIndex={-1}
+            >
+              {showPasswords.confirm ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
+        </div>
+
+        {securityError && <div className="auth-error">{securityError}</div>}
+
+        {securitySuccess && (
+          <div className="auth-success">
+            Security settings updated successfully! 🎉
+          </div>
+        )}
+      </Modal>
 
       {/* Profile Picture Modal */}
-      <ImageModal
+      <Modal
         isOpen={showProfilePictureModal}
-        mode="create"
+        mode="form"
         title="Edit Profile"
         onClose={handleCloseProfilePictureModal}
         onLeftAction={handleCloseProfilePictureModal}
@@ -1687,9 +1627,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
         rightButtonDisabled={profileUploading}
-        showSelectDifferentButton={!!selectedProfileFile || !!profilePreviewUrl}
-        onSelectDifferentPhoto={handleSelectDifferentProfilePhoto}
-        imageSection={
+        showAdditionalButton={!!selectedProfileFile || !!profilePreviewUrl}
+        onAdditionalAction={handleSelectDifferentProfilePhoto}
+        additionalButtonText="Select Different Photo"
+        additionalButtonClass="additional-btn"
+        maxWidth="600px"
+        headerSection={
           <>
             <div
               className={`file-drop-zone ${
@@ -1840,7 +1783,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
           {error && <div className="auth-error">{error}</div>}
         </div>
-      </ImageModal>
+      </Modal>
     </div>
   );
 }

@@ -1466,13 +1466,7 @@ body.modal-open {
   flex-shrink: 0; /* Prevent actions from shrinking */
 }
 
-/* Form actions right section */
-.form-actions-right {
-  display: flex; /* Flexbox for right section layout */
-  gap: 12px; /* Space between right section buttons */
-}
-
-/* Mobile form actions are now handled by ImageModal.css for consistency */
+/* Mobile form actions are now handled by Modal.css for consistency */
 
 /* Delete button styling */
 .delete-btn {
