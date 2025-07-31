@@ -4,9 +4,9 @@ export interface User {
   id: string;
   email: string;
   password_hash: string;
-  first_name: string;
+  first_name?: string;
   middle_name?: string;
-  last_name: string;
+  last_name?: string;
   birthday?: string; // ISO date string
   families: string[];
   profile_picture_url?: string;
@@ -17,9 +17,9 @@ export interface User {
 export interface UserInput {
   email: string;
   password: string;
-  first_name: string;
+  first_name?: string;
   middle_name?: string;
-  last_name: string;
+  last_name?: string;
   birthday?: string;
   families?: string[];
   profile_picture_url?: string;
@@ -38,9 +38,9 @@ export interface UserUpdate {
 export interface UserPublic {
   id: string;
   email: string;
-  first_name: string;
+  first_name?: string;
   middle_name?: string;
-  last_name: string;
+  last_name?: string;
   birthday?: string;
   families: string[];
   profile_picture_url?: string;

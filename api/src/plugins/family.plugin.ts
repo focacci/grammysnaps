@@ -15,6 +15,7 @@ declare module "fastify" {
       create: (input: FamilyInput, ownerId: string) => Promise<FamilyPublic>;
       get: () => Promise<FamilyPublic[]>;
       getById: (id: string) => Promise<Family | null>;
+      exists: (id: string) => Promise<boolean>;
       getUserFamilies: (userId: string) => Promise<FamilyPublic[]>;
       getMembers: (familyId: string) => Promise<FamilyMember[]>;
       getRelatedFamilies: (familyId: string) => Promise<RelatedFamily[]>;
@@ -116,6 +117,19 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to fetch family by ID");
+      }
+    },
+
+    async exists(id: string): Promise<boolean> {
+      try {
+        const { rows } = await fastify.pg.query(
+          "SELECT 1 FROM families WHERE id = $1 LIMIT 1",
+          [id]
+        );
+        return rows.length > 0;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to check if family exists");
       }
     },
 

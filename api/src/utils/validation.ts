@@ -160,15 +160,9 @@ export class ValidationUtils {
       if (typeof familyId === "string") {
         const trimmed = familyId.trim();
         if (trimmed) {
-          // Validate family ID format (alphanumeric with hyphens and underscores)
-          if (!/^[a-zA-Z0-9\-_]+$/.test(trimmed)) {
-            throw new Error(
-              "Family ID contains invalid characters. Only letters, numbers, hyphens, and underscores are allowed"
-            );
-          }
-
-          if (trimmed.length > 50) {
-            throw new Error("Family ID is too long (max 50 characters)");
+          // Validate family ID format (UUID)
+          if (!validator.isUUID(trimmed)) {
+            throw new Error("Family ID must be a valid UUID");
           }
 
           sanitized.push(trimmed);
