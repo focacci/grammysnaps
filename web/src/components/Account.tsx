@@ -1206,7 +1206,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       {/* Join Family Modal */}
       <Modal
         isOpen={showJoinFamilyModal}
-        mode="view"
+        mode="form"
         title="Join Family Group"
         onClose={handleCloseJoinFamilyModal}
         onRightAction={handleJoinFamilySubmit}
