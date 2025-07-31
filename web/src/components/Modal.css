@@ -1,5 +1,142 @@
 /* Modal.css - Styles for the reusable modal component */
 
+/* Modal Overlay and Core Structure */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Clean Modal Header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+/* Red Close Button */
+.close-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+.close-btn:active {
+  transform: scale(0.95);
+}
+
+/* Modal Body */
+.modal-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 16px;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+    border-radius: 8px;
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .close-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.125rem;
+  }
+
+  .close-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+}
+
 /* Modal overlay and basic structure inherit from PhotoView.css */
 /* This file only contains specific overrides or additions for the Modal component */
 
@@ -33,24 +170,14 @@
   display: none; /* WebKit browsers (Chrome, Safari, Edge) scrollbar hiding */
 }
 
-/* Preview mode specific styles - override PhotoView.css modal header layout */
+/* Preview mode specific styles */
 .modal-preview.modal-content .modal-header {
-  justify-content: flex-start !important; /* Align header content to left instead of center */
+  justify-content: space-between; /* Title left, close button right */
 }
 
-.modal-preview.modal-content .modal-header .modal-header-left {
-  flex: none !important; /* Don't allow left section to grow and take extra space */
-  margin-right: auto !important; /* Push close button to far right using auto margin */
-}
-
-.modal-preview.modal-content .modal-header .modal-header-left h2 {
-  text-align: left !important; /* Left-align the heading text for better UX */
-  margin: 0 !important; /* Remove default heading margins for clean spacing */
-}
-
-.modal-preview.modal-content .modal-header .close-btn {
-  margin-left: auto !important; /* Push close button to right side using flexbox */
-  flex-shrink: 0 !important; /* Prevent close button from shrinking */
+.modal-preview.modal-content .modal-header h2 {
+  text-align: left; /* Left-align the heading text */
+  margin: 0; /* Remove default heading margins */
 }
 
 /* Reduce top padding in modal body for preview mode */
@@ -103,51 +230,6 @@
   flex: 1; /* Allow first form group to expand and take available vertical space */
   display: flex; /* Use flexbox for internal layout of header section */
   flex-direction: column; /* Stack header elements vertically */
-}
-
-/* Back button styling */
-.back-btn {
-  background: transparent; /* Transparent background for minimal appearance */
-  border: none; /* Remove default button border */
-  color: var(--text-secondary); /* Use theme-aware secondary text color */
-  font-size: 1.5rem; /* Large enough for easy clicking/tapping */
-  cursor: pointer; /* Show pointer cursor on hover */
-  padding: 0.5rem; /* Add padding for larger click target */
-  border-radius: 4px; /* Subtle rounded corners for modern appearance */
-  transition: all 0.2s ease; /* Smooth transition for hover effects */
-  display: flex; /* Use flexbox for icon centering */
-  align-items: center; /* Center icon vertically */
-  justify-content: center; /* Center icon horizontally */
-  width: 36px; /* Fixed width for consistent button size */
-  height: 36px; /* Fixed height for consistent button size */
-  margin-right: 0.5rem; /* Add space between back button and title */
-}
-
-.back-btn:hover {
-  background: var(--bg-secondary); /* Show background on hover for feedback */
-  color: var(--text-primary); /* Darken text color on hover for emphasis */
-}
-
-/* Modal header left section for back button and title */
-.modal-header-left {
-  display: flex; /* Use flexbox for horizontal layout */
-  align-items: center; /* Vertically center back button and title */
-  flex: 1; /* Take available space, pushing close button to right */
-  min-width: 0; /* Allow content to shrink below minimum content width */
-}
-
-/* Mobile responsive back button */
-@media (max-width: 768px) {
-  .back-btn {
-    width: 32px; /* Smaller width for mobile to save space */
-    height: 32px; /* Smaller height for mobile to save space */
-    font-size: 1.3rem; /* Slightly smaller icon for mobile screens */
-    margin-right: 0.75rem; /* Increased margin for better touch spacing */
-  }
-
-  .modal-header-left h2 {
-    font-size: 1.3rem; /* Smaller heading size for mobile screens */
-  }
 }
 
 /* File Upload Styles for Modal */

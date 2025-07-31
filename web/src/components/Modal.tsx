@@ -27,7 +27,6 @@ interface ModalProps {
   deleteButtonText?: string;
   deleteButtonDisabled?: boolean;
   deleteButtonClass?: string;
-  onBack?: () => void; // Optional back button callback
   maxWidth?: string; // Custom max width
   showAdditionalButton?: boolean;
   onAdditionalAction?: () => void;
@@ -57,7 +56,6 @@ const Modal: React.FC<ModalProps> = ({
   deleteButtonText = "Delete",
   deleteButtonDisabled = false,
   deleteButtonClass = "delete-btn",
-  onBack,
   maxWidth = "600px",
   showAdditionalButton = false,
   onAdditionalAction,
@@ -95,14 +93,7 @@ const Modal: React.FC<ModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <div className="modal-header-left">
-            {mode === "form" && onBack && (
-              <button className="back-btn" onClick={onBack} title="Back">
-                ←
-              </button>
-            )}
-            <h2>{title}</h2>
-          </div>
+          <h2>{title}</h2>
           <button className="close-btn" onClick={onClose}>
             ×
           </button>

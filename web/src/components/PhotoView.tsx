@@ -1511,7 +1511,6 @@ function PhotoView({ user }: PhotoViewProps) {
         rightButtonDisabled={savingImage}
         leftButtonClass="delete-btn"
         rightButtonClass="submit-btn"
-        onBack={handleEditToggle}
         maxWidth="600px"
         headerSection={
           selectedImage && selectedImage.s3_url ? (
