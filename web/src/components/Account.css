@@ -786,18 +786,12 @@
 
 /* Security Modal Styles */
 .form-divider {
-  margin: 1.5rem 0 1rem 0; /* Vertical spacing around divider */
   padding: 0.75rem 0; /* Vertical padding within divider */
-  border-top: 1px solid var(--border-light); /* Top border for visual separation */
-  border-bottom: 1px solid var(--border-light); /* Bottom border for visual separation */
   text-align: center; /* Center-align divider text */
-  background-color: var(
-    --bg-tertiary
-  ); /* Tertiary background for distinction */
 }
 
 .form-divider span {
-  font-size: 14px; /* Small font size for divider text */
+  font-size: 16px; /* Small font size for divider text */
   font-weight: 500; /* Medium weight for readability */
   color: var(--text-secondary); /* Secondary text color for subtle appearance */
   text-transform: uppercase; /* Convert text to uppercase */
@@ -1321,4 +1315,16 @@
     font-size: 0.8rem; /* Smaller font for delete button on small screens */
     padding: 6px 12px; /* Reduced padding for small screens */
   }
+}
+
+/* Security modal email display */
+.security-modal-user-email {
+  text-align: center; /* Center align the email */
+  padding: 1rem; /* Add padding around the email */
+}
+
+.security-modal-user-email span {
+  font-weight: 500; /* Medium font weight for emphasis */
+  color: var(--text-primary); /* Primary text color */
+  font-size: 1rem; /* Standard font size */
 }

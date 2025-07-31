@@ -137,7 +137,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
   // Security Modal State
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [securityForm, setSecurityForm] = useState({
-    email: user.email,
     current_password: "",
     new_password: "",
     confirm_password: "",
@@ -867,7 +866,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const handleSecuritySettings = () => {
     setShowSecurityModal(true);
     setSecurityForm({
-      email: user.email,
       current_password: "",
       new_password: "",
       confirm_password: "",
@@ -903,11 +901,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
       // Prepare the request body
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const requestBody: any = {};
-
-      // Only include email if it changed
-      if (securityForm.email !== user.email) {
-        requestBody.email = securityForm.email;
-      }
 
       // Only include password fields if changing password
       if (securityForm.new_password) {
@@ -1508,18 +1501,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
         rightButtonClass="submit-btn"
         showLeftButton={false}
       >
-        <div className="form-group">
-          <label htmlFor="securityEmail">Email Address *</label>
-          <input
-            type="email"
-            id="securityEmail"
-            value={securityForm.email}
-            onChange={(e) =>
-              setSecurityForm({ ...securityForm, email: e.target.value })
-            }
-            required
-            placeholder="Enter your email address"
-          />
+        <div className="security-modal-user-email">
+          <span>{user.email}</span>
         </div>
 
         <div className="form-divider">
