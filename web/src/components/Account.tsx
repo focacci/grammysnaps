@@ -1508,18 +1508,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
         rightButtonClass="submit-btn"
         showLeftButton={false}
       >
-        <div className="form-group">
-          <label htmlFor="securityEmail">Email Address *</label>
-          <input
-            type="email"
-            id="securityEmail"
-            value={securityForm.email}
-            onChange={(e) =>
-              setSecurityForm({ ...securityForm, email: e.target.value })
-            }
-            required
-            placeholder="Enter your email address"
-          />
+        <div className="security-modal-user-email">
+          <span>{user.email}</span>
         </div>
 
         <div className="form-divider">

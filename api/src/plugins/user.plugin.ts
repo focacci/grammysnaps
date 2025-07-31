@@ -368,24 +368,10 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           }
         }
 
-        // Check if email is being changed and if it conflicts
-        if (input.email && input.email !== existingUser.email) {
-          const userWithEmail = await fastify.user.getByEmail(input.email);
-          if (userWithEmail) {
-            throw new Error("Another user with this email already exists");
-          }
-        }
-
         // Build dynamic update query
         const updateFields: string[] = [];
-        const values: any[] = [];
+        const values: (string | number)[] = [];
         let paramCount = 1;
-
-        if (input.email !== undefined) {
-          updateFields.push(`email = $${paramCount}`);
-          values.push(input.email);
-          paramCount++;
-        }
 
         if (input.new_password !== undefined) {
           // Hash the new password
@@ -393,6 +379,16 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           updateFields.push(`password_hash = $${paramCount}`);
           values.push(password_hash);
           paramCount++;
+        }
+
+        // If no fields to update, return current user
+        if (updateFields.length === 0) {
+          if (existingUser.birthday) {
+            existingUser.birthday = new Date(existingUser.birthday)
+              .toISOString()
+              .split("T")[0];
+          }
+          return toPublicUser(existingUser);
         }
 
         // Add updated_at timestamp
