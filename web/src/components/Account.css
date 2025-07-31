@@ -856,13 +856,6 @@
   color: #66bb6a; /* Lighter green text for dark theme */
 }
 
-/* Modal Header Actions */
-.modal-header-actions {
-  display: flex; /* Use flexbox for header actions layout */
-  align-items: center; /* Vertically center header actions */
-  gap: 12px; /* Add spacing between header action items */
-}
-
 /* Override auth-header for family manage modal */
 .family-manage-modal .auth-header {
   justify-content: space-between; /* Spread title and actions to opposite ends */
@@ -1283,15 +1276,6 @@
     min-height: 48px; /* Minimum height for proper touch targets */
   }
 
-  /* Modal improvements */
-  .modal-header {
-    padding: 16px 20px; /* Increased modal header padding on mobile */
-  }
-
-  .modal-content {
-    padding: 16px 20px; /* Increased modal content padding on mobile */
-  }
-
   /* Member management layout */
   .member-row {
     grid-template-columns: auto 1fr; /* Two columns on mobile: avatar and info */
@@ -1331,12 +1315,6 @@
   .section-header {
     min-height: 52px; /* Larger minimum height for section headers */
     font-size: 18px; /* Larger font size for better readability on small screens */
-  }
-
-  /* Modal header improvements */
-  .modal-header-actions {
-    flex-direction: column; /* Stack header actions vertically on very small screens */
-    gap: 8px; /* Small gap between stacked actions */
   }
 
   .delete-family-btn {

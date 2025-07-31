@@ -1376,7 +1376,7 @@ function PhotoView({ user }: PhotoViewProps) {
         onLeftAction={closeCreateTagModal}
         onRightAction={handleCreateTagSubmit}
         leftButtonText="Cancel"
-        rightButtonText={creatingTag ? "Creating..." : "Create Tag"}
+        rightButtonText={creatingTag ? "Creating..." : "Create"}
         rightButtonDisabled={creatingTag}
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
@@ -1680,13 +1680,13 @@ function PhotoView({ user }: PhotoViewProps) {
         onLeftAction={closeEditTagModal}
         onRightAction={handleEditTagSubmit}
         leftButtonText="Cancel"
-        rightButtonText={savingTag ? "Saving..." : "Save Changes"}
+        rightButtonText={savingTag ? "Saving..." : "Save"}
         rightButtonDisabled={savingTag}
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
         showDeleteButton={true}
         onDeleteAction={handleDeleteTag}
-        deleteButtonText={deletingTag ? "Deleting..." : "Delete Tag"}
+        deleteButtonText={deletingTag ? "Deleting..." : "Delete"}
         deleteButtonDisabled={deletingTag}
         deleteButtonClass="delete-btn"
       >
