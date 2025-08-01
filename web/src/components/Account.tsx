@@ -119,6 +119,18 @@ function Account({ user, onUserUpdate }: AccountProps) {
   // Delete Family State
   const [deleteFamilyLoading, setDeleteFamilyLoading] = useState(false);
 
+  // Remove Member Confirmation State
+  const [showRemoveMemberModal, setShowRemoveMemberModal] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<FamilyMember | null>(
+    null
+  );
+
+  // Remove Related Family Confirmation State
+  const [showRemoveRelatedFamilyModal, setShowRemoveRelatedFamilyModal] =
+    useState(false);
+  const [relatedFamilyToRemove, setRelatedFamilyToRemove] =
+    useState<RelatedFamily | null>(null);
+
   // Copy Feedback State
   const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
 
@@ -126,6 +138,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [leaveFamilyLoading, setLeaveFamilyLoading] = useState<string | null>(
     null
   );
+  const [showLeaveFamilyModal, setShowLeaveFamilyModal] = useState(false);
+  const [familyToLeave, setFamilyToLeave] = useState<FamilyGroup | null>(null);
 
   // View Members Modal State
   const [showViewMembersModal, setShowViewMembersModal] = useState(false);
@@ -513,12 +527,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
     }
   };
 
-  const handleRemoveRelatedFamily = async (relatedFamilyId: string) => {
-    if (!selectedFamily) return;
+  const handleRemoveRelatedFamily = async () => {
+    if (!selectedFamily || !relatedFamilyToRemove) return;
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/family/${selectedFamily.id}/related/${relatedFamilyId}`,
+        `${API_BASE_URL}/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`,
         {
           method: "DELETE",
         }
@@ -532,11 +546,25 @@ function Account({ user, onUserUpdate }: AccountProps) {
       // Reload related families and families list
       await loadRelatedFamilies(selectedFamily.id);
       await loadUserFamilies();
+
+      // Close the confirmation modal
+      setShowRemoveRelatedFamilyModal(false);
+      setRelatedFamilyToRemove(null);
     } catch (err) {
       setRelatedFamilyError(
         err instanceof Error ? err.message : "Failed to remove related family"
       );
     }
+  };
+
+  const handleRemoveRelatedFamilyClick = (relatedFamily: RelatedFamily) => {
+    setRelatedFamilyToRemove(relatedFamily);
+    setShowRemoveRelatedFamilyModal(true);
+  };
+
+  const handleCloseRemoveRelatedFamilyModal = () => {
+    setShowRemoveRelatedFamilyModal(false);
+    setRelatedFamilyToRemove(null);
   };
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -594,12 +622,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
     }
   };
 
-  const handleRemoveMember = async (memberId: string) => {
-    if (!selectedFamily) return;
+  const handleRemoveMember = async () => {
+    if (!selectedFamily || !memberToRemove) return;
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/family/${selectedFamily.id}/members/${memberId}`,
+        `${API_BASE_URL}/family/${selectedFamily.id}/members/${memberToRemove.id}`,
         {
           method: "DELETE",
         }
@@ -613,11 +641,25 @@ function Account({ user, onUserUpdate }: AccountProps) {
       // Reload family members and families list
       await loadFamilyMembers(selectedFamily.id);
       await loadUserFamilies();
+
+      // Close the confirmation modal
+      setShowRemoveMemberModal(false);
+      setMemberToRemove(null);
     } catch (err) {
       setManageFamilyError(
         err instanceof Error ? err.message : "Failed to remove member"
       );
     }
+  };
+
+  const handleRemoveMemberClick = (member: FamilyMember) => {
+    setMemberToRemove(member);
+    setShowRemoveMemberModal(true);
+  };
+
+  const handleCloseRemoveMemberModal = () => {
+    setShowRemoveMemberModal(false);
+    setMemberToRemove(null);
   };
 
   const handleDeleteFamily = async () => {
@@ -660,6 +702,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setRelatedFamilyError("");
     setAddMemberEmail("");
     setAddRelatedFamilyId("");
+
+    // Clean up confirmation modals
+    setShowRemoveMemberModal(false);
+    setMemberToRemove(null);
+    setShowRemoveRelatedFamilyModal(false);
+    setRelatedFamilyToRemove(null);
   };
 
   // View Members Modal Handlers
@@ -703,12 +751,19 @@ function Account({ user, onUserUpdate }: AccountProps) {
   };
 
   // Leave Family Handler
-  const handleLeaveFamily = async (familyId: string) => {
+  const handleLeaveFamilyClick = (family: FamilyGroup) => {
+    setFamilyToLeave(family);
+    setShowLeaveFamilyModal(true);
+  };
+
+  const handleLeaveFamily = async () => {
+    if (!familyToLeave) return;
+
     try {
-      setLeaveFamilyLoading(familyId);
+      setLeaveFamilyLoading(familyToLeave.id);
 
       const response = await fetch(
-        `${API_BASE_URL}/family/${familyId}/members/${user.id}`,
+        `${API_BASE_URL}/family/${familyToLeave.id}/members/${user.id}`,
         {
           method: "DELETE",
         }
@@ -720,12 +775,21 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       // Refresh the family list
       await loadUserFamilies();
+
+      // Close the modal
+      setShowLeaveFamilyModal(false);
+      setFamilyToLeave(null);
     } catch (error) {
       console.error("Error leaving family:", error);
       alert("Failed to leave family. Please try again.");
     } finally {
       setLeaveFamilyLoading(null);
     }
+  };
+
+  const handleCloseLeaveFamilyModal = () => {
+    setShowLeaveFamilyModal(false);
+    setFamilyToLeave(null);
   };
 
   // Profile Picture and Edit Profile Handlers (merged)
@@ -1108,7 +1172,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
                           {family.user_role === "member" && (
                             <button
                               className="action-btn leave-btn"
-                              onClick={() => handleLeaveFamily(family.id)}
+                              onClick={() => handleLeaveFamilyClick(family)}
                               disabled={leaveFamilyLoading === family.id}
                             >
                               {leaveFamilyLoading === family.id
@@ -1166,14 +1230,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <Modal
         isOpen={showCreateFamilyModal}
         mode="form"
-        title="Create Family Group"
+        title="Create Family"
         onClose={handleCloseCreateFamilyModal}
         onRightAction={handleCreateFamilySubmit}
         rightButtonText={createFamilyLoading ? "Creating..." : "Create"}
         rightButtonDisabled={createFamilyLoading}
-        leftButtonClass="cancel-btn"
-        rightButtonClass="submit-btn"
-        showLeftButton={false}
       >
         <div className="form-group">
           <label htmlFor="familyName">Family Name *</label>
@@ -1201,13 +1262,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <Modal
         isOpen={showJoinFamilyModal}
         mode="form"
-        title="Join Family Group"
+        title="Join Family"
         onClose={handleCloseJoinFamilyModal}
         onRightAction={handleJoinFamilySubmit}
         rightButtonText={joinFamilyLoading ? "Joining..." : "Join"}
         rightButtonDisabled={joinFamilyLoading}
-        showLeftButton={false}
-        maxWidth="500px"
       >
         <div className="form-group">
           <label htmlFor="familyId">Family ID *</label>
@@ -1328,7 +1387,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
                       <button
                         className="remove-btn"
                         onClick={() =>
-                          handleRemoveRelatedFamily(relatedFamily.id)
+                          handleRemoveRelatedFamilyClick(relatedFamily)
                         }
                       >
                         Remove
@@ -1413,7 +1472,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
                       {member.role !== "owner" && (
                         <button
                           className="remove-btn"
-                          onClick={() => handleRemoveMember(member.id)}
+                          onClick={() => handleRemoveMemberClick(member)}
                         >
                           Remove
                         </button>
@@ -1767,6 +1826,94 @@ function Account({ user, onUserUpdate }: AccountProps) {
           </div>
 
           {error && <div className="auth-error">{error}</div>}
+        </div>
+      </Modal>
+
+      {/* Leave Family Confirmation Modal */}
+      <Modal
+        isOpen={showLeaveFamilyModal && familyToLeave !== null}
+        mode="view"
+        title="Leave Family"
+        onClose={handleCloseLeaveFamilyModal}
+        showLeftButton={false}
+        showRightButton={false}
+        showDeleteButton={true}
+        onDeleteAction={handleLeaveFamily}
+        confirmBeforeDelete={false}
+        deleteButtonText={leaveFamilyLoading ? "Leaving..." : "Leave Family"}
+        deleteButtonDisabled={!!leaveFamilyLoading}
+        deleteButtonClass="delete-btn"
+        maxWidth="500px"
+      >
+        <div className="leave-family-content">
+          <p>
+            Are you sure you want to leave{" "}
+            <strong>{familyToLeave?.name}</strong>?
+          </p>
+          <p>
+            You will no longer have access to photos and content shared in this
+            family group. You can rejoin later if invited again.
+          </p>
+        </div>
+      </Modal>
+
+      {/* Remove Member Confirmation Modal */}
+      <Modal
+        isOpen={showRemoveMemberModal && memberToRemove !== null}
+        mode="view"
+        title="Remove Family Member"
+        onClose={handleCloseRemoveMemberModal}
+        showLeftButton={false}
+        showRightButton={false}
+        showDeleteButton={true}
+        confirmBeforeDelete={false}
+        onDeleteAction={handleRemoveMember}
+        deleteButtonText="Remove Member"
+        deleteButtonDisabled={false}
+        deleteButtonClass="delete-btn"
+        maxWidth="500px"
+      >
+        <div className="remove-member-content">
+          <p>
+            Are you sure you want to remove{" "}
+            <strong>
+              {memberToRemove?.first_name || "No"}{" "}
+              {memberToRemove?.last_name || "Name"}
+            </strong>{" "}
+            from <strong>{selectedFamily?.name}</strong>?
+          </p>
+          <p>
+            They will no longer have access to photos and content shared in this
+            family group. They can rejoin if invited again.
+          </p>
+        </div>
+      </Modal>
+
+      {/* Remove Related Family Confirmation Modal */}
+      <Modal
+        isOpen={showRemoveRelatedFamilyModal && relatedFamilyToRemove !== null}
+        mode="view"
+        title="Remove Family Relation"
+        onClose={handleCloseRemoveRelatedFamilyModal}
+        showLeftButton={false}
+        showRightButton={false}
+        showDeleteButton={true}
+        confirmBeforeDelete={false}
+        onDeleteAction={handleRemoveRelatedFamily}
+        deleteButtonText="Remove Relation"
+        deleteButtonDisabled={false}
+        deleteButtonClass="delete-btn"
+        maxWidth="500px"
+      >
+        <div className="remove-related-family-content">
+          <p>
+            Are you sure you want to remove the relation with{" "}
+            <strong>{relatedFamilyToRemove?.name}</strong>?
+          </p>
+          <p>
+            This will remove the connection between your family groups. The
+            relation can be re-established later if needed.
+          </p>
         </div>
       </Modal>
     </div>
