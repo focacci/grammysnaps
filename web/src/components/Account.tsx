@@ -126,6 +126,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [leaveFamilyLoading, setLeaveFamilyLoading] = useState<string | null>(
     null
   );
+  const [showLeaveFamilyModal, setShowLeaveFamilyModal] = useState(false);
+  const [familyToLeave, setFamilyToLeave] = useState<FamilyGroup | null>(null);
 
   // View Members Modal State
   const [showViewMembersModal, setShowViewMembersModal] = useState(false);
@@ -703,12 +705,19 @@ function Account({ user, onUserUpdate }: AccountProps) {
   };
 
   // Leave Family Handler
-  const handleLeaveFamily = async (familyId: string) => {
+  const handleLeaveFamilyClick = (family: FamilyGroup) => {
+    setFamilyToLeave(family);
+    setShowLeaveFamilyModal(true);
+  };
+
+  const handleLeaveFamily = async () => {
+    if (!familyToLeave) return;
+
     try {
-      setLeaveFamilyLoading(familyId);
+      setLeaveFamilyLoading(familyToLeave.id);
 
       const response = await fetch(
-        `${API_BASE_URL}/family/${familyId}/members/${user.id}`,
+        `${API_BASE_URL}/family/${familyToLeave.id}/members/${user.id}`,
         {
           method: "DELETE",
         }
@@ -720,12 +729,21 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       // Refresh the family list
       await loadUserFamilies();
+
+      // Close the modal
+      setShowLeaveFamilyModal(false);
+      setFamilyToLeave(null);
     } catch (error) {
       console.error("Error leaving family:", error);
       alert("Failed to leave family. Please try again.");
     } finally {
       setLeaveFamilyLoading(null);
     }
+  };
+
+  const handleCloseLeaveFamilyModal = () => {
+    setShowLeaveFamilyModal(false);
+    setFamilyToLeave(null);
   };
 
   // Profile Picture and Edit Profile Handlers (merged)
@@ -1108,7 +1126,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
                           {family.user_role === "member" && (
                             <button
                               className="action-btn leave-btn"
-                              onClick={() => handleLeaveFamily(family.id)}
+                              onClick={() => handleLeaveFamilyClick(family)}
                               disabled={leaveFamilyLoading === family.id}
                             >
                               {leaveFamilyLoading === family.id
@@ -1767,6 +1785,34 @@ function Account({ user, onUserUpdate }: AccountProps) {
           </div>
 
           {error && <div className="auth-error">{error}</div>}
+        </div>
+      </Modal>
+
+      {/* Leave Family Confirmation Modal */}
+      <Modal
+        isOpen={showLeaveFamilyModal && familyToLeave !== null}
+        mode="view"
+        title="Leave Family"
+        onClose={handleCloseLeaveFamilyModal}
+        showLeftButton={false}
+        showRightButton={false}
+        showDeleteButton={true}
+        onDeleteAction={handleLeaveFamily}
+        confirmBeforeDelete={false}
+        deleteButtonText={leaveFamilyLoading ? "Leaving..." : "Leave Family"}
+        deleteButtonDisabled={!!leaveFamilyLoading}
+        deleteButtonClass="delete-btn"
+        maxWidth="500px"
+      >
+        <div className="leave-family-content">
+          <p>
+            Are you sure you want to leave{" "}
+            <strong>{familyToLeave?.name}</strong>?
+          </p>
+          <p>
+            You will no longer have access to photos and content shared in this
+            family group. You can rejoin later if invited again.
+          </p>
         </div>
       </Modal>
     </div>
