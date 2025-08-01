@@ -40,7 +40,7 @@ const Modal: React.FC<ModalProps> = ({
   mode = "form",
   title,
   onClose,
-  onLeftAction,
+  onLeftAction = onClose,
   onRightAction,
   leftButtonText = "Cancel",
   rightButtonText = "Submit",
