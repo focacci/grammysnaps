@@ -6,14 +6,14 @@ import Modal from "./Modal";
 interface User {
   id: string;
   email: string;
-  first_name: string;
-  middle_name?: string;
-  last_name: string;
-  birthday?: string;
+  first_name: string | null;
+  middle_name: string | null;
+  last_name: string | null;
+  birthday: string | null;
   families: string[];
   created_at: string;
   updated_at: string;
-  profilePicture?: string;
+  profilePicture: string;
 }
 
 interface FamilyGroup {

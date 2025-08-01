@@ -121,16 +121,25 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
     const sanitized = ClientValidationUtils.sanitizeInput(value);
     setter(sanitized);
 
-    const { error } = ClientValidationUtils.sanitizeText(
-      sanitized,
-      fieldName,
-      required,
-      50
-    );
-    setFieldErrors((prev) => ({
-      ...prev,
-      [fieldName.toLowerCase().replace(/\s+/g, "")]: error || "",
-    }));
+    // Only validate if field has content or if it's required
+    if (sanitized.trim() || required) {
+      const { error } = ClientValidationUtils.sanitizeText(
+        sanitized,
+        fieldName,
+        required,
+        50
+      );
+      setFieldErrors((prev) => ({
+        ...prev,
+        [fieldName.toLowerCase().replace(/\s+/g, "")]: error || "",
+      }));
+    } else {
+      // Clear error if field is empty and not required
+      setFieldErrors((prev) => ({
+        ...prev,
+        [fieldName.toLowerCase().replace(/\s+/g, "")]: "",
+      }));
+    }
   };
 
   // Validate birthday
@@ -223,31 +232,38 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
           return;
         }
 
-        const firstNameValidation = ClientValidationUtils.sanitizeText(
-          firstName,
-          "First name",
-          true,
-          50
-        );
-        if (firstNameValidation.error) {
-          setError(firstNameValidation.error);
-          setLoading(false);
-          return;
+        // Validate first name if provided
+        if (firstName.trim()) {
+          const firstNameValidation = ClientValidationUtils.sanitizeText(
+            firstName,
+            "First name",
+            false,
+            50
+          );
+          if (firstNameValidation.error) {
+            setError(firstNameValidation.error);
+            setLoading(false);
+            return;
+          }
         }
 
-        const lastNameValidation = ClientValidationUtils.sanitizeText(
-          lastName,
-          "Last name",
-          true,
-          50
-        );
-        if (lastNameValidation.error) {
-          setError(lastNameValidation.error);
-          setLoading(false);
-          return;
+        // Validate last name if provided
+        if (lastName.trim()) {
+          const lastNameValidation = ClientValidationUtils.sanitizeText(
+            lastName,
+            "Last name",
+            false,
+            50
+          );
+          if (lastNameValidation.error) {
+            setError(lastNameValidation.error);
+            setLoading(false);
+            return;
+          }
         }
 
-        if (middleName) {
+        // Validate middle name if provided
+        if (middleName.trim()) {
           const middleNameValidation = ClientValidationUtils.sanitizeText(
             middleName,
             "Middle name",
@@ -261,7 +277,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
           }
         }
 
-        if (birthday) {
+        // Validate birthday if provided
+        if (birthday.trim()) {
           const birthdayValidation =
             ClientValidationUtils.validateDate(birthday);
           if (birthdayValidation.error) {
@@ -278,10 +295,10 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
         : {
             email: emailValidation.sanitized,
             password,
-            first_name: firstName.trim(),
-            middle_name: middleName.trim() || undefined,
-            last_name: lastName.trim(),
-            birthday: birthday || undefined,
+            first_name: firstName.trim() || null,
+            middle_name: middleName.trim() || null,
+            last_name: lastName.trim() || null,
+            birthday: birthday.trim() || null,
             families,
           };
 
@@ -340,7 +357,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
           {!isLogin && (
             <>
               <div className="form-group">
-                <label htmlFor="firstName">First Name *</label>
+                <label htmlFor="firstName">First Name</label>
                 <input
                   type="text"
                   id="firstName"
@@ -350,11 +367,10 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                       e.target.value,
                       "First name",
                       setFirstName,
-                      true
+                      false
                     )
                   }
-                  required
-                  placeholder="Enter your first name"
+                  placeholder="Enter your first name (optional)"
                 />
                 {fieldErrors.firstName && (
                   <div className="field-error">{fieldErrors.firstName}</div>
@@ -380,7 +396,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="lastName">Last Name *</label>
+                <label htmlFor="lastName">Last Name</label>
                 <input
                   type="text"
                   id="lastName"
@@ -390,11 +406,10 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                       e.target.value,
                       "Last name",
                       setLastName,
-                      true
+                      false
                     )
                   }
-                  required
-                  placeholder="Enter your last name"
+                  placeholder="Enter your last name (optional)"
                 />
                 {fieldErrors.lastName && (
                   <div className="field-error">{fieldErrors.lastName}</div>
