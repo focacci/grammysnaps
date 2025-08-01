@@ -23,6 +23,7 @@ interface ModalProps {
   showLeftButton?: boolean;
   showRightButton?: boolean;
   showDeleteButton?: boolean;
+  confirmBeforeDelete?: boolean; // Whether to confirm before delete action
   onDeleteAction?: () => void;
   deleteButtonText?: string;
   deleteButtonDisabled?: boolean;
@@ -52,6 +53,7 @@ const Modal: React.FC<ModalProps> = ({
   showLeftButton = true,
   showRightButton = true,
   showDeleteButton = false,
+  confirmBeforeDelete = true,
   onDeleteAction,
   deleteButtonText = "Delete",
   deleteButtonDisabled = false,
@@ -86,7 +88,11 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   const handleDeleteClick = () => {
-    setShowDeleteConfirmation(true);
+    if (confirmBeforeDelete) {
+      setShowDeleteConfirmation(true);
+    } else {
+      handleDeleteConfirm();
+    }
   };
 
   const handleDeleteConfirm = () => {
