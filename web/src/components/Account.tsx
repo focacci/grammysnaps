@@ -1230,14 +1230,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <Modal
         isOpen={showCreateFamilyModal}
         mode="form"
-        title="Create Family Group"
+        title="Create Family"
         onClose={handleCloseCreateFamilyModal}
         onRightAction={handleCreateFamilySubmit}
         rightButtonText={createFamilyLoading ? "Creating..." : "Create"}
         rightButtonDisabled={createFamilyLoading}
-        leftButtonClass="cancel-btn"
-        rightButtonClass="submit-btn"
-        showLeftButton={false}
       >
         <div className="form-group">
           <label htmlFor="familyName">Family Name *</label>
@@ -1265,13 +1262,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <Modal
         isOpen={showJoinFamilyModal}
         mode="form"
-        title="Join Family Group"
+        title="Join Family"
         onClose={handleCloseJoinFamilyModal}
         onRightAction={handleJoinFamilySubmit}
         rightButtonText={joinFamilyLoading ? "Joining..." : "Join"}
         rightButtonDisabled={joinFamilyLoading}
-        showLeftButton={false}
-        maxWidth="500px"
       >
         <div className="form-group">
           <label htmlFor="familyId">Family ID *</label>
