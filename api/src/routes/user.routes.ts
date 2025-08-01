@@ -122,6 +122,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
       reply: FastifyReply
     ) => {
       try {
+        console.log(request.body);
         const user = await fastify.user.update(request.params.id, request.body);
         if (!user) {
           return reply.status(404).send({ error: "User not found" });

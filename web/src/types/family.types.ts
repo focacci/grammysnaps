@@ -16,10 +16,10 @@ export interface FamilyInput {
 
 export interface FamilyMember {
   id: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
-  birthday?: string;
+  birthday?: string | null;
   role: "owner" | "member";
   joined_at: string;
 }

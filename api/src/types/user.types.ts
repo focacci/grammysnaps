@@ -4,12 +4,12 @@ export interface User {
   id: string;
   email: string;
   password_hash: string;
-  first_name: string;
-  middle_name?: string;
-  last_name: string;
-  birthday?: string; // ISO date string
+  first_name?: string | null;
+  middle_name?: string | null;
+  last_name?: string | null;
+  birthday?: string | null; // YYYY-MM-DD format
   families: string[];
-  profile_picture_url?: string;
+  profile_picture_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -17,20 +17,20 @@ export interface User {
 export interface UserInput {
   email: string;
   password: string;
-  first_name: string;
-  middle_name?: string;
-  last_name: string;
-  birthday?: string;
-  families?: string[];
+  first_name: string | null;
+  middle_name: string | null;
+  last_name: string | null;
+  birthday: string | null;
+  families: string[];
   profile_picture_url?: string;
 }
 
 export interface UserUpdate {
   email?: string;
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
-  birthday?: string;
+  first_name?: string | null;
+  middle_name?: string | null;
+  last_name?: string | null;
+  birthday?: string | null;
   families?: string[];
   profile_picture_url?: string;
 }
@@ -38,12 +38,12 @@ export interface UserUpdate {
 export interface UserPublic {
   id: string;
   email: string;
-  first_name: string;
-  middle_name?: string;
-  last_name: string;
-  birthday?: string;
+  first_name?: string | null;
+  middle_name?: string | null;
+  last_name?: string | null;
+  birthday?: string | null;
   families: string[];
-  profile_picture_url?: string;
+  profile_picture_url?: string | null;
   created_at: string;
   updated_at: string;
 }

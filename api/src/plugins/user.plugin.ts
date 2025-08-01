@@ -50,6 +50,16 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     return publicUser;
   };
 
+  const filterValidFamilies = async (families: string[]): Promise<string[]> => {
+    const validFamilies: string[] = [];
+    for (const familyId of families) {
+      if (await fastify.family.exists(familyId)) {
+        validFamilies.push(familyId);
+      }
+    }
+    return validFamilies;
+  };
+
   fastify.decorate("user", {
     async create(input: UserInput): Promise<UserPublic> {
       const {
@@ -66,27 +76,26 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         // Sanitize and validate all inputs
         const sanitizedEmail = ValidationUtils.sanitizeEmail(email);
         const sanitizedPassword = ValidationUtils.sanitizePassword(password);
-        const sanitizedFirstName = ValidationUtils.sanitizeText(
-          first_name,
-          "First name",
-          true,
-          50
-        );
+        const sanitizedFirstName = first_name
+          ? ValidationUtils.sanitizeText(first_name, "First name", false, 50)
+          : null;
         const sanitizedMiddleName = middle_name
           ? ValidationUtils.sanitizeText(middle_name, "Middle name", false, 50)
           : null;
-        const sanitizedLastName = ValidationUtils.sanitizeText(
-          last_name,
-          "Last name",
-          true,
-          50
-        );
+        const sanitizedLastName = last_name
+          ? ValidationUtils.sanitizeText(last_name, "Last name", false, 50)
+          : null;
         const sanitizedBirthday = birthday
           ? ValidationUtils.sanitizeDate(birthday)
           : null;
         const sanitizedFamilies = ValidationUtils.sanitizeFamilyIds(
           families || []
         );
+
+        // Validate family IDs
+        const sanitizedAndValidFamilies = sanitizedFamilies.length
+          ? await filterValidFamilies(sanitizedFamilies)
+          : [];
 
         // Check if email already exists
         const existingUserByEmail = await fastify.user.getByEmail(
@@ -110,7 +119,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             sanitizedMiddleName,
             sanitizedLastName,
             sanitizedBirthday,
-            sanitizedFamilies,
+            sanitizedAndValidFamilies,
           ]
         );
 
@@ -180,6 +189,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         families,
         profile_picture_url,
       } = input;
+      fastify.log.info(`Updating user: ${input}`);
 
       try {
         // Sanitize and validate the ID
@@ -192,38 +202,32 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         }
 
         // Sanitize and validate inputs
-        const sanitizedEmail = email
+        const sanitizedEmail = email?.trim()
           ? ValidationUtils.sanitizeEmail(email)
-          : undefined;
-        const sanitizedFirstName = first_name
-          ? ValidationUtils.sanitizeText(first_name, "First name", true, 50)
-          : undefined;
-        const sanitizedMiddleName =
-          middle_name !== undefined
-            ? middle_name
-              ? ValidationUtils.sanitizeText(
-                  middle_name,
-                  "Middle name",
-                  false,
-                  50
-                )
-              : null
-            : undefined;
-        const sanitizedLastName = last_name
-          ? ValidationUtils.sanitizeText(last_name, "Last name", true, 50)
-          : undefined;
-        const sanitizedBirthday =
-          birthday !== undefined
-            ? birthday
-              ? ValidationUtils.sanitizeDate(birthday)
-              : null
-            : undefined;
+          : null;
+        const sanitizedFirstName = first_name?.trim()
+          ? ValidationUtils.sanitizeText(first_name, "First name", false, 50)
+          : null;
+        const sanitizedMiddleName = middle_name?.trim()
+          ? ValidationUtils.sanitizeText(middle_name, "Middle name", false, 50)
+          : null;
+        const sanitizedLastName = last_name?.trim()
+          ? ValidationUtils.sanitizeText(last_name, "Last name", false, 50)
+          : null;
+        const sanitizedBirthday = birthday?.trim().split("T")[0]
+          ? ValidationUtils.sanitizeDate(birthday?.trim().split("T")[0])
+          : null;
         const sanitizedFamilies = families
           ? ValidationUtils.sanitizeFamilyIds(families)
-          : undefined;
+          : null;
         const sanitizedProfilePictureUrl = profile_picture_url
           ? ValidationUtils.sanitizeURL(profile_picture_url)
-          : undefined;
+          : null;
+
+        // Validate family IDs
+        const sanitizedAndValidFamilies = sanitizedFamilies?.length
+          ? await filterValidFamilies(sanitizedFamilies)
+          : [];
 
         // Check for conflicts with other users if updating email
         if (sanitizedEmail && sanitizedEmail !== existingUser.email) {
@@ -235,46 +239,32 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
         // Build dynamic update query
         const updateFields: string[] = [];
-        const values: any[] = [];
+        const values: (string | string[] | null)[] = [];
         let paramCount = 1;
 
-        if (sanitizedEmail !== undefined) {
-          updateFields.push(`email = $${paramCount}`);
-          values.push(sanitizedEmail);
-          paramCount++;
-        }
+        updateFields.push(`first_name = $${paramCount}`);
+        values.push(sanitizedFirstName);
+        paramCount++;
 
-        if (sanitizedFirstName !== undefined) {
-          updateFields.push(`first_name = $${paramCount}`);
-          values.push(sanitizedFirstName);
-          paramCount++;
-        }
+        updateFields.push(`middle_name = $${paramCount}`);
+        values.push(sanitizedMiddleName);
+        paramCount++;
 
-        if (sanitizedMiddleName !== undefined) {
-          updateFields.push(`middle_name = $${paramCount}`);
-          values.push(sanitizedMiddleName);
-          paramCount++;
-        }
+        updateFields.push(`last_name = $${paramCount}`);
+        values.push(sanitizedLastName);
+        paramCount++;
 
-        if (sanitizedLastName !== undefined) {
-          updateFields.push(`last_name = $${paramCount}`);
-          values.push(sanitizedLastName);
-          paramCount++;
-        }
+        updateFields.push(`birthday = $${paramCount}`);
+        values.push(sanitizedBirthday);
+        paramCount++;
 
-        if (sanitizedBirthday !== undefined) {
-          updateFields.push(`birthday = $${paramCount}`);
-          values.push(sanitizedBirthday);
-          paramCount++;
-        }
-
-        if (sanitizedFamilies !== undefined) {
+        if (sanitizedAndValidFamilies) {
           updateFields.push(`families = $${paramCount}`);
-          values.push(sanitizedFamilies);
+          values.push(sanitizedAndValidFamilies);
           paramCount++;
         }
 
-        if (sanitizedProfilePictureUrl !== undefined) {
+        if (sanitizedProfilePictureUrl) {
           updateFields.push(`profile_picture_url = $${paramCount}`);
           values.push(sanitizedProfilePictureUrl);
           paramCount++;
@@ -293,11 +283,6 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [user],
         } = await fastify.pg.query<User>(query, values);
-
-        // Format birthday for consistent frontend display
-        if (user.birthday) {
-          user.birthday = new Date(user.birthday).toISOString().split("T")[0];
-        }
 
         fastify.log.info(`Updated user: ${user.email}`);
         return toPublicUser(user);

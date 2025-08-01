@@ -8,14 +8,14 @@ import Modal from "./Modal";
 interface User {
   id: string;
   email: string;
-  first_name: string;
-  middle_name?: string;
-  last_name: string;
-  birthday?: string;
+  first_name: string | null;
+  middle_name?: string | null;
+  last_name: string | null;
+  birthday?: string | null;
   families: string[];
   created_at: string;
   updated_at: string;
-  profile_picture_url?: string;
+  profile_picture_url?: string | null;
 }
 
 interface FamilyGroup {
@@ -31,10 +31,10 @@ interface FamilyGroup {
 
 interface FamilyMember {
   id: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
-  birthday?: string;
+  birthday?: string | null;
   role: "owner" | "member";
   joined_at: string;
 }
@@ -72,10 +72,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
   );
   const [profileUploading, setProfileUploading] = useState(false);
   const [editForm, setEditForm] = useState({
-    first_name: user.first_name,
-    middle_name: user.middle_name || "",
-    last_name: user.last_name,
-    birthday: user.birthday || "",
+    first_name: user.first_name || null,
+    middle_name: user.middle_name || null,
+    last_name: user.last_name || null,
+    birthday: user.birthday || null,
   });
   const [error, setError] = useState("");
 
@@ -734,9 +734,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setSelectedProfileFile(null);
     // Reset form to current user data
     setEditForm({
-      first_name: user.first_name,
+      first_name: user.first_name || "",
       middle_name: user.middle_name || "",
-      last_name: user.last_name,
+      last_name: user.last_name || "",
       birthday: user.birthday || "",
     });
     setError("");
@@ -805,6 +805,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
         profilePictureUrl = data.url;
       }
 
+      console.log("Birthday:", editForm.birthday);
       // Then, update user profile data
       const userUpdateResponse = await fetch(
         `${API_BASE_URL}/user/${user.id}`,
@@ -814,10 +815,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            first_name: editForm.first_name.trim(),
-            middle_name: editForm.middle_name.trim() || undefined,
-            last_name: editForm.last_name.trim(),
-            birthday: editForm.birthday || undefined,
+            first_name: editForm.first_name?.trim() || null,
+            middle_name: editForm.middle_name?.trim() || null,
+            last_name: editForm.last_name?.trim() || null,
+            birthday: editForm.birthday || null,
           }),
         }
       );
@@ -1384,14 +1385,14 @@ function Account({ user, onUserUpdate }: AccountProps) {
                   <div key={member.id} className="member-row">
                     <div className="member-avatar">
                       <span className="avatar-placeholder">
-                        {member.first_name[0]}
-                        {member.last_name[0]}
+                        {member.first_name?.[0] || "?"}
+                        {member.last_name?.[0] || "?"}
                       </span>
                     </div>
 
                     <div className="member-info">
                       <div className="member-name">
-                        {member.first_name} {member.last_name}
+                        {member.first_name || "No"} {member.last_name || "Name"}
                         {member.role === "owner" && (
                           <span className="owner-badge">👑 Owner</span>
                         )}
@@ -1451,14 +1452,14 @@ function Account({ user, onUserUpdate }: AccountProps) {
                   <div key={member.id} className="member-row">
                     <div className="member-avatar">
                       <span className="avatar-placeholder">
-                        {member.first_name[0]}
-                        {member.last_name[0]}
+                        {member.first_name?.[0] || "?"}
+                        {member.last_name?.[0] || "?"}
                       </span>
                     </div>
 
                     <div className="member-info">
                       <div className="member-name">
-                        {member.first_name} {member.last_name}
+                        {member.first_name || "No"} {member.last_name || "Name"}
                         {member.role === "owner" && (
                           <span className="owner-badge">👑 Owner</span>
                         )}
@@ -1711,16 +1712,15 @@ function Account({ user, onUserUpdate }: AccountProps) {
         {/* Profile Information Form */}
         <div className="profile-edit-form">
           <div className="form-group">
-            <label htmlFor="editFirstName">First Name *</label>
+            <label htmlFor="editFirstName">First Name</label>
             <input
               type="text"
               id="editFirstName"
-              value={editForm.first_name}
+              value={editForm.first_name || ""}
               onChange={(e) =>
-                setEditForm({ ...editForm, first_name: e.target.value })
+                setEditForm({ ...editForm, first_name: e.target.value || null })
               }
-              required
-              placeholder="Enter your first name"
+              placeholder="Enter your first name (optional)"
             />
           </div>
 
@@ -1729,25 +1729,27 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type="text"
               id="editMiddleName"
-              value={editForm.middle_name}
+              value={editForm.middle_name || ""}
               onChange={(e) =>
-                setEditForm({ ...editForm, middle_name: e.target.value })
+                setEditForm({
+                  ...editForm,
+                  middle_name: e.target.value || null,
+                })
               }
               placeholder="Enter your middle name (optional)"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="editLastName">Last Name *</label>
+            <label htmlFor="editLastName">Last Name</label>
             <input
               type="text"
               id="editLastName"
-              value={editForm.last_name}
+              value={editForm.last_name || ""}
               onChange={(e) =>
-                setEditForm({ ...editForm, last_name: e.target.value })
+                setEditForm({ ...editForm, last_name: e.target.value || null })
               }
-              required
-              placeholder="Enter your last name"
+              placeholder="Enter your last name (optional)"
             />
           </div>
 
@@ -1756,9 +1758,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type="date"
               id="editBirthday"
-              value={editForm.birthday}
+              value={editForm.birthday || ""}
               onChange={(e) =>
-                setEditForm({ ...editForm, birthday: e.target.value })
+                setEditForm({ ...editForm, birthday: e.target.value || null })
               }
               placeholder="Select your birthday (optional)"
             />
