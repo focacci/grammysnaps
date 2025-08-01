@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import "./Modal.css";
 import "./Modal.css";
@@ -62,6 +62,8 @@ const Modal: React.FC<ModalProps> = ({
   additionalButtonText = "Additional",
   additionalButtonClass = "additional-btn",
 }) => {
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
   if (!isOpen) return null;
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -81,6 +83,21 @@ const Modal: React.FC<ModalProps> = ({
     if (onRightAction) {
       (onRightAction as () => void)();
     }
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setShowDeleteConfirmation(false);
+    if (onDeleteAction) {
+      onDeleteAction();
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirmation(false);
   };
 
   const isFormMode = mode === "form";
@@ -144,7 +161,7 @@ const Modal: React.FC<ModalProps> = ({
                   <div className="form-actions-delete">
                     <button
                       type="button"
-                      onClick={onDeleteAction}
+                      onClick={handleDeleteClick}
                       disabled={deleteButtonDisabled}
                       className={deleteButtonClass}
                     >
@@ -186,7 +203,7 @@ const Modal: React.FC<ModalProps> = ({
                   <div className="form-actions-delete">
                     <button
                       type="button"
-                      onClick={onDeleteAction}
+                      onClick={handleDeleteClick}
                       disabled={deleteButtonDisabled}
                       className={deleteButtonClass}
                     >
@@ -202,8 +219,52 @@ const Modal: React.FC<ModalProps> = ({
     </div>
   );
 
+  const confirmationDialog = (
+    <div className="modal-overlay" onClick={handleDeleteCancel}>
+      <div
+        className="modal-content"
+        style={{ maxWidth }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h2>Confirm Delete</h2>
+          <button className="close-btn" onClick={handleDeleteCancel}>
+            ×
+          </button>
+        </div>
+        <div className="modal-body">
+          <p>
+            Are you sure you want to delete this item? This action cannot be
+            undone.
+          </p>
+          <div className="form-actions">
+            <div className="form-actions-main">
+              <button
+                type="button"
+                onClick={handleDeleteCancel}
+                className="cancel-btn"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                className="delete-btn"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Use createPortal to render modal outside component tree
-  return createPortal(modalContent, document.body);
+  return createPortal(
+    showDeleteConfirmation ? confirmationDialog : modalContent,
+    document.body
+  );
 };
 
 export default Modal;
