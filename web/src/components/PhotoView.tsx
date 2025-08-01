@@ -1503,14 +1503,19 @@ function PhotoView({ user }: PhotoViewProps) {
         mode="form"
         title="Edit"
         onClose={closeImageModal}
-        onLeftAction={handleDeleteImage}
+        onLeftAction={handleEditToggle}
         onRightAction={handleSaveImage}
-        leftButtonText={deletingImage ? "Deleting..." : "Delete"}
+        leftButtonText="Cancel"
         rightButtonText={savingImage ? "Saving..." : "Save"}
-        leftButtonDisabled={deletingImage}
+        leftButtonDisabled={false}
         rightButtonDisabled={savingImage}
-        leftButtonClass="delete-btn"
+        leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
+        showDeleteButton={true}
+        onDeleteAction={handleDeleteImage}
+        deleteButtonText={deletingImage ? "Deleting..." : "Delete"}
+        deleteButtonDisabled={deletingImage}
+        deleteButtonClass="delete-btn"
         maxWidth="600px"
         headerSection={
           selectedImage && selectedImage.s3_url ? (
