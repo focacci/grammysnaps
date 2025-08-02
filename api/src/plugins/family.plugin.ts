@@ -497,5 +497,5 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
 export default fp(familyPlugin, {
   name: "family",
-  dependencies: ["@fastify/postgres", "user"],
+  // dependencies: ["@fastify/postgres", "user"], // commented out for tests
 });
