@@ -8,23 +8,22 @@ import {
   RelatedFamily,
 } from "../types/family.types";
 
+const mockFamilyCreate = jest.fn();
+const mockFamilyGet = jest.fn();
+const mockFamilyGetById = jest.fn();
+const mockFamilyExists = jest.fn();
+const mockFamilyGetUserFamilies = jest.fn();
+const mockFamilyGetMembers = jest.fn();
+const mockFamilyGetRelatedFamilies = jest.fn();
+const mockFamilyAddRelatedFamily = jest.fn();
+const mockFamilyRemoveRelatedFamily = jest.fn();
+const mockFamilyUpdate = jest.fn();
+const mockFamilyDelete = jest.fn();
+const mockFamilyAddMember = jest.fn();
+const mockFamilyRemoveMember = jest.fn();
+
 describe("Family Routes", () => {
   let fastify: FastifyInstance;
-  let mockFamilyPlugin: {
-    create: jest.MockedFunction<any>;
-    get: jest.MockedFunction<any>;
-    getById: jest.MockedFunction<any>;
-    exists: jest.MockedFunction<any>;
-    getUserFamilies: jest.MockedFunction<any>;
-    getMembers: jest.MockedFunction<any>;
-    getRelatedFamilies: jest.MockedFunction<any>;
-    addRelatedFamily: jest.MockedFunction<any>;
-    removeRelatedFamily: jest.MockedFunction<any>;
-    update: jest.MockedFunction<any>;
-    delete: jest.MockedFunction<any>;
-    addMember: jest.MockedFunction<any>;
-    removeMember: jest.MockedFunction<any>;
-  };
 
   const mockFamily: Family = {
     id: "family-123",
@@ -68,25 +67,22 @@ describe("Family Routes", () => {
     // Create a new Fastify instance for each test
     fastify = Fastify({ logger: false });
 
-    // Create mock family plugin
-    mockFamilyPlugin = {
-      create: jest.fn(),
-      get: jest.fn(),
-      getById: jest.fn(),
-      exists: jest.fn(),
-      getUserFamilies: jest.fn(),
-      getMembers: jest.fn(),
-      getRelatedFamilies: jest.fn(),
-      addRelatedFamily: jest.fn(),
-      removeRelatedFamily: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      addMember: jest.fn(),
-      removeMember: jest.fn(),
-    };
-
     // Decorate the fastify instance with mock plugin
-    fastify.decorate("family", mockFamilyPlugin);
+    fastify.decorate("family", {
+      create: mockFamilyCreate,
+      get: mockFamilyGet,
+      getById: mockFamilyGetById,
+      exists: mockFamilyExists,
+      getUserFamilies: mockFamilyGetUserFamilies,
+      getMembers: mockFamilyGetMembers,
+      getRelatedFamilies: mockFamilyGetRelatedFamilies,
+      addRelatedFamily: mockFamilyAddRelatedFamily,
+      removeRelatedFamily: mockFamilyRemoveRelatedFamily,
+      update: mockFamilyUpdate,
+      delete: mockFamilyDelete,
+      addMember: mockFamilyAddMember,
+      removeMember: mockFamilyRemoveMember,
+    });
 
     // Register family routes
     await fastify.register(familyRoutes);
@@ -105,7 +101,7 @@ describe("Family Routes", () => {
   describe("GET /", () => {
     it("should successfully get all families", async () => {
       const mockFamilies = [mockFamilyPublic];
-      mockFamilyPlugin.get.mockResolvedValue(mockFamilies);
+      mockFamilyGet.mockResolvedValue(mockFamilies);
 
       const response = await fastify.inject({
         method: "GET",
@@ -115,11 +111,11 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockFamilies);
-      expect(mockFamilyPlugin.get).toHaveBeenCalledWith();
+      expect(mockFamilyGet).toHaveBeenCalledWith();
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.get.mockRejectedValue(new Error("Database error"));
+      mockFamilyGet.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
@@ -135,7 +131,7 @@ describe("Family Routes", () => {
   describe("GET /user/:userId", () => {
     it("should successfully get families for a user", async () => {
       const mockFamilies = [mockFamilyPublic];
-      mockFamilyPlugin.getUserFamilies.mockResolvedValue(mockFamilies);
+      mockFamilyGetUserFamilies.mockResolvedValue(mockFamilies);
 
       const response = await fastify.inject({
         method: "GET",
@@ -145,13 +141,11 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockFamilies);
-      expect(mockFamilyPlugin.getUserFamilies).toHaveBeenCalledWith("user-123");
+      expect(mockFamilyGetUserFamilies).toHaveBeenCalledWith("user-123");
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.getUserFamilies.mockRejectedValue(
-        new Error("Database error")
-      );
+      mockFamilyGetUserFamilies.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
@@ -166,7 +160,7 @@ describe("Family Routes", () => {
 
   describe("GET /:id", () => {
     it("should successfully get family by ID", async () => {
-      mockFamilyPlugin.getById.mockResolvedValue(mockFamily);
+      mockFamilyGetById.mockResolvedValue(mockFamily);
 
       const response = await fastify.inject({
         method: "GET",
@@ -176,11 +170,11 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockFamily);
-      expect(mockFamilyPlugin.getById).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyGetById).toHaveBeenCalledWith("family-123");
     });
 
     it("should return 404 for non-existent family", async () => {
-      mockFamilyPlugin.getById.mockResolvedValue(null);
+      mockFamilyGetById.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "GET",
@@ -193,7 +187,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.getById.mockRejectedValue(new Error("Database error"));
+      mockFamilyGetById.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
@@ -209,7 +203,7 @@ describe("Family Routes", () => {
   describe("GET /:id/members", () => {
     it("should successfully get family members", async () => {
       const mockMembers = [mockFamilyMember];
-      mockFamilyPlugin.getMembers.mockResolvedValue(mockMembers);
+      mockFamilyGetMembers.mockResolvedValue(mockMembers);
 
       const response = await fastify.inject({
         method: "GET",
@@ -219,13 +213,11 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockMembers);
-      expect(mockFamilyPlugin.getMembers).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyGetMembers).toHaveBeenCalledWith("family-123");
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.getMembers.mockRejectedValue(
-        new Error("Database error")
-      );
+      mockFamilyGetMembers.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
@@ -246,7 +238,7 @@ describe("Family Routes", () => {
     };
 
     it("should successfully create a new family", async () => {
-      mockFamilyPlugin.create.mockResolvedValue(mockFamilyPublic);
+      mockFamilyCreate.mockResolvedValue(mockFamilyPublic);
 
       const response = await fastify.inject({
         method: "POST",
@@ -257,7 +249,7 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(201);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockFamilyPublic);
-      expect(mockFamilyPlugin.create).toHaveBeenCalledWith(
+      expect(mockFamilyCreate).toHaveBeenCalledWith(
         { name: "The Johnsons", description: "A lovely family" },
         "user-123"
       );
@@ -307,7 +299,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.create.mockRejectedValue(new Error("Database error"));
+      mockFamilyCreate.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "POST",
@@ -321,7 +313,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.create.mockRejectedValue("String error");
+      mockFamilyCreate.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "POST",
@@ -343,7 +335,7 @@ describe("Family Routes", () => {
 
     it("should successfully update family", async () => {
       const updatedFamily = { ...mockFamily, ...validUpdateData };
-      mockFamilyPlugin.update.mockResolvedValue(updatedFamily);
+      mockFamilyUpdate.mockResolvedValue(updatedFamily);
 
       const response = await fastify.inject({
         method: "PUT",
@@ -354,14 +346,14 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(updatedFamily);
-      expect(mockFamilyPlugin.update).toHaveBeenCalledWith(
+      expect(mockFamilyUpdate).toHaveBeenCalledWith(
         "family-123",
         validUpdateData
       );
     });
 
     it("should return 404 for non-existent family", async () => {
-      mockFamilyPlugin.update.mockResolvedValue(null);
+      mockFamilyUpdate.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "PUT",
@@ -375,7 +367,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.update.mockRejectedValue(new Error("Update error"));
+      mockFamilyUpdate.mockRejectedValue(new Error("Update error"));
 
       const response = await fastify.inject({
         method: "PUT",
@@ -389,7 +381,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.update.mockRejectedValue("String error");
+      mockFamilyUpdate.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "PUT",
@@ -404,7 +396,7 @@ describe("Family Routes", () => {
 
     it("should handle empty update data", async () => {
       const updatedFamily = mockFamily;
-      mockFamilyPlugin.update.mockResolvedValue(updatedFamily);
+      mockFamilyUpdate.mockResolvedValue(updatedFamily);
 
       const response = await fastify.inject({
         method: "PUT",
@@ -413,13 +405,13 @@ describe("Family Routes", () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyPlugin.update).toHaveBeenCalledWith("family-123", {});
+      expect(mockFamilyUpdate).toHaveBeenCalledWith("family-123", {});
     });
   });
 
   describe("DELETE /:id", () => {
     it("should successfully delete family", async () => {
-      mockFamilyPlugin.delete.mockResolvedValue(undefined);
+      mockFamilyDelete.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -428,11 +420,11 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(204);
       expect(response.body).toBe("");
-      expect(mockFamilyPlugin.delete).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyDelete).toHaveBeenCalledWith("family-123");
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.delete.mockRejectedValue(new Error("Delete error"));
+      mockFamilyDelete.mockRejectedValue(new Error("Delete error"));
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -445,7 +437,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.delete.mockRejectedValue("String error");
+      mockFamilyDelete.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -464,7 +456,7 @@ describe("Family Routes", () => {
     };
 
     it("should successfully add member to family", async () => {
-      mockFamilyPlugin.addMember.mockResolvedValue(undefined);
+      mockFamilyAddMember.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "POST",
@@ -475,7 +467,7 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Member added successfully");
-      expect(mockFamilyPlugin.addMember).toHaveBeenCalledWith(
+      expect(mockFamilyAddMember).toHaveBeenCalledWith(
         "family-123",
         "user-456"
       );
@@ -494,9 +486,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.addMember.mockRejectedValue(
-        new Error("Add member error")
-      );
+      mockFamilyAddMember.mockRejectedValue(new Error("Add member error"));
 
       const response = await fastify.inject({
         method: "POST",
@@ -510,7 +500,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.addMember.mockRejectedValue("String error");
+      mockFamilyAddMember.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "POST",
@@ -526,7 +516,7 @@ describe("Family Routes", () => {
 
   describe("DELETE /:id/members/:userId", () => {
     it("should successfully remove member from family", async () => {
-      mockFamilyPlugin.removeMember.mockResolvedValue(undefined);
+      mockFamilyRemoveMember.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -536,14 +526,14 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Member removed successfully");
-      expect(mockFamilyPlugin.removeMember).toHaveBeenCalledWith(
+      expect(mockFamilyRemoveMember).toHaveBeenCalledWith(
         "family-123",
         "user-456"
       );
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.removeMember.mockRejectedValue(
+      mockFamilyRemoveMember.mockRejectedValue(
         new Error("Remove member error")
       );
 
@@ -558,7 +548,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.removeMember.mockRejectedValue("String error");
+      mockFamilyRemoveMember.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -574,9 +564,7 @@ describe("Family Routes", () => {
   describe("GET /:id/related", () => {
     it("should successfully get related families", async () => {
       const mockRelatedFamilies = [mockRelatedFamily];
-      mockFamilyPlugin.getRelatedFamilies.mockResolvedValue(
-        mockRelatedFamilies
-      );
+      mockFamilyGetRelatedFamilies.mockResolvedValue(mockRelatedFamilies);
 
       const response = await fastify.inject({
         method: "GET",
@@ -586,13 +574,11 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockRelatedFamilies);
-      expect(mockFamilyPlugin.getRelatedFamilies).toHaveBeenCalledWith(
-        "family-123"
-      );
+      expect(mockFamilyGetRelatedFamilies).toHaveBeenCalledWith("family-123");
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.getRelatedFamilies.mockRejectedValue(
+      mockFamilyGetRelatedFamilies.mockRejectedValue(
         new Error("Database error")
       );
 
@@ -613,7 +599,7 @@ describe("Family Routes", () => {
     };
 
     it("should successfully add related family", async () => {
-      mockFamilyPlugin.addRelatedFamily.mockResolvedValue(undefined);
+      mockFamilyAddRelatedFamily.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "POST",
@@ -624,7 +610,7 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(201);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Related family added successfully");
-      expect(mockFamilyPlugin.addRelatedFamily).toHaveBeenCalledWith(
+      expect(mockFamilyAddRelatedFamily).toHaveBeenCalledWith(
         "family-123",
         "family-456"
       );
@@ -643,7 +629,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.addRelatedFamily.mockRejectedValue(
+      mockFamilyAddRelatedFamily.mockRejectedValue(
         new Error("Add related family error")
       );
 
@@ -659,7 +645,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.addRelatedFamily.mockRejectedValue("String error");
+      mockFamilyAddRelatedFamily.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "POST",
@@ -675,7 +661,7 @@ describe("Family Routes", () => {
 
   describe("DELETE /:id/related/:relatedId", () => {
     it("should successfully remove related family", async () => {
-      mockFamilyPlugin.removeRelatedFamily.mockResolvedValue(undefined);
+      mockFamilyRemoveRelatedFamily.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -685,14 +671,14 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Related family removed successfully");
-      expect(mockFamilyPlugin.removeRelatedFamily).toHaveBeenCalledWith(
+      expect(mockFamilyRemoveRelatedFamily).toHaveBeenCalledWith(
         "family-123",
         "family-456"
       );
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyPlugin.removeRelatedFamily.mockRejectedValue(
+      mockFamilyRemoveRelatedFamily.mockRejectedValue(
         new Error("Remove related family error")
       );
 
@@ -707,7 +693,7 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyPlugin.removeRelatedFamily.mockRejectedValue("String error");
+      mockFamilyRemoveRelatedFamily.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -747,7 +733,7 @@ describe("Family Routes", () => {
     });
 
     it("should properly handle URL parameters", async () => {
-      mockFamilyPlugin.getById.mockResolvedValue(mockFamily);
+      mockFamilyGetById.mockResolvedValue(mockFamily);
 
       const response = await fastify.inject({
         method: "GET",
@@ -755,13 +741,11 @@ describe("Family Routes", () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyPlugin.getById).toHaveBeenCalledWith(
-        "family-123-with-dashes"
-      );
+      expect(mockFamilyGetById).toHaveBeenCalledWith("family-123-with-dashes");
     });
 
     it("should handle special characters in family ID", async () => {
-      mockFamilyPlugin.getById.mockResolvedValue(mockFamily);
+      mockFamilyGetById.mockResolvedValue(mockFamily);
 
       const familyId = "550e8400-e29b-41d4-a716-446655440000";
       const response = await fastify.inject({
@@ -770,11 +754,11 @@ describe("Family Routes", () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyPlugin.getById).toHaveBeenCalledWith(familyId);
+      expect(mockFamilyGetById).toHaveBeenCalledWith(familyId);
     });
 
     it("should handle family creation with only required fields", async () => {
-      mockFamilyPlugin.create.mockResolvedValue(mockFamilyPublic);
+      mockFamilyCreate.mockResolvedValue(mockFamilyPublic);
 
       const response = await fastify.inject({
         method: "POST",
@@ -786,7 +770,7 @@ describe("Family Routes", () => {
       });
 
       expect(response.statusCode).toBe(201);
-      expect(mockFamilyPlugin.create).toHaveBeenCalledWith(
+      expect(mockFamilyCreate).toHaveBeenCalledWith(
         { name: "Minimal Family" },
         "user-123"
       );
