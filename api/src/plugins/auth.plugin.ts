@@ -1,6 +1,6 @@
 import { FastifyPluginAsync, FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { UserPublic } from "../types/user.types";
 
 const JWT_SECRET =
