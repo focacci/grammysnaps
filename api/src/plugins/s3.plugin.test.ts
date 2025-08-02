@@ -13,12 +13,9 @@ import s3Plugin, { S3Config, UploadOptions, ImageInfo } from "./s3.plugin";
 // Mock AWS SDK
 jest.mock("@aws-sdk/client-s3");
 jest.mock("@aws-sdk/s3-request-presigner");
-jest.mock("fastify-plugin", () => (plugin: any, options?: any) => plugin);
+jest.mock("fastify-plugin", () => (plugin: any) => plugin);
 
 const MockedS3Client = S3Client as jest.MockedClass<typeof S3Client>;
-const mockGetSignedUrl = getSignedUrl as jest.MockedFunction<
-  typeof getSignedUrl
->;
 
 describe("S3 Plugin", () => {
   let mockFastify: jest.Mocked<FastifyInstance>;

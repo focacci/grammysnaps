@@ -1,5 +1,3 @@
-import { Tag } from "./tag.types";
-
 export interface ImageInput {
   file?: Buffer;
   title?: string;
