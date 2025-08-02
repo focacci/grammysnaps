@@ -245,5 +245,5 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
 export default fp(imagePlugin, {
   name: "image",
-  dependencies: ["@fastify/postgres"],
+  // dependencies: ["@fastify/postgres"],
 });
