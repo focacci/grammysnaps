@@ -55,6 +55,7 @@ export class ValidationUtils {
       "password123",
       "admin",
       "qwerty",
+      "adminpassword",
     ];
     if (commonPasswords.includes(password.toLowerCase())) {
       throw new Error(
