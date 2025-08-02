@@ -10,27 +10,27 @@ jest.mock("../utils/validation", () => ({
   },
 }));
 
+// User plugin mocks
+const mockUserCreate = jest.fn();
+const mockUserGet = jest.fn();
+const mockUserGetByEmail = jest.fn();
+const mockUserGetById = jest.fn();
+const mockUserUpdate = jest.fn();
+const mockUserUpdateSecurity = jest.fn();
+const mockUserDelete = jest.fn();
+const mockUserValidatePassword = jest.fn();
+const mockUserAddToFamily = jest.fn();
+const mockUserRemoveFromFamily = jest.fn();
+
+// Auth plugin mocks
+const mockGenerateTokens = jest.fn();
+const mockVerifyRefreshToken = jest.fn();
+const mockVerifyAccessToken = jest.fn();
+const mockValidateSession = jest.fn();
+const mockRevokeUserTokens = jest.fn();
+
 describe("Auth Routes", () => {
   let fastify: FastifyInstance;
-  let mockUserPlugin: {
-    create: jest.MockedFunction<any>;
-    get: jest.MockedFunction<any>;
-    getByEmail: jest.MockedFunction<any>;
-    getById: jest.MockedFunction<any>;
-    update: jest.MockedFunction<any>;
-    updateSecurity: jest.MockedFunction<any>;
-    delete: jest.MockedFunction<any>;
-    validatePassword: jest.MockedFunction<any>;
-    addToFamily: jest.MockedFunction<any>;
-    removeFromFamily: jest.MockedFunction<any>;
-  };
-  let mockAuthPlugin: {
-    generateTokens: jest.MockedFunction<any>;
-    verifyRefreshToken: jest.MockedFunction<any>;
-    verifyAccessToken: jest.MockedFunction<any>;
-    validateSession: jest.MockedFunction<any>;
-    revokeUserTokens: jest.MockedFunction<any>;
-  };
 
   const mockUser: UserPublic = {
     id: "user-123",
@@ -51,31 +51,27 @@ describe("Auth Routes", () => {
     // Create a new Fastify instance for each test
     fastify = Fastify({ logger: false });
 
-    // Create mock plugins
-    mockUserPlugin = {
-      create: jest.fn(),
-      get: jest.fn(),
-      getByEmail: jest.fn(),
-      getById: jest.fn(),
-      update: jest.fn(),
-      updateSecurity: jest.fn(),
-      delete: jest.fn(),
-      validatePassword: jest.fn(),
-      addToFamily: jest.fn(),
-      removeFromFamily: jest.fn(),
-    };
-
-    mockAuthPlugin = {
-      generateTokens: jest.fn(),
-      verifyRefreshToken: jest.fn(),
-      verifyAccessToken: jest.fn(),
-      validateSession: jest.fn(),
-      revokeUserTokens: jest.fn(),
-    };
-
     // Decorate the fastify instance with mock plugins
-    fastify.decorate("user", mockUserPlugin);
-    fastify.decorate("auth", mockAuthPlugin);
+    fastify.decorate("user", {
+      create: mockUserCreate,
+      get: mockUserGet,
+      getByEmail: mockUserGetByEmail,
+      getById: mockUserGetById,
+      update: mockUserUpdate,
+      updateSecurity: mockUserUpdateSecurity,
+      delete: mockUserDelete,
+      validatePassword: mockUserValidatePassword,
+      addToFamily: mockUserAddToFamily,
+      removeFromFamily: mockUserRemoveFromFamily,
+    } as any);
+
+    fastify.decorate("auth", {
+      generateTokens: mockGenerateTokens,
+      verifyRefreshToken: mockVerifyRefreshToken,
+      verifyAccessToken: mockVerifyAccessToken,
+      validateSession: mockValidateSession,
+      revokeUserTokens: mockRevokeUserTokens,
+    } as any);
 
     // Register auth routes
     await fastify.register(authRoutes);
@@ -109,9 +105,9 @@ describe("Auth Routes", () => {
         refreshToken: "mock-refresh-token",
       };
 
-      mockUserPlugin.getByEmail.mockResolvedValue(mockUserWithPassword);
-      mockUserPlugin.validatePassword.mockResolvedValue(true);
-      mockAuthPlugin.generateTokens.mockResolvedValue(mockTokens);
+      mockUserGetByEmail.mockResolvedValue(mockUserWithPassword);
+      mockUserValidatePassword.mockResolvedValue(true);
+      mockGenerateTokens.mockResolvedValue(mockTokens);
 
       const response = await fastify.inject({
         method: "POST",
@@ -127,14 +123,12 @@ describe("Auth Routes", () => {
         refreshToken: mockTokens.refreshToken,
       });
 
-      expect(mockUserPlugin.getByEmail).toHaveBeenCalledWith(
-        "test@example.com"
-      );
-      expect(mockUserPlugin.validatePassword).toHaveBeenCalledWith(
+      expect(mockUserGetByEmail).toHaveBeenCalledWith("test@example.com");
+      expect(mockUserValidatePassword).toHaveBeenCalledWith(
         mockUserWithPassword,
         "password123"
       );
-      expect(mockAuthPlugin.generateTokens).toHaveBeenCalledWith(mockUser);
+      expect(mockGenerateTokens).toHaveBeenCalledWith(mockUser);
     });
 
     it("should return 500 for missing email when validation throws", async () => {
@@ -188,7 +182,7 @@ describe("Auth Routes", () => {
     });
 
     it("should return 401 for non-existent user", async () => {
-      mockUserPlugin.getByEmail.mockResolvedValue(null);
+      mockUserGetByEmail.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "POST",
@@ -202,8 +196,8 @@ describe("Auth Routes", () => {
     });
 
     it("should return 401 for invalid password", async () => {
-      mockUserPlugin.getByEmail.mockResolvedValue(mockUserWithPassword);
-      mockUserPlugin.validatePassword.mockResolvedValue(false);
+      mockUserGetByEmail.mockResolvedValue(mockUserWithPassword);
+      mockUserValidatePassword.mockResolvedValue(false);
 
       const response = await fastify.inject({
         method: "POST",
@@ -243,7 +237,7 @@ describe("Auth Routes", () => {
         typeof ValidationUtils
       >;
       mockedValidationUtils.sanitizeEmail.mockReturnValue("test@example.com");
-      mockUserPlugin.getByEmail.mockRejectedValue(new Error("Database error"));
+      mockUserGetByEmail.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "POST",
@@ -269,9 +263,9 @@ describe("Auth Routes", () => {
         refreshToken: "new-refresh-token",
       };
 
-      mockAuthPlugin.verifyRefreshToken.mockResolvedValue(mockTokenPayload);
-      mockUserPlugin.getById.mockResolvedValue(mockUser);
-      mockAuthPlugin.generateTokens.mockResolvedValue(mockNewTokens);
+      mockVerifyRefreshToken.mockResolvedValue(mockTokenPayload);
+      mockUserGetById.mockResolvedValue(mockUser);
+      mockGenerateTokens.mockResolvedValue(mockNewTokens);
 
       const response = await fastify.inject({
         method: "POST",
@@ -287,11 +281,11 @@ describe("Auth Routes", () => {
         refreshToken: mockNewTokens.refreshToken,
       });
 
-      expect(mockAuthPlugin.verifyRefreshToken).toHaveBeenCalledWith(
+      expect(mockVerifyRefreshToken).toHaveBeenCalledWith(
         "valid-refresh-token"
       );
-      expect(mockUserPlugin.getById).toHaveBeenCalledWith("user-123");
-      expect(mockAuthPlugin.generateTokens).toHaveBeenCalledWith(mockUser);
+      expect(mockUserGetById).toHaveBeenCalledWith("user-123");
+      expect(mockGenerateTokens).toHaveBeenCalledWith(mockUser);
     });
 
     it("should return 401 for missing refresh token", async () => {
@@ -307,7 +301,7 @@ describe("Auth Routes", () => {
     });
 
     it("should return 401 for invalid refresh token", async () => {
-      mockAuthPlugin.verifyRefreshToken.mockResolvedValue(null);
+      mockVerifyRefreshToken.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "POST",
@@ -322,8 +316,8 @@ describe("Auth Routes", () => {
 
     it("should return 401 for user not found", async () => {
       const mockTokenPayload = { userId: "user-123" };
-      mockAuthPlugin.verifyRefreshToken.mockResolvedValue(mockTokenPayload);
-      mockUserPlugin.getById.mockResolvedValue(null);
+      mockVerifyRefreshToken.mockResolvedValue(mockTokenPayload);
+      mockUserGetById.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "POST",
@@ -337,7 +331,7 @@ describe("Auth Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockAuthPlugin.verifyRefreshToken.mockRejectedValue(
+      mockVerifyRefreshToken.mockRejectedValue(
         new Error("Token verification error")
       );
 
@@ -390,8 +384,8 @@ describe("Auth Routes", () => {
   describe("GET /validate", () => {
     it("should successfully validate session with valid token", async () => {
       const mockTokenPayload = { userId: "user-123" };
-      mockAuthPlugin.verifyAccessToken.mockResolvedValue(mockTokenPayload);
-      mockAuthPlugin.validateSession.mockResolvedValue(mockUser);
+      mockVerifyAccessToken.mockResolvedValue(mockTokenPayload);
+      mockValidateSession.mockResolvedValue(mockUser);
 
       const response = await fastify.inject({
         method: "GET",
@@ -407,10 +401,8 @@ describe("Auth Routes", () => {
         user: mockUser,
       });
 
-      expect(mockAuthPlugin.verifyAccessToken).toHaveBeenCalledWith(
-        "valid-access-token"
-      );
-      expect(mockAuthPlugin.validateSession).toHaveBeenCalledWith("user-123");
+      expect(mockVerifyAccessToken).toHaveBeenCalledWith("valid-access-token");
+      expect(mockValidateSession).toHaveBeenCalledWith("user-123");
     });
 
     it("should return 401 for missing authorization header", async () => {
@@ -439,7 +431,7 @@ describe("Auth Routes", () => {
     });
 
     it("should return 401 for invalid access token", async () => {
-      mockAuthPlugin.verifyAccessToken.mockResolvedValue(null);
+      mockVerifyAccessToken.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "GET",
@@ -456,8 +448,8 @@ describe("Auth Routes", () => {
 
     it("should return 401 for invalid session", async () => {
       const mockTokenPayload = { userId: "user-123" };
-      mockAuthPlugin.verifyAccessToken.mockResolvedValue(mockTokenPayload);
-      mockAuthPlugin.validateSession.mockResolvedValue(null);
+      mockVerifyAccessToken.mockResolvedValue(mockTokenPayload);
+      mockValidateSession.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "GET",
@@ -473,7 +465,7 @@ describe("Auth Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockAuthPlugin.verifyAccessToken.mockRejectedValue(
+      mockVerifyAccessToken.mockRejectedValue(
         new Error("Token verification error")
       );
 
@@ -521,9 +513,9 @@ describe("Auth Routes", () => {
       >;
       mockedValidationUtils.sanitizeEmail.mockReturnValue("test@example.com");
 
-      mockUserPlugin.getByEmail.mockResolvedValue(mockUserWithPassword);
-      mockUserPlugin.validatePassword.mockResolvedValue(true);
-      mockAuthPlugin.generateTokens.mockResolvedValue({
+      mockUserGetByEmail.mockResolvedValue(mockUserWithPassword);
+      mockUserValidatePassword.mockResolvedValue(true);
+      mockGenerateTokens.mockResolvedValue({
         accessToken: "token",
         refreshToken: "refresh",
       });
@@ -540,15 +532,13 @@ describe("Auth Routes", () => {
       expect(mockedValidationUtils.sanitizeEmail).toHaveBeenCalledWith(
         "  TEST@EXAMPLE.COM  "
       );
-      expect(mockUserPlugin.getByEmail).toHaveBeenCalledWith(
-        "test@example.com"
-      );
+      expect(mockUserGetByEmail).toHaveBeenCalledWith("test@example.com");
     });
 
     it("should not expose password hash in login response", async () => {
-      mockUserPlugin.getByEmail.mockResolvedValue(mockUserWithPassword);
-      mockUserPlugin.validatePassword.mockResolvedValue(true);
-      mockAuthPlugin.generateTokens.mockResolvedValue({
+      mockUserGetByEmail.mockResolvedValue(mockUserWithPassword);
+      mockUserValidatePassword.mockResolvedValue(true);
+      mockGenerateTokens.mockResolvedValue({
         accessToken: "token",
         refreshToken: "refresh",
       });
