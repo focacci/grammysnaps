@@ -1241,6 +1241,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
           <input
             type="text"
             id="familyName"
+            name="familyName"
             value={createFamilyForm.name}
             onChange={(e) =>
               setCreateFamilyForm({
@@ -1273,6 +1274,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
           <input
             type="text"
             id="familyId"
+            name="familyId"
+            autoComplete="off"
             value={joinFamilyId}
             onChange={handleJoinFamilyIdChange}
             placeholder="Enter the family ID to join"
@@ -1332,6 +1335,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
               <div className="form-group">
                 <input
                   type="text"
+                  name="relatedFamilyId"
+                  autoComplete="off"
                   value={addRelatedFamilyId}
                   onChange={(e) => setAddRelatedFamilyId(e.target.value)}
                   placeholder="Enter family ID to add relation"
@@ -1397,6 +1402,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
               <div className="form-group">
                 <input
                   type="email"
+                  name="memberEmail"
+                  autoComplete="email"
                   value={addMemberEmail}
                   onChange={(e) => setAddMemberEmail(e.target.value)}
                   placeholder="Enter email address to add member"
@@ -1562,6 +1569,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type={showPasswords.current ? "text" : "password"}
               id="currentPassword"
+              name="currentPassword"
+              autoComplete="current-password"
               value={securityForm.current_password}
               onChange={(e) =>
                 setSecurityForm({
@@ -1588,6 +1597,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type={showPasswords.new ? "text" : "password"}
               id="newPassword"
+              name="newPassword"
+              autoComplete="new-password"
               value={securityForm.new_password}
               onChange={(e) =>
                 setSecurityForm({
@@ -1615,6 +1626,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type={showPasswords.confirm ? "text" : "password"}
               id="confirmPassword"
+              name="confirmPassword"
+              autoComplete="new-password"
               value={securityForm.confirm_password}
               onChange={(e) =>
                 setSecurityForm({
@@ -1762,6 +1775,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type="text"
               id="editFirstName"
+              name="firstName"
+              autoComplete="given-name"
               value={editForm.first_name || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, first_name: e.target.value || null })
@@ -1775,6 +1790,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type="text"
               id="editMiddleName"
+              name="middleName"
+              autoComplete="additional-name"
               value={editForm.middle_name || ""}
               onChange={(e) =>
                 setEditForm({
@@ -1791,6 +1808,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type="text"
               id="editLastName"
+              name="lastName"
+              autoComplete="family-name"
               value={editForm.last_name || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, last_name: e.target.value || null })
@@ -1804,6 +1823,8 @@ function Account({ user, onUserUpdate }: AccountProps) {
             <input
               type="date"
               id="editBirthday"
+              name="birthday"
+              autoComplete="bday"
               value={editForm.birthday || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, birthday: e.target.value || null })
