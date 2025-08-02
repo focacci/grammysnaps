@@ -65,6 +65,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [inviteKey, setInviteKey] = useState("");
 
   // New user profile fields
   const [firstName, setFirstName] = useState("");
@@ -88,6 +89,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
     lastName: "",
     birthday: "",
     familyInput: "",
+    inviteKey: "",
   });
 
   // Check for password mismatch in real-time
@@ -196,6 +198,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setInviteKey("");
     setFirstName("");
     setMiddleName("");
     setLastName("");
@@ -214,6 +217,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
       lastName: "",
       birthday: "",
       familyInput: "",
+      inviteKey: "",
     });
   };
 
@@ -247,16 +251,39 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
           return;
         }
 
+        // Check if invite key is required (development mode)
+        const isDevelopment = import.meta.env.VITE_NODE_ENV === "dev";
+
+        if (isDevelopment && !inviteKey.trim()) {
+          setError(
+            "An invite key is required to create an account in development mode"
+          );
+          setLoading(false);
+          return;
+        }
+
+        // Prepare signup data
+        const signupData: {
+          email: string;
+          password: string;
+          invite_key?: string;
+        } = {
+          email: emailValidation.sanitized,
+          password,
+        };
+
+        // Add invite key if in development mode
+        if (isDevelopment && inviteKey.trim()) {
+          signupData.invite_key = inviteKey.trim();
+        }
+
         // First step of signup - create user with email and password only
         const response = await fetch(`${API_BASE_URL}/user`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            email: emailValidation.sanitized,
-            password,
-          }),
+          body: JSON.stringify(signupData),
         });
 
         const data = await response.json();
@@ -631,6 +658,28 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                   <div className="field-error">
                     {fieldErrors.confirmPassword}
                   </div>
+                )}
+              </div>
+            )}
+
+            {!isLogin && import.meta.env.VITE_NODE_ENV === "dev" && (
+              <div className="form-group">
+                <label htmlFor="inviteKey">Invite Key *</label>
+                <input
+                  type="text"
+                  id="inviteKey"
+                  name="inviteKey"
+                  autoComplete="off"
+                  value={inviteKey}
+                  onChange={(e) => {
+                    setInviteKey(e.target.value.trim());
+                    setFieldErrors((prev) => ({ ...prev, inviteKey: "" }));
+                  }}
+                  required
+                  placeholder="Enter your invite key"
+                />
+                {fieldErrors.inviteKey && (
+                  <div className="field-error">{fieldErrors.inviteKey}</div>
                 )}
               </div>
             )}
