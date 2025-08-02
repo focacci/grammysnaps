@@ -33,7 +33,8 @@ describe("Image Routes", () => {
     filename: "test.jpg",
     tags: ["tag1", "tag2"],
     family_ids: ["family-1", "family-2"],
-    s3_url: "https://grammysnaps.s3.us-east-2.amazonaws.com/family-photos/uuid/test.jpg",
+    s3_url:
+      "https://grammysnaps.s3.us-east-2.amazonaws.com/family-photos/uuid/test.jpg",
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
@@ -191,11 +192,17 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(response.headers["content-disposition"]).toBe('attachment; filename="test.jpg"');
+      expect(response.headers["content-disposition"]).toBe(
+        'attachment; filename="test.jpg"'
+      );
       expect(response.headers["content-type"]).toBe("application/octet-stream");
-      expect(response.headers["content-length"]).toBe(mockBuffer.length.toString());
+      expect(response.headers["content-length"]).toBe(
+        mockBuffer.length.toString()
+      );
       expect(response.rawPayload).toEqual(mockBuffer);
-      expect(mockS3Download).toHaveBeenCalledWith("family-photos/uuid/test.jpg");
+      expect(mockS3Download).toHaveBeenCalledWith(
+        "family-photos/uuid/test.jpg"
+      );
     });
 
     it("should return 404 when image not found", async () => {
@@ -220,7 +227,9 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Image file not found in storage" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: "Image file not found in storage",
+      });
     });
 
     it("should handle S3 download errors", async () => {
@@ -355,9 +364,9 @@ describe("Image Routes", () => {
     });
 
     it("should handle valid update with optional title", async () => {
-      const updateDataNoTitle = { 
-        tags: ["550e8400-e29b-41d4-a716-446655440010"], 
-        family_ids: ["550e8400-e29b-41d4-a716-446655440001"] 
+      const updateDataNoTitle = {
+        tags: ["550e8400-e29b-41d4-a716-446655440010"],
+        family_ids: ["550e8400-e29b-41d4-a716-446655440001"],
       };
       const updatedImage = { ...mockImage, ...updateDataNoTitle };
       mockImageGetById.mockResolvedValue(mockImage);
@@ -373,10 +382,10 @@ describe("Image Routes", () => {
     });
 
     it("should handle empty tags array", async () => {
-      const updateDataEmptyTags = { 
-        title: "Test", 
-        tags: [], 
-        family_ids: ["550e8400-e29b-41d4-a716-446655440001"] 
+      const updateDataEmptyTags = {
+        title: "Test",
+        tags: [],
+        family_ids: ["550e8400-e29b-41d4-a716-446655440001"],
       };
       const updatedImage = { ...mockImage, ...updateDataEmptyTags };
       mockImageGetById.mockResolvedValue(mockImage);
@@ -392,10 +401,10 @@ describe("Image Routes", () => {
     });
 
     it("should reject empty family_ids array due to validation", async () => {
-      const updateDataEmptyFamilies = { 
-        title: "Test", 
-        tags: ["550e8400-e29b-41d4-a716-446655440010"], 
-        family_ids: [] 
+      const updateDataEmptyFamilies = {
+        title: "Test",
+        tags: ["550e8400-e29b-41d4-a716-446655440010"],
+        family_ids: [],
       };
 
       const response = await fastify.inject({
