@@ -32,6 +32,10 @@ export const AUTH_ERRORS = {
 export const USER_ERRORS = {
   ACCOUNT_EXISTS:
     "An account with this email address already exists. Please use a different email or try logging in instead.",
+  INVITE_KEY_REQUIRED:
+    "An invite key is required to create an account in the development environment.",
+  INVITE_KEY_INVALID:
+    "The invite key you provided is invalid. Please check with your administrator.",
   CREATE_FAILED:
     "Unable to create your account at this time. Please try again later.",
   RETRIEVE_FAILED:

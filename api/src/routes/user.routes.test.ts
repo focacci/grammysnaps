@@ -116,6 +116,97 @@ describe("User Routes", () => {
       updated_at: "2024-01-01T00:00:00Z",
     };
 
+    describe("in development environment", () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      const originalInviteKey = process.env.DEV_INVITE_KEY;
+
+      beforeEach(() => {
+        process.env.NODE_ENV = "dev";
+        process.env.DEV_INVITE_KEY = "dev123";
+      });
+
+      afterEach(() => {
+        process.env.NODE_ENV = originalNodeEnv;
+        process.env.DEV_INVITE_KEY = originalInviteKey;
+      });
+
+      it("should require invite key", async () => {
+        const response = await fastify.inject({
+          method: "POST",
+          url: "/",
+          payload: validUserInput,
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(JSON.parse(response.payload)).toEqual({
+          error: USER_ERRORS.INVITE_KEY_REQUIRED,
+        });
+      });
+
+      it("should reject invalid invite key", async () => {
+        const userInputWithInvalidKey: UserInput = {
+          ...validUserInput,
+          invite_key: "invalid-key",
+        };
+
+        const response = await fastify.inject({
+          method: "POST",
+          url: "/",
+          payload: userInputWithInvalidKey,
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(JSON.parse(response.payload)).toEqual({
+          error: USER_ERRORS.INVITE_KEY_INVALID,
+        });
+      });
+
+      it("should create user with valid invite key", async () => {
+        mockUserCreate.mockResolvedValue(mockUserResponse);
+
+        const userInputWithValidKey: UserInput = {
+          ...validUserInput,
+          invite_key: "dev123",
+        };
+
+        const response = await fastify.inject({
+          method: "POST",
+          url: "/",
+          payload: userInputWithValidKey,
+        });
+
+        expect(response.statusCode).toBe(201);
+        expect(JSON.parse(response.payload)).toEqual(mockUserResponse);
+        expect(mockUserCreate).toHaveBeenCalledWith(userInputWithValidKey);
+      });
+    });
+
+    describe("in production environment", () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+
+      beforeEach(() => {
+        process.env.NODE_ENV = "production";
+      });
+
+      afterEach(() => {
+        process.env.NODE_ENV = originalNodeEnv;
+      });
+
+      it("should create user without invite key", async () => {
+        mockUserCreate.mockResolvedValue(mockUserResponse);
+
+        const response = await fastify.inject({
+          method: "POST",
+          url: "/",
+          payload: validUserInput,
+        });
+
+        expect(response.statusCode).toBe(201);
+        expect(JSON.parse(response.payload)).toEqual(mockUserResponse);
+        expect(mockUserCreate).toHaveBeenCalledWith(validUserInput);
+      });
+    });
+
     it("should create user successfully", async () => {
       mockUserCreate.mockResolvedValue(mockUserResponse);
 
