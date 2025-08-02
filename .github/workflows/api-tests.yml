@@ -1,4 +1,4 @@
-name: API Tests
+name: API
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   lint:
-    name: API - Linter
+    name: Linter
     runs-on: ubuntu-latest
 
     strategy:
@@ -40,7 +40,7 @@ jobs:
         run: npm run lint
 
   test:
-    name: API - Unit Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
 
     strategy:
