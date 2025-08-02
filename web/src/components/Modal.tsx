@@ -68,12 +68,6 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onRightAction) {
@@ -109,7 +103,7 @@ const Modal: React.FC<ModalProps> = ({
   const isFormMode = mode === "form";
 
   const modalContent = (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
+    <div className="modal-overlay">
       <div
         className={`modal-content ${mode === "preview" ? "modal-preview" : ""}`}
         style={{ maxWidth }}
@@ -226,7 +220,7 @@ const Modal: React.FC<ModalProps> = ({
   );
 
   const confirmationDialog = (
-    <div className="modal-overlay" onClick={handleDeleteCancel}>
+    <div className="modal-overlay">
       <div
         className="modal-content"
         style={{ maxWidth }}

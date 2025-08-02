@@ -385,15 +385,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
   };
 
   return (
-    <div
-      className="auth-overlay"
-      onClick={(e) => {
-        // Close modal when clicking on the backdrop (overlay itself)
-        if (e.target === e.currentTarget) {
-          onCancel();
-        }
-      }}
-    >
+    <div className="auth-overlay">
       <div className="auth-modal">
         <div className="auth-header">
           <h2>
