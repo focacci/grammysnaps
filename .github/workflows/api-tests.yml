@@ -1,32 +1,29 @@
-name: API Tests
+name: API
 
 on:
   push:
-    branches: [main, testing]
+    branches: ["main"]
     paths:
       - "api/**"
       - ".github/workflows/api-tests.yml"
   pull_request:
-    branches: [main]
+    branches: ["*"]
     paths:
       - "api/**"
 
 jobs:
-  test:
+  lint:
+    name: Linter
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20.x
           cache: "npm"
           cache-dependency-path: api/package-lock.json
 
@@ -37,6 +34,25 @@ jobs:
       - name: Run linter
         working-directory: ./api
         run: npm run lint
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./api
+        run: npm ci
 
       - name: Run tests
         working-directory: ./api

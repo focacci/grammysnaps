@@ -5,7 +5,7 @@ import { UserPublic } from "../types/user.types";
 
 // Mock dependencies
 jest.mock("jsonwebtoken");
-jest.mock("fastify-plugin", () => (plugin: any, options?: any) => plugin);
+jest.mock("fastify-plugin", () => (plugin: any) => plugin);
 
 describe("Auth Plugin", () => {
   let mockFastify: jest.Mocked<FastifyInstance>;

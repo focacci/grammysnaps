@@ -7,7 +7,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const families = await fastify.family.get();
       return families;
-    } catch (error) {
+    } catch {
       reply.code(500).send({ error: "Failed to fetch families" });
     }
   });

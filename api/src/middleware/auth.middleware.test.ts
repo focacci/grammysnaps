@@ -5,7 +5,6 @@ import {
   createMockReply,
   createMockUserPayload,
   expectErrorResponse,
-  expectSuccessResponse,
 } from "../../test-utils";
 
 describe("requireAuth middleware", () => {
