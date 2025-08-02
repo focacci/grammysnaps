@@ -361,6 +361,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 <input
                   type="text"
                   id="firstName"
+                  name="firstName"
+                  autoComplete="given-name"
                   value={firstName}
                   onChange={(e) =>
                     handleTextFieldChange(
@@ -382,6 +384,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 <input
                   type="text"
                   id="middleName"
+                  name="middleName"
+                  autoComplete="additional-name"
                   value={middleName}
                   onChange={(e) =>
                     handleTextFieldChange(
@@ -400,6 +404,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 <input
                   type="text"
                   id="lastName"
+                  name="lastName"
+                  autoComplete="family-name"
                   value={lastName}
                   onChange={(e) =>
                     handleTextFieldChange(
@@ -421,6 +427,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                 <input
                   type="date"
                   id="birthday"
+                  name="birthday"
+                  autoComplete="bday"
                   value={birthday}
                   onChange={(e) => handleBirthdayChange(e.target.value)}
                   placeholder="Select your birthday (optional)"
@@ -436,6 +444,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                   <input
                     type="text"
                     id="familyInput"
+                    name="familyId"
+                    autoComplete="off"
                     value={familyInput}
                     onChange={(e) => {
                       const sanitized = ClientValidationUtils.sanitizeInput(
@@ -489,6 +499,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
             <input
               type="email"
               id="email"
+              name="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
               required
@@ -504,6 +516,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
             <input
               type="password"
               id="password"
+              name="password"
+              autoComplete={isLogin ? "current-password" : "new-password"}
               value={password}
               onChange={(e) => handlePasswordChange(e.target.value)}
               required
@@ -521,6 +535,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
               <input
                 type="password"
                 id="confirmPassword"
+                name="confirmPassword"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
