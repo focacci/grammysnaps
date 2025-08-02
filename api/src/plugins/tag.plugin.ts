@@ -120,5 +120,5 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
 export default fp(tagPlugin, {
   name: "tag",
-  dependencies: ["@fastify/postgres"],
+  // dependencies: ["@fastify/postgres"], // commented out for testing
 });
