@@ -280,7 +280,4 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
   });
 };
 
-export default fp(s3Plugin, {
-  name: "s3",
-  dependencies: [],
-});
+export default fp(s3Plugin, { name: "s3" });
