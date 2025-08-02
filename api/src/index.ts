@@ -18,6 +18,12 @@ import authRoutes from "./routes/auth.routes";
 const server: FastifyInstance = Fastify({ logger: true });
 
 const main = async () => {
+  // Load environment variables from .env file in development only
+  if (!["dev", "production"].includes(process.env.NODE_ENV || "local")) {
+    const { config } = await import("dotenv");
+    config();
+  }
+
   // Add CORS headers manually
   server.addHook("preHandler", async (request, reply) => {
     const allowedOrigins = [
