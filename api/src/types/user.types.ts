@@ -23,6 +23,7 @@ export interface UserInput {
   birthday: string | null;
   families: string[];
   profile_picture_url?: string;
+  invite_key?: string;
 }
 
 export interface UserUpdate {
