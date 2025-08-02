@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from "fastify";
 import imageRoutes from "./image.routes";
 import { Image, ImageInput } from "../types/image.types";
+import { IMAGE_ERRORS } from "../types/errors";
 
 const mockImageGet = jest.fn();
 const mockImageGetById = jest.fn();
@@ -155,7 +156,9 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Image not found" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: IMAGE_ERRORS.NOT_FOUND,
+      });
     });
 
     it("should reject invalid UUID format", async () => {
@@ -214,7 +217,9 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Image not found" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: IMAGE_ERRORS.NOT_FOUND,
+      });
     });
 
     it("should return 404 when image has no s3_url", async () => {
@@ -228,7 +233,7 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.body)).toEqual({
-        message: "Image file not found in storage",
+        message: IMAGE_ERRORS.FILE_NOT_FOUND,
       });
     });
 
@@ -243,7 +248,7 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.message).toBe("Failed to download image");
+      expect(responseBody.message).toBe(IMAGE_ERRORS.DOWNLOAD_FAILED);
       expect(responseBody.error).toBeDefined();
     });
 
@@ -280,7 +285,7 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body)).toEqual({
-        message: "Request must be multipart/form-data",
+        message: IMAGE_ERRORS.MULTIPART_REQUIRED,
       });
     });
 
@@ -337,7 +342,9 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Image not found" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: IMAGE_ERRORS.NOT_FOUND,
+      });
     });
 
     it("should reject invalid UUID format", async () => {
@@ -465,7 +472,7 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
-        message: "Failed to get images for family",
+        message: IMAGE_ERRORS.GET_BY_FAMILY_FAILED,
         error: "Database error",
       });
     });
@@ -513,7 +520,9 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Image not found" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: IMAGE_ERRORS.NOT_FOUND,
+      });
     });
 
     it("should continue deletion even if S3 delete fails", async () => {
@@ -542,7 +551,7 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
-        message: "Failed to delete image",
+        message: IMAGE_ERRORS.DELETE_FAILED,
         error: {},
       });
     });
@@ -673,7 +682,7 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
-        message: "Failed to get images for families",
+        message: IMAGE_ERRORS.GET_BY_FAMILIES_FAILED,
         error: "Database error",
       });
     });

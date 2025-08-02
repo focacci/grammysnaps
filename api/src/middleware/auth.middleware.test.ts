@@ -6,6 +6,7 @@ import {
   createMockUserPayload,
   expectErrorResponse,
 } from "../../test-utils";
+import { AUTH_ERRORS } from "../types/errors";
 
 describe("requireAuth middleware", () => {
   let mockRequest: FastifyRequest;
@@ -23,7 +24,11 @@ describe("requireAuth middleware", () => {
 
       await requireAuth(mockRequest, mockReply);
 
-      expectErrorResponse(mockReply, 401, "Access token required");
+      expectErrorResponse(
+        mockReply,
+        401,
+        AUTH_ERRORS.MIDDLEWARE_TOKEN_REQUIRED
+      );
     });
   });
 
@@ -35,7 +40,11 @@ describe("requireAuth middleware", () => {
 
       await requireAuth(mockRequest, mockReply);
 
-      expectErrorResponse(mockReply, 401, "Access token required");
+      expectErrorResponse(
+        mockReply,
+        401,
+        AUTH_ERRORS.MIDDLEWARE_TOKEN_REQUIRED
+      );
     });
   });
 
@@ -75,7 +84,11 @@ describe("requireAuth middleware", () => {
       expect(mockRequest.server.auth.verifyAccessToken).toHaveBeenCalledWith(
         validToken
       );
-      expectErrorResponse(mockReply, 401, "Invalid or expired token");
+      expectErrorResponse(
+        mockReply,
+        401,
+        AUTH_ERRORS.MIDDLEWARE_SESSION_EXPIRED
+      );
     });
 
     it("should return 401 when token verification returns undefined", async () => {
@@ -88,7 +101,11 @@ describe("requireAuth middleware", () => {
       expect(mockRequest.server.auth.verifyAccessToken).toHaveBeenCalledWith(
         validToken
       );
-      expectErrorResponse(mockReply, 401, "Invalid or expired token");
+      expectErrorResponse(
+        mockReply,
+        401,
+        AUTH_ERRORS.MIDDLEWARE_SESSION_EXPIRED
+      );
     });
 
     it("should handle token verification errors gracefully", async () => {
@@ -106,7 +123,11 @@ describe("requireAuth middleware", () => {
         "Auth middleware error:",
         error
       );
-      expectErrorResponse(mockReply, 500, "Authentication error");
+      expectErrorResponse(
+        mockReply,
+        500,
+        AUTH_ERRORS.MIDDLEWARE_SERVICE_UNAVAILABLE
+      );
     });
 
     it("should not modify request.user when token verification fails", async () => {
@@ -145,7 +166,11 @@ describe("requireAuth middleware", () => {
 
       await requireAuth(mockRequest, mockReply);
 
-      expectErrorResponse(mockReply, 401, "Access token required");
+      expectErrorResponse(
+        mockReply,
+        401,
+        AUTH_ERRORS.MIDDLEWARE_TOKEN_REQUIRED
+      );
     });
 
     it("should handle empty Bearer token", async () => {

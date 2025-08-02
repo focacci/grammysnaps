@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import tagRoutes from "./tag.routes";
 import { Tag } from "../types/tag.types";
 import { TagInput, TagUpdateInput } from "../plugins/tag.plugin";
+import { TAG_ERRORS } from "../types/errors";
 
 const mockTagCreate = jest.fn();
 const mockTagGet = jest.fn();
@@ -163,7 +164,9 @@ describe("Tag Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Tag not found" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: TAG_ERRORS.NOT_FOUND,
+      });
     });
 
     it("should reject invalid UUID format", async () => {
@@ -411,7 +414,9 @@ describe("Tag Routes", () => {
       });
 
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.body)).toEqual({ message: "Tag not found" });
+      expect(JSON.parse(response.body)).toEqual({
+        message: TAG_ERRORS.NOT_FOUND,
+      });
     });
 
     it("should reject invalid UUID format in params", async () => {
@@ -575,7 +580,7 @@ describe("Tag Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.message).toBe("Failed to delete tag");
+      expect(responseBody.message).toBe(TAG_ERRORS.DELETE_FAILED);
       expect(responseBody.error).toBeDefined();
     });
 

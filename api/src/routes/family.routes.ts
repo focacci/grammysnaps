@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from "fastify";
 import { FamilyInput, FamilyUpdate } from "../types/family.types";
+import { FAMILY_ERRORS } from "../types/errors";
 
 const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Get all families (admin only)
@@ -8,7 +9,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const families = await fastify.family.get();
       return families;
     } catch {
-      reply.code(500).send({ error: "Failed to fetch families" });
+      reply.code(500).send({
+        error: FAMILY_ERRORS.RETRIEVE_FAILED,
+      });
     }
   });
 
@@ -20,7 +23,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       return families;
     } catch (error) {
       fastify.log.error(error);
-      reply.code(500).send({ error: "Failed to fetch user families" });
+      reply.code(500).send({
+        error: FAMILY_ERRORS.RETRIEVE_USER_FAMILIES_FAILED,
+      });
     }
   });
 
@@ -31,13 +36,17 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const family = await fastify.family.getById(id);
 
       if (!family) {
-        return reply.code(404).send({ error: "Family not found" });
+        return reply.code(404).send({
+          error: FAMILY_ERRORS.NOT_FOUND,
+        });
       }
 
       return family;
     } catch (error) {
       fastify.log.error(error);
-      reply.code(500).send({ error: "Failed to fetch family" });
+      reply.code(500).send({
+        error: FAMILY_ERRORS.GET_BY_ID_FAILED,
+      });
     }
   });
 
@@ -49,7 +58,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       return members;
     } catch (error) {
       fastify.log.error(error);
-      reply.code(500).send({ error: "Failed to fetch family members" });
+      reply.code(500).send({
+        error: FAMILY_ERRORS.GET_MEMBERS_FAILED,
+      });
     }
   });
 
@@ -60,11 +71,13 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const { owner_id, ...familyInput } = familyData;
 
       if (!owner_id) {
-        return reply.code(400).send({ error: "owner_id is required" });
+        return reply.code(400).send({
+          error: FAMILY_ERRORS.OWNER_ID_REQUIRED,
+        });
       }
 
       if (!familyInput.name || familyInput.name.trim().length === 0) {
-        return reply.code(400).send({ error: "Family name is required" });
+        return reply.code(400).send({ error: FAMILY_ERRORS.NAME_REQUIRED });
       }
 
       const family = await fastify.family.create(familyInput, owner_id);
@@ -73,7 +86,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to create family",
+          error instanceof Error ? error.message : FAMILY_ERRORS.CREATE_FAILED,
       });
     }
   });
@@ -87,7 +100,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const family = await fastify.family.update(id, updateData);
 
       if (!family) {
-        return reply.code(404).send({ error: "Family not found" });
+        return reply.code(404).send({
+          error: FAMILY_ERRORS.UPDATE_NOT_FOUND,
+        });
       }
 
       return family;
@@ -95,7 +110,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to update family",
+          error instanceof Error ? error.message : FAMILY_ERRORS.UPDATE_FAILED,
       });
     }
   });
@@ -111,7 +126,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to delete family",
+          error instanceof Error ? error.message : FAMILY_ERRORS.DELETE_FAILED,
       });
     }
   });
@@ -123,7 +138,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const { user_id } = request.body as { user_id: string };
 
       if (!user_id) {
-        return reply.code(400).send({ error: "user_id is required" });
+        return reply.code(400).send({ error: FAMILY_ERRORS.USER_ID_REQUIRED });
       }
 
       await fastify.family.addMember(id, user_id);
@@ -131,7 +146,10 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: error instanceof Error ? error.message : "Failed to add member",
+        error:
+          error instanceof Error
+            ? error.message
+            : FAMILY_ERRORS.ADD_MEMBER_FAILED,
       });
     }
   });
@@ -147,7 +165,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to remove member",
+          error instanceof Error
+            ? error.message
+            : FAMILY_ERRORS.REMOVE_MEMBER_FAILED,
       });
     }
   });
@@ -161,7 +181,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: "Failed to fetch related families",
+        error: FAMILY_ERRORS.GET_RELATED_FAILED,
       });
     }
   });
@@ -173,7 +193,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const { family_id } = request.body as { family_id: string };
 
       if (!family_id) {
-        return reply.code(400).send({ error: "family_id is required" });
+        return reply
+          .code(400)
+          .send({ error: FAMILY_ERRORS.FAMILY_ID_REQUIRED });
       }
 
       await fastify.family.addRelatedFamily(id, family_id);
@@ -184,7 +206,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         error:
           error instanceof Error
             ? error.message
-            : "Failed to add related family",
+            : FAMILY_ERRORS.ADD_RELATED_FAILED,
       });
     }
   });
@@ -205,7 +227,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         error:
           error instanceof Error
             ? error.message
-            : "Failed to remove related family",
+            : FAMILY_ERRORS.REMOVE_RELATED_FAILED,
       });
     }
   });

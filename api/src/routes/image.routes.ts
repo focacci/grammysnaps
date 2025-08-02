@@ -2,6 +2,7 @@ import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import { ImageInput } from "../types/image.types";
 import { MultipartFile } from "@fastify/multipart";
 import { v4 as uuidv4 } from "uuid";
+import { IMAGE_ERRORS } from "../types/errors";
 
 interface GetImageParams {
   imageId: string;
@@ -59,7 +60,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       const { imageId } = request.params as GetImageParams;
       const image = await fastify.image.getById(imageId);
       if (!image) {
-        return reply.status(404).send({ message: "Image not found" });
+        return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
       }
       return reply.status(200).send({ image });
     }
@@ -79,13 +80,13 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         // Get the image to extract S3 key
         const image = await fastify.image.getById(imageId);
         if (!image) {
-          return reply.status(404).send({ message: "Image not found" });
+          return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
         }
 
         if (!image.s3_url) {
           return reply
             .status(404)
-            .send({ message: "Image file not found in storage" });
+            .send({ message: IMAGE_ERRORS.FILE_NOT_FOUND });
         }
 
         // Extract S3 key from the public URL
@@ -106,9 +107,10 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.send(buffer);
       } catch (err) {
         fastify.log.error(err);
-        return reply
-          .status(500)
-          .send({ message: "Failed to download image", error: err });
+        return reply.status(500).send({
+          message: IMAGE_ERRORS.DOWNLOAD_FAILED,
+          error: err,
+        });
       }
     }
   );
@@ -120,7 +122,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       // Check if request is multipart
       if (!request.isMultipart()) {
         return reply.status(400).send({
-          message: "Request must be multipart/form-data",
+          message: IMAGE_ERRORS.MULTIPART_REQUIRED,
         });
       }
 
@@ -132,7 +134,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
 
       try {
         // With attachFieldsToBody: true, files are in request.body too
-        const body = request.body as any;
+        const body = request.body as Record<string, unknown>;
         fastify.log.info(`Request body keys:`, Object.keys(body || {}));
 
         // Find the file field in the body
@@ -152,17 +154,31 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
 
           // Get title from body
           if (body.title) {
-            const titleValue = body.title.value || body.title;
-            title = titleValue && titleValue !== "" ? titleValue : undefined;
+            const titleData = body.title as { value?: string } | string;
+            const titleValue =
+              typeof titleData === "object" && titleData.value
+                ? titleData.value
+                : titleData;
+            title =
+              typeof titleValue === "string" && titleValue !== ""
+                ? titleValue
+                : undefined;
             fastify.log.info(`Parsed title: ${title}`);
           }
 
           // Get tags from body
           if (body.tags) {
             try {
-              const tagsValue = body.tags.value || body.tags;
+              const tagsData = body.tags as { value?: string } | string;
+              const tagsValue =
+                typeof tagsData === "object" && tagsData.value
+                  ? tagsData.value
+                  : tagsData;
               fastify.log.info(`Raw tags value: ${tagsValue}`);
-              tags = tagsValue && tagsValue !== "" ? JSON.parse(tagsValue) : [];
+              tags =
+                typeof tagsValue === "string" && tagsValue !== ""
+                  ? JSON.parse(tagsValue)
+                  : [];
               fastify.log.info(`Parsed tags: ${JSON.stringify(tags)}`);
             } catch (err) {
               fastify.log.warn("Failed to parse tags:", err);
@@ -173,10 +189,18 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           // Get family_ids from body
           if (body.family_ids) {
             try {
-              const familyIdsValue = body.family_ids.value || body.family_ids;
+              const familyIdsData = body.family_ids as
+                | { value?: string }
+                | string;
+              const familyIdsValue =
+                typeof familyIdsData === "object" && familyIdsData.value
+                  ? familyIdsData.value
+                  : familyIdsData;
               fastify.log.info(`Raw family_ids value: ${familyIdsValue}`);
               family_ids =
-                familyIdsValue && familyIdsValue !== ""
+                familyIdsValue &&
+                typeof familyIdsValue === "string" &&
+                familyIdsValue !== ""
                   ? JSON.parse(familyIdsValue)
                   : [];
               fastify.log.info(
@@ -191,20 +215,20 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error) {
         fastify.log.error("Error parsing multipart data:", error);
         return reply.status(400).send({
-          message: "Error processing form data",
+          message: IMAGE_ERRORS.PROCESSING_ERROR,
         });
       }
 
       if (!fileData) {
         return reply.status(400).send({
-          message: "No file uploaded. Please provide an image file.",
+          message: IMAGE_ERRORS.NO_FILE,
         });
       }
 
       // Validate family_ids
       if (!family_ids || family_ids.length === 0) {
         return reply.status(400).send({
-          message: "At least one family must be associated with the image.",
+          message: IMAGE_ERRORS.FAMILY_REQUIRED,
         });
       }
 
@@ -218,8 +242,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       ];
       if (!allowedTypes.includes(fileData.mimetype)) {
         return reply.status(400).send({
-          message:
-            "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
+          message: IMAGE_ERRORS.INVALID_TYPE,
         });
       }
 
@@ -228,7 +251,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (buffer.length > maxSize) {
         return reply.status(400).send({
-          message: "File too large. Maximum size is 10MB.",
+          message: IMAGE_ERRORS.TOO_LARGE,
         });
       }
 
@@ -270,7 +293,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (error) {
       fastify.log.error("Error uploading image:", error);
       return reply.status(500).send({
-        message: "Failed to upload image",
+        message: IMAGE_ERRORS.UPLOAD_FAILED,
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
@@ -291,7 +314,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       // First get the existing image to preserve s3_url and filename
       const existingImage = await fastify.image.getById(imageId);
       if (!existingImage) {
-        return reply.status(404).send({ message: "Image not found" });
+        return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
       }
 
       // Update with preserved s3_url and filename
@@ -327,7 +350,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error) {
         fastify.log.error("Error getting images by family:", error);
         return reply.status(500).send({
-          message: "Failed to get images for family",
+          message: IMAGE_ERRORS.GET_BY_FAMILY_FAILED,
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
@@ -347,7 +370,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         // First get the image to extract S3 key
         const image = await fastify.image.getById(imageId);
         if (!image) {
-          return reply.status(404).send({ message: "Image not found" });
+          return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
         }
 
         // Delete from S3 if s3_url exists
@@ -371,9 +394,10 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(204).send();
       } catch (err) {
         fastify.log.error(err);
-        return reply
-          .status(500)
-          .send({ message: "Failed to delete image", error: err });
+        return reply.status(500).send({
+          message: IMAGE_ERRORS.DELETE_FAILED,
+          error: err,
+        });
       }
     }
   );
@@ -414,7 +438,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error) {
         fastify.log.error("Error getting images by families:", error);
         return reply.status(500).send({
-          message: "Failed to get images for families",
+          message: IMAGE_ERRORS.GET_BY_FAMILIES_FAILED,
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
