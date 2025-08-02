@@ -1,5 +1,6 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import { TagInput, TagUpdateInput } from "../plugins/tag.plugin";
+import { TAG_ERRORS } from "../types/errors";
 
 const createTagRequestBodySchema = {
   type: "object",
@@ -84,7 +85,7 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
       const { tagId } = request.params as GetTagParams;
       const tag = await fastify.tag.getById(tagId);
       if (!tag) {
-        return reply.status(404).send({ message: "Tag not found" });
+        return reply.status(404).send({ message: TAG_ERRORS.NOT_FOUND });
       }
       return reply.status(200).send({ tag });
     }
@@ -123,7 +124,7 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
         family_id,
       });
       if (!updatedTag) {
-        return reply.status(404).send({ message: "Tag not found" });
+        return reply.status(404).send({ message: TAG_ERRORS.NOT_FOUND });
       }
       return reply.status(200).send({ tag: updatedTag });
     }
@@ -141,13 +142,10 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(204).send();
       } catch (err) {
         fastify.log.error(err);
-        return reply
-          .status(500)
-          .send({
-            message:
-              "Unable to delete the tag at this time. Please try again later.",
-            error: err,
-          });
+        return reply.status(500).send({
+          message: TAG_ERRORS.DELETE_FAILED,
+          error: err,
+        });
       }
     }
   );

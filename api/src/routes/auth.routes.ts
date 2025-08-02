@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 // import fastifyRateLimit from "@fastify/rate-limit";
 import { LoginInput } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
+import { AUTH_ERRORS } from "../types/errors";
 
 interface RefreshTokenBody {
   refreshToken: string;
@@ -20,7 +21,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
     keyGenerator: (req: any) => req.ip, // Rate limit per IP
     errorResponseBuilder: (req: any, context: any) => {
       return {
-        error: "Too many authentication attempts, please try again later.",
+        error: AUTH_ERRORS.RATE_LIMIT,
         expiresIn: Math.round(context.ttl / 1000),
       };
     },
@@ -43,19 +44,23 @@ export default async function authRoutes(fastify: FastifyInstance) {
         if (!password || typeof password !== "string") {
           return reply
             .status(400)
-            .send({ error: "Password is required and must be a valid string" });
+            .send({ error: AUTH_ERRORS.PASSWORD_REQUIRED });
         }
 
         // Get user with password hash for validation
         const user = await fastify.user.getByEmail(sanitizedEmail);
         if (!user) {
-          return reply.status(401).send({ error: "Invalid email or password" });
+          return reply
+            .status(401)
+            .send({ error: AUTH_ERRORS.INVALID_CREDENTIALS });
         }
 
         // Validate password
         const isValid = await fastify.user.validatePassword(user, password);
         if (!isValid) {
-          return reply.status(401).send({ error: "Invalid email or password" });
+          return reply
+            .status(401)
+            .send({ error: AUTH_ERRORS.INVALID_CREDENTIALS });
         }
 
         // Convert to public user (remove password hash)
@@ -79,12 +84,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
         if (error instanceof Error && error.message.includes("Invalid")) {
           return reply.status(400).send({ error: error.message });
         }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to log in at this time. Please check your credentials and try again.",
-          });
+        return reply.status(500).send({
+          error: AUTH_ERRORS.LOGIN_FAILED,
+        });
       }
     }
   );
@@ -100,30 +102,23 @@ export default async function authRoutes(fastify: FastifyInstance) {
         const { refreshToken } = request.body;
 
         if (!refreshToken) {
-          return reply
-            .status(401)
-            .send({
-              error: "Refresh token is required to get a new access token",
-            });
+          return reply.status(401).send({
+            error: AUTH_ERRORS.REFRESH_TOKEN_REQUIRED,
+          });
         }
 
         // Verify refresh token
         const payload = await fastify.auth.verifyRefreshToken(refreshToken);
         if (!payload) {
-          return reply
-            .status(401)
-            .send({ error: "Your session has expired. Please log in again." });
+          return reply.status(401).send({ error: AUTH_ERRORS.SESSION_EXPIRED });
         }
 
         // Get current user data
         const user = await fastify.user.getById(payload.userId);
         if (!user) {
-          return reply
-            .status(401)
-            .send({
-              error:
-                "Your account no longer exists. Please contact support if this is unexpected.",
-            });
+          return reply.status(401).send({
+            error: AUTH_ERRORS.ACCOUNT_NOT_FOUND,
+          });
         }
 
         // Generate new tokens
@@ -137,11 +132,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
         });
       } catch (error) {
         fastify.log.error(error);
-        return reply
-          .status(500)
-          .send({
-            error: "Unable to refresh your session. Please log in again.",
-          });
+        return reply.status(500).send({
+          error: AUTH_ERRORS.REFRESH_FAILED,
+        });
       }
     }
   );
@@ -163,9 +156,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
         return reply.send({ message: "Logged out successfully" });
       } catch (error) {
         fastify.log.error(error);
-        return reply
-          .status(500)
-          .send({ error: "Unable to log out at this time. Please try again." });
+        return reply.status(500).send({ error: AUTH_ERRORS.LOGOUT_FAILED });
       }
     }
   );
@@ -177,40 +168,31 @@ export default async function authRoutes(fastify: FastifyInstance) {
       try {
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return reply
-            .status(401)
-            .send({
-              error: "Authentication token is required. Please log in first.",
-            });
+          return reply.status(401).send({
+            error: AUTH_ERRORS.TOKEN_REQUIRED,
+          });
         }
 
         const token = authHeader.substring(7);
         const payload = await fastify.auth.verifyAccessToken(token);
 
         if (!payload) {
-          return reply
-            .status(401)
-            .send({ error: "Your session has expired. Please log in again." });
+          return reply.status(401).send({ error: AUTH_ERRORS.SESSION_EXPIRED });
         }
 
         const user = await fastify.auth.validateSession(payload.userId);
         if (!user) {
-          return reply
-            .status(401)
-            .send({
-              error: "Your session is no longer valid. Please log in again.",
-            });
+          return reply.status(401).send({
+            error: AUTH_ERRORS.SESSION_INVALID,
+          });
         }
 
         return reply.send({ user });
       } catch (error) {
         fastify.log.error(error);
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to validate your session. Please try logging in again.",
-          });
+        return reply.status(500).send({
+          error: AUTH_ERRORS.VALIDATION_FAILED,
+        });
       }
     }
   );

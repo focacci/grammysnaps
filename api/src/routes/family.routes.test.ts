@@ -7,6 +7,7 @@ import {
   FamilyMember,
   RelatedFamily,
 } from "../types/family.types";
+import { FAMILY_ERRORS } from "../types/errors";
 
 const mockFamilyCreate = jest.fn();
 const mockFamilyGet = jest.fn();
@@ -124,7 +125,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to fetch families");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.RETRIEVE_FAILED);
     });
   });
 
@@ -154,7 +155,9 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to fetch user families");
+      expect(responseBody.error).toBe(
+        FAMILY_ERRORS.RETRIEVE_USER_FAMILIES_FAILED
+      );
     });
   });
 
@@ -183,7 +186,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Family not found");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.NOT_FOUND);
     });
 
     it("should return 500 for database error", async () => {
@@ -196,7 +199,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to fetch family");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.GET_BY_ID_FAILED);
     });
   });
 
@@ -226,7 +229,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to fetch family members");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.GET_MEMBERS_FAILED);
     });
   });
 
@@ -266,7 +269,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("owner_id is required");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.OWNER_ID_REQUIRED);
     });
 
     it("should return 400 for missing family name", async () => {
@@ -280,7 +283,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Family name is required");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.NAME_REQUIRED);
     });
 
     it("should return 400 for empty family name", async () => {
@@ -295,11 +298,13 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Family name is required");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.NAME_REQUIRED);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyCreate.mockRejectedValue(new Error("Database error"));
+      mockFamilyCreate.mockRejectedValue(
+        new Error(FAMILY_ERRORS.CREATE_FAILED)
+      );
 
       const response = await fastify.inject({
         method: "POST",
@@ -309,7 +314,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Database error");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.CREATE_FAILED);
     });
 
     it("should return 500 for unexpected error", async () => {
@@ -323,7 +328,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to create family");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.CREATE_FAILED);
     });
   });
 
@@ -363,7 +368,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(404);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Family not found");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.UPDATE_NOT_FOUND);
     });
 
     it("should return 500 for database error", async () => {
@@ -391,7 +396,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to update family");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.UPDATE_FAILED);
     });
 
     it("should handle empty update data", async () => {
@@ -424,7 +429,9 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyDelete.mockRejectedValue(new Error("Delete error"));
+      mockFamilyDelete.mockRejectedValue(
+        new Error(FAMILY_ERRORS.DELETE_FAILED)
+      );
 
       const response = await fastify.inject({
         method: "DELETE",
@@ -433,7 +440,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Delete error");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.DELETE_FAILED);
     });
 
     it("should return 500 for unexpected error", async () => {
@@ -446,7 +453,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to delete family");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.DELETE_FAILED);
     });
   });
 
@@ -482,7 +489,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("user_id is required");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.USER_ID_REQUIRED);
     });
 
     it("should return 500 for database error", async () => {
@@ -510,7 +517,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to add member");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.ADD_MEMBER_FAILED);
     });
   });
 
@@ -557,7 +564,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to remove member");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.REMOVE_MEMBER_FAILED);
     });
   });
 
@@ -589,7 +596,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to fetch related families");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.GET_RELATED_FAILED);
     });
   });
 
@@ -625,7 +632,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("family_id is required");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.FAMILY_ID_REQUIRED);
     });
 
     it("should return 500 for database error", async () => {
@@ -655,7 +662,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to add related family");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.ADD_RELATED_FAILED);
     });
   });
 
@@ -702,7 +709,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Failed to remove related family");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.REMOVE_RELATED_FAILED);
     });
   });
 
@@ -729,7 +736,7 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("owner_id is required");
+      expect(responseBody.error).toBe(FAMILY_ERRORS.OWNER_ID_REQUIRED);
     });
 
     it("should properly handle URL parameters", async () => {

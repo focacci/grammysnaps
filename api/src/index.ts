@@ -14,6 +14,7 @@ import familyPlugin from "./plugins/family.plugin";
 import familyRoutes from "./routes/family.routes";
 import authPlugin from "./plugins/auth.plugin";
 import authRoutes from "./routes/auth.routes";
+import { SERVER_ERRORS } from "./types/errors";
 
 const server: FastifyInstance = Fastify({ logger: true });
 
@@ -68,7 +69,7 @@ const main = async () => {
     timeWindow: "1 minute", // per 1 minute
     errorResponseBuilder: (req: any, context: any) => {
       return {
-        error: "Too many requests, please try again later.",
+        error: RATE_LIMIT_ERRORS.TOO_MANY_REQUESTS,
         expiresIn: Math.round(context.ttl / 1000), // seconds
       };
     },
@@ -137,7 +138,7 @@ const main = async () => {
     } catch (err) {
       return reply.status(500).send({
         status: "error",
-        message: "Database connection failed",
+        message: SERVER_ERRORS.HEALTH_CHECK_FAILED,
         error: err instanceof Error ? err.message : String(err),
       });
     }

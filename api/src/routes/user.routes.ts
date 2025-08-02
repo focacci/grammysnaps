@@ -6,6 +6,7 @@ import {
 } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
 import { MultipartFile } from "@fastify/multipart";
+import { USER_ERRORS } from "../types/errors";
 
 interface UserParams {
   id: string;
@@ -37,19 +38,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
           error instanceof Error &&
           error.message.includes("already exists")
         ) {
-          return reply
-            .status(409)
-            .send({
-              error:
-                "An account with this email address already exists. Please use a different email or try logging in instead.",
-            });
-        }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to create your account at this time. Please try again later.",
+          return reply.status(409).send({
+            error: USER_ERRORS.ACCOUNT_EXISTS,
           });
+        }
+        return reply.status(500).send({
+          error: USER_ERRORS.CREATE_FAILED,
+        });
       }
     }
   );
@@ -66,12 +61,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         return reply.send(users);
       } catch (error) {
         fastify.log.error(error);
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to retrieve users at this time. Please try again later.",
-          });
+        return reply.status(500).send({
+          error: USER_ERRORS.RETRIEVE_FAILED,
+        });
       }
     }
   );
@@ -90,12 +82,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         );
         const user = await fastify.user.getById(sanitizedId);
         if (!user) {
-          return reply
-            .status(404)
-            .send({
-              error:
-                "The requested user could not be found. They may have been deleted or the ID is incorrect.",
-            });
+          return reply.status(404).send({
+            error: USER_ERRORS.NOT_FOUND,
+          });
         }
         return reply.send(user);
       } catch (error) {
@@ -103,12 +92,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         if (error instanceof Error && error.message.includes("Invalid")) {
           return reply.status(400).send({ error: error.message });
         }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to retrieve the user by ID at this time. Please try again later.",
-          });
+        return reply.status(500).send({
+          error: USER_ERRORS.GET_BY_ID_FAILED,
+        });
       }
     }
   );
@@ -126,12 +112,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         );
         const user = await fastify.user.getByEmail(sanitizedEmail);
         if (!user) {
-          return reply
-            .status(404)
-            .send({
-              error:
-                "No user found with this email address. Please check the email and try again.",
-            });
+          return reply.status(404).send({
+            error: USER_ERRORS.EMAIL_NOT_FOUND,
+          });
         }
         return reply.send(user);
       } catch (error) {
@@ -139,12 +122,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         if (error instanceof Error && error.message.includes("Invalid")) {
           return reply.status(400).send({ error: error.message });
         }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to retrieve the user by email at this time. Please try again later.",
-          });
+        return reply.status(500).send({
+          error: USER_ERRORS.GET_BY_EMAIL_FAILED,
+        });
       }
     }
   );
@@ -160,12 +140,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         console.log(request.body);
         const user = await fastify.user.update(request.params.id, request.body);
         if (!user) {
-          return reply
-            .status(404)
-            .send({
-              error:
-                "The user you're trying to update could not be found. They may have been deleted.",
-            });
+          return reply.status(404).send({
+            error: USER_ERRORS.UPDATE_NOT_FOUND,
+          });
         }
         return reply.send(user);
       } catch (error) {
@@ -174,19 +151,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
           error instanceof Error &&
           error.message.includes("already exists")
         ) {
-          return reply
-            .status(409)
-            .send({
-              error:
-                "This email address is already in use by another account. Please choose a different email.",
-            });
-        }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to update your profile at this time. Please try again later.",
+          return reply.status(409).send({
+            error: USER_ERRORS.EMAIL_IN_USE,
           });
+        }
+        return reply.status(500).send({
+          error: USER_ERRORS.UPDATE_FAILED,
+        });
       }
     }
   );
@@ -207,48 +178,33 @@ export default async function userRoutes(fastify: FastifyInstance) {
           request.body
         );
         if (!user) {
-          return reply
-            .status(404)
-            .send({
-              error:
-                "The user account could not be found. Please try logging in again.",
-            });
+          return reply.status(404).send({
+            error: USER_ERRORS.SECURITY_UPDATE_NOT_FOUND,
+          });
         }
         return reply.send(user);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error) {
           if (error.message.includes("already exists")) {
-            return reply
-              .status(409)
-              .send({
-                error:
-                  "This email address is already in use by another account. Please choose a different email.",
-              });
+            return reply.status(409).send({
+              error: USER_ERRORS.EMAIL_IN_USE,
+            });
           }
           if (error.message.includes("Current password is incorrect")) {
-            return reply
-              .status(401)
-              .send({
-                error:
-                  "The current password you entered is incorrect. Please try again.",
-              });
+            return reply.status(401).send({
+              error: USER_ERRORS.INCORRECT_PASSWORD,
+            });
           }
           if (error.message.includes("Current password is required")) {
-            return reply
-              .status(400)
-              .send({
-                error:
-                  "Your current password is required to make security changes.",
-              });
+            return reply.status(400).send({
+              error: USER_ERRORS.CURRENT_PASSWORD_REQUIRED,
+            });
           }
         }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to update your security settings at this time. Please try again later.",
-          });
+        return reply.status(500).send({
+          error: USER_ERRORS.SECURITY_UPDATE_FAILED,
+        });
       }
     }
   );
@@ -269,19 +225,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("not found")) {
-          return reply
-            .status(404)
-            .send({
-              error:
-                "The user account could not be found or has already been deleted.",
-            });
-        }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to delete the user account at this time. Please try again later.",
+          return reply.status(404).send({
+            error: USER_ERRORS.DELETE_NOT_FOUND,
           });
+        }
+        return reply.status(500).send({
+          error: USER_ERRORS.DELETE_FAILED,
+        });
       }
     }
   );
@@ -305,27 +255,18 @@ export default async function userRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("not found")) {
           if (error.message.includes("User")) {
-            return reply
-              .status(404)
-              .send({
-                error:
-                  "The user could not be found. They may have been deleted.",
-              });
+            return reply.status(404).send({
+              error: USER_ERRORS.ADD_TO_FAMILY_USER_NOT_FOUND,
+            });
           } else {
-            return reply
-              .status(404)
-              .send({
-                error:
-                  "The family could not be found. It may have been deleted.",
-              });
+            return reply.status(404).send({
+              error: USER_ERRORS.ADD_TO_FAMILY_FAMILY_NOT_FOUND,
+            });
           }
         }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to add the user to the family at this time. Please try again later.",
-          });
+        return reply.status(500).send({
+          error: USER_ERRORS.ADD_TO_FAMILY_FAILED,
+        });
       }
     }
   );
@@ -349,27 +290,18 @@ export default async function userRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("not found")) {
           if (error.message.includes("User")) {
-            return reply
-              .status(404)
-              .send({
-                error:
-                  "The user could not be found. They may have been deleted.",
-              });
+            return reply.status(404).send({
+              error: USER_ERRORS.REMOVE_FROM_FAMILY_USER_NOT_FOUND,
+            });
           } else {
-            return reply
-              .status(404)
-              .send({
-                error:
-                  "The family could not be found. It may have been deleted.",
-              });
+            return reply.status(404).send({
+              error: USER_ERRORS.REMOVE_FROM_FAMILY_FAMILY_NOT_FOUND,
+            });
           }
         }
-        return reply
-          .status(500)
-          .send({
-            error:
-              "Unable to remove the user from the family at this time. Please try again later.",
-          });
+        return reply.status(500).send({
+          error: USER_ERRORS.REMOVE_FROM_FAMILY_FAILED,
+        });
       }
     }
   );
@@ -400,7 +332,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         // Check if request is multipart
         if (!request.isMultipart()) {
           return reply.status(400).send({
-            message: "Request must be multipart/form-data",
+            message: USER_ERRORS.PROFILE_PICTURE_MULTIPART_REQUIRED,
           });
         }
 
@@ -432,13 +364,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
         } catch (parseError) {
           fastify.log.error("Error parsing multipart data:", parseError);
           return reply.status(400).send({
-            message: "Error processing form data",
+            message: USER_ERRORS.PROFILE_PICTURE_PROCESSING_ERROR,
           });
         }
 
         if (!file) {
           return reply.status(400).send({
-            message: "No file uploaded. Please provide a profile picture.",
+            message: USER_ERRORS.PROFILE_PICTURE_NO_FILE,
           });
         }
 
@@ -456,8 +388,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         ];
         if (!allowedTypes.includes(file.mimetype)) {
           return reply.status(400).send({
-            message:
-              "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
+            message: USER_ERRORS.PROFILE_PICTURE_INVALID_TYPE,
           });
         }
 
@@ -467,13 +398,15 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
         const maxSize = 5 * 1024 * 1024; // 5 MB
         if (buffer.length === 0) {
-          return reply.status(400).send({ message: "Uploaded file is empty" });
+          return reply
+            .status(400)
+            .send({ message: USER_ERRORS.PROFILE_PICTURE_EMPTY });
         }
 
         if (buffer.length > maxSize) {
           return reply
             .status(400)
-            .send({ message: "File size exceeds 5 MB limit" });
+            .send({ message: USER_ERRORS.PROFILE_PICTURE_TOO_LARGE });
         }
 
         fastify.log.info(
@@ -514,8 +447,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
           // Handle specific S3 errors
           if (error.message.includes("S3") || error.message.includes("AWS")) {
             return reply.status(500).send({
-              message:
-                "Unable to save profile picture. Please try again later.",
+              message: USER_ERRORS.PROFILE_PICTURE_UPLOAD_FAILED,
               error: error.message,
             });
           }
@@ -524,12 +456,15 @@ export default async function userRoutes(fastify: FastifyInstance) {
           if (error.message.includes("User not found")) {
             return reply
               .status(404)
-              .send({ message: "User not found", error: error.message });
+              .send({
+                message: USER_ERRORS.PROFILE_PICTURE_USER_NOT_FOUND,
+                error: error.message,
+              });
           }
         }
 
         return reply.status(500).send({
-          message: "Profile picture upload failed",
+          message: USER_ERRORS.PROFILE_PICTURE_GENERAL_FAILED,
           error: String(error),
         });
       }

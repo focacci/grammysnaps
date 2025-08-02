@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import authRoutes from "./auth.routes";
 import { UserPublic, LoginInput } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
+import { AUTH_ERRORS } from "../types/errors";
 
 // Mock validation utilities
 jest.mock("../utils/validation", () => ({
@@ -149,7 +150,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Login failed");
+      expect(responseBody.error).toBe(AUTH_ERRORS.LOGIN_FAILED);
     });
 
     it("should return 400 for missing password", async () => {
@@ -163,7 +164,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Invalid password");
+      expect(responseBody.error).toBe(AUTH_ERRORS.PASSWORD_REQUIRED);
     });
 
     it("should return 400 for invalid password type", async () => {
@@ -178,7 +179,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Invalid password");
+      expect(responseBody.error).toBe(AUTH_ERRORS.PASSWORD_REQUIRED);
     });
 
     it("should return 401 for non-existent user", async () => {
@@ -192,7 +193,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Invalid email or password");
+      expect(responseBody.error).toBe(AUTH_ERRORS.INVALID_CREDENTIALS);
     });
 
     it("should return 401 for invalid password", async () => {
@@ -207,7 +208,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Invalid email or password");
+      expect(responseBody.error).toBe(AUTH_ERRORS.INVALID_CREDENTIALS);
     });
 
     it("should return 400 for validation error from sanitizeEmail", async () => {
@@ -247,7 +248,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Login failed");
+      expect(responseBody.error).toBe(AUTH_ERRORS.LOGIN_FAILED);
     });
   });
 
@@ -297,7 +298,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Refresh token required");
+      expect(responseBody.error).toBe(AUTH_ERRORS.REFRESH_TOKEN_REQUIRED);
     });
 
     it("should return 401 for invalid refresh token", async () => {
@@ -311,7 +312,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Invalid or expired refresh token");
+      expect(responseBody.error).toBe(AUTH_ERRORS.SESSION_EXPIRED);
     });
 
     it("should return 401 for user not found", async () => {
@@ -327,7 +328,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("User not found");
+      expect(responseBody.error).toBe(AUTH_ERRORS.ACCOUNT_NOT_FOUND);
     });
 
     it("should return 500 for unexpected error", async () => {
@@ -343,7 +344,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Token refresh failed");
+      expect(responseBody.error).toBe(AUTH_ERRORS.REFRESH_FAILED);
     });
   });
 
@@ -413,7 +414,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("No token provided");
+      expect(responseBody.error).toBe(AUTH_ERRORS.TOKEN_REQUIRED);
     });
 
     it("should return 401 for malformed authorization header", async () => {
@@ -427,7 +428,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("No token provided");
+      expect(responseBody.error).toBe(AUTH_ERRORS.TOKEN_REQUIRED);
     });
 
     it("should return 401 for invalid access token", async () => {
@@ -443,7 +444,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Invalid token");
+      expect(responseBody.error).toBe(AUTH_ERRORS.SESSION_EXPIRED);
     });
 
     it("should return 401 for invalid session", async () => {
@@ -461,7 +462,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(401);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Session invalid");
+      expect(responseBody.error).toBe(AUTH_ERRORS.SESSION_INVALID);
     });
 
     it("should return 500 for unexpected error", async () => {
@@ -479,7 +480,7 @@ describe("Auth Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Session validation failed");
+      expect(responseBody.error).toBe(AUTH_ERRORS.VALIDATION_FAILED);
     });
   });
 

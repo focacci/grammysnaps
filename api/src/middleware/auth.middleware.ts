@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import { AUTH_ERRORS } from "../types/errors";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -16,33 +17,25 @@ export const requireAuth = async (
   try {
     const authHeader = request.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return reply
-        .status(401)
-        .send({
-          error:
-            "Authentication token is required. Please log in to access this resource.",
-        });
+      return reply.status(401).send({
+        error: AUTH_ERRORS.MIDDLEWARE_TOKEN_REQUIRED,
+      });
     }
 
     const token = authHeader.substring(7); // Remove "Bearer " prefix
     const payload = await request.server.auth.verifyAccessToken(token);
 
     if (!payload) {
-      return reply
-        .status(401)
-        .send({
-          error: "Your session has expired or is invalid. Please log in again.",
-        });
+      return reply.status(401).send({
+        error: AUTH_ERRORS.MIDDLEWARE_SESSION_EXPIRED,
+      });
     }
 
     request.user = payload;
   } catch (error) {
     request.server.log.error("Auth middleware error:", error);
-    return reply
-      .status(500)
-      .send({
-        error:
-          "Authentication service is temporarily unavailable. Please try again.",
-      });
+    return reply.status(500).send({
+      error: AUTH_ERRORS.MIDDLEWARE_SERVICE_UNAVAILABLE,
+    });
   }
 };

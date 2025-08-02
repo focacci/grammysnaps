@@ -7,6 +7,7 @@ import {
   UserUpdate,
   SecurityUpdateInput,
 } from "../types/user.types";
+import { USER_ERRORS } from "../types/errors";
 
 describe("User Routes", () => {
   let fastify: FastifyInstance;
@@ -140,7 +141,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(409);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Email already exists",
+        error: USER_ERRORS.ACCOUNT_EXISTS,
       });
     });
 
@@ -155,7 +156,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to create user",
+        error: USER_ERRORS.CREATE_FAILED,
       });
     });
   });
@@ -223,7 +224,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to fetch users",
+        error: USER_ERRORS.RETRIEVE_FAILED,
       });
     });
   });
@@ -267,7 +268,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.NOT_FOUND,
       });
     });
 
@@ -293,7 +294,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to fetch user",
+        error: USER_ERRORS.GET_BY_ID_FAILED,
       });
     });
   });
@@ -336,7 +337,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.EMAIL_NOT_FOUND,
       });
     });
 
@@ -362,7 +363,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to fetch user",
+        error: USER_ERRORS.GET_BY_EMAIL_FAILED,
       });
     });
   });
@@ -417,7 +418,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.UPDATE_NOT_FOUND,
       });
     });
 
@@ -432,7 +433,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(409);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Email already exists",
+        error: USER_ERRORS.EMAIL_IN_USE,
       });
     });
 
@@ -447,7 +448,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to update user",
+        error: USER_ERRORS.UPDATE_FAILED,
       });
     });
   });
@@ -499,7 +500,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.SECURITY_UPDATE_NOT_FOUND,
       });
     });
 
@@ -516,7 +517,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(409);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Email already exists",
+        error: USER_ERRORS.EMAIL_IN_USE,
       });
     });
 
@@ -533,7 +534,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(401);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Current password is incorrect",
+        error: USER_ERRORS.INCORRECT_PASSWORD,
       });
     });
 
@@ -550,7 +551,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Current password is required",
+        error: USER_ERRORS.CURRENT_PASSWORD_REQUIRED,
       });
     });
 
@@ -567,7 +568,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to update security settings",
+        error: USER_ERRORS.SECURITY_UPDATE_FAILED,
       });
     });
   });
@@ -603,7 +604,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.DELETE_NOT_FOUND,
       });
     });
 
@@ -618,7 +619,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to delete user",
+        error: USER_ERRORS.DELETE_FAILED,
       });
     });
 
@@ -635,7 +636,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to delete user",
+        error: USER_ERRORS.DELETE_FAILED,
       });
     });
   });
@@ -669,7 +670,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.ADD_TO_FAMILY_USER_NOT_FOUND,
       });
     });
 
@@ -683,7 +684,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Family not found",
+        error: USER_ERRORS.ADD_TO_FAMILY_FAMILY_NOT_FOUND,
       });
     });
 
@@ -699,7 +700,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to add user to family",
+        error: USER_ERRORS.ADD_TO_FAMILY_FAILED,
       });
     });
   });
@@ -733,7 +734,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "User not found",
+        error: USER_ERRORS.REMOVE_FROM_FAMILY_USER_NOT_FOUND,
       });
     });
 
@@ -747,7 +748,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Family not found",
+        error: USER_ERRORS.REMOVE_FROM_FAMILY_FAMILY_NOT_FOUND,
       });
     });
 
@@ -763,7 +764,7 @@ describe("User Routes", () => {
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: "Failed to remove user from family",
+        error: USER_ERRORS.REMOVE_FROM_FAMILY_FAILED,
       });
     });
   });
