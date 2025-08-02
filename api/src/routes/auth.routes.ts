@@ -41,7 +41,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
         const sanitizedEmail = ValidationUtils.sanitizeEmail(email);
         // Note: Don't validate password length here as it might be an existing user with shorter password
         if (!password || typeof password !== "string") {
-          return reply.status(400).send({ error: "Invalid password" });
+          return reply
+            .status(400)
+            .send({ error: "Password is required and must be a valid string" });
         }
 
         // Get user with password hash for validation
@@ -77,7 +79,12 @@ export default async function authRoutes(fastify: FastifyInstance) {
         if (error instanceof Error && error.message.includes("Invalid")) {
           return reply.status(400).send({ error: error.message });
         }
-        return reply.status(500).send({ error: "Login failed" });
+        return reply
+          .status(500)
+          .send({
+            error:
+              "Unable to log in at this time. Please check your credentials and try again.",
+          });
       }
     }
   );
@@ -93,7 +100,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
         const { refreshToken } = request.body;
 
         if (!refreshToken) {
-          return reply.status(401).send({ error: "Refresh token required" });
+          return reply
+            .status(401)
+            .send({
+              error: "Refresh token is required to get a new access token",
+            });
         }
 
         // Verify refresh token
@@ -101,13 +112,18 @@ export default async function authRoutes(fastify: FastifyInstance) {
         if (!payload) {
           return reply
             .status(401)
-            .send({ error: "Invalid or expired refresh token" });
+            .send({ error: "Your session has expired. Please log in again." });
         }
 
         // Get current user data
         const user = await fastify.user.getById(payload.userId);
         if (!user) {
-          return reply.status(401).send({ error: "User not found" });
+          return reply
+            .status(401)
+            .send({
+              error:
+                "Your account no longer exists. Please contact support if this is unexpected.",
+            });
         }
 
         // Generate new tokens
@@ -121,7 +137,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
         });
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Token refresh failed" });
+        return reply
+          .status(500)
+          .send({
+            error: "Unable to refresh your session. Please log in again.",
+          });
       }
     }
   );
@@ -143,7 +163,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
         return reply.send({ message: "Logged out successfully" });
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Logout failed" });
+        return reply
+          .status(500)
+          .send({ error: "Unable to log out at this time. Please try again." });
       }
     }
   );
@@ -155,25 +177,40 @@ export default async function authRoutes(fastify: FastifyInstance) {
       try {
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return reply.status(401).send({ error: "No token provided" });
+          return reply
+            .status(401)
+            .send({
+              error: "Authentication token is required. Please log in first.",
+            });
         }
 
         const token = authHeader.substring(7);
         const payload = await fastify.auth.verifyAccessToken(token);
 
         if (!payload) {
-          return reply.status(401).send({ error: "Invalid token" });
+          return reply
+            .status(401)
+            .send({ error: "Your session has expired. Please log in again." });
         }
 
         const user = await fastify.auth.validateSession(payload.userId);
         if (!user) {
-          return reply.status(401).send({ error: "Session invalid" });
+          return reply
+            .status(401)
+            .send({
+              error: "Your session is no longer valid. Please log in again.",
+            });
         }
 
         return reply.send({ user });
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Session validation failed" });
+        return reply
+          .status(500)
+          .send({
+            error:
+              "Unable to validate your session. Please try logging in again.",
+          });
       }
     }
   );

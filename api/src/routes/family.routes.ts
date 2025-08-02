@@ -8,7 +8,12 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const families = await fastify.family.get();
       return families;
     } catch {
-      reply.code(500).send({ error: "Failed to fetch families" });
+      reply
+        .code(500)
+        .send({
+          error:
+            "Unable to retrieve families at this time. Please try again later.",
+        });
     }
   });
 
@@ -20,7 +25,12 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       return families;
     } catch (error) {
       fastify.log.error(error);
-      reply.code(500).send({ error: "Failed to fetch user families" });
+      reply
+        .code(500)
+        .send({
+          error:
+            "Unable to retrieve user's families at this time. Please try again later.",
+        });
     }
   });
 
@@ -31,13 +41,23 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const family = await fastify.family.getById(id);
 
       if (!family) {
-        return reply.code(404).send({ error: "Family not found" });
+        return reply
+          .code(404)
+          .send({
+            error:
+              "The requested family could not be found. It may have been deleted.",
+          });
       }
 
       return family;
     } catch (error) {
       fastify.log.error(error);
-      reply.code(500).send({ error: "Failed to fetch family" });
+      reply
+        .code(500)
+        .send({
+          error:
+            "Unable to retrieve the family at this time. Please try again later.",
+        });
     }
   });
 
@@ -49,7 +69,12 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       return members;
     } catch (error) {
       fastify.log.error(error);
-      reply.code(500).send({ error: "Failed to fetch family members" });
+      reply
+        .code(500)
+        .send({
+          error:
+            "Unable to retrieve family members at this time. Please try again later.",
+        });
     }
   });
 
@@ -60,11 +85,18 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const { owner_id, ...familyInput } = familyData;
 
       if (!owner_id) {
-        return reply.code(400).send({ error: "owner_id is required" });
+        return reply
+          .code(400)
+          .send({
+            error:
+              "Owner ID is required to create a family. Please log in and try again.",
+          });
       }
 
       if (!familyInput.name || familyInput.name.trim().length === 0) {
-        return reply.code(400).send({ error: "Family name is required" });
+        return reply
+          .code(400)
+          .send({ error: "Family name is required and cannot be empty." });
       }
 
       const family = await fastify.family.create(familyInput, owner_id);
@@ -73,7 +105,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to create family",
+          error instanceof Error
+            ? error.message
+            : "Unable to create the family at this time. Please try again later.",
       });
     }
   });
@@ -87,7 +121,12 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       const family = await fastify.family.update(id, updateData);
 
       if (!family) {
-        return reply.code(404).send({ error: "Family not found" });
+        return reply
+          .code(404)
+          .send({
+            error:
+              "The family you're trying to update could not be found. It may have been deleted.",
+          });
       }
 
       return family;
@@ -95,7 +134,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to update family",
+          error instanceof Error
+            ? error.message
+            : "Unable to update the family at this time. Please try again later.",
       });
     }
   });
@@ -111,7 +152,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to delete family",
+          error instanceof Error
+            ? error.message
+            : "Unable to delete the family at this time. Please try again later.",
       });
     }
   });
@@ -131,7 +174,10 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: error instanceof Error ? error.message : "Failed to add member",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to add member to the family at this time. Please try again later.",
       });
     }
   });
@@ -147,7 +193,9 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : "Failed to remove member",
+          error instanceof Error
+            ? error.message
+            : "Unable to remove member from the family at this time. Please try again later.",
       });
     }
   });
@@ -161,7 +209,8 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: "Failed to fetch related families",
+        error:
+          "Unable to retrieve related families at this time. Please try again later.",
       });
     }
   });
@@ -184,7 +233,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         error:
           error instanceof Error
             ? error.message
-            : "Failed to add related family",
+            : "Unable to link families at this time. Please try again later.",
       });
     }
   });
@@ -205,7 +254,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         error:
           error instanceof Error
             ? error.message
-            : "Failed to remove related family",
+            : "Unable to unlink families at this time. Please try again later.",
       });
     }
   });

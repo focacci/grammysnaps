@@ -108,7 +108,11 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         fastify.log.error(err);
         return reply
           .status(500)
-          .send({ message: "Failed to download image", error: err });
+          .send({
+            message:
+              "Unable to download the image at this time. Please try again later.",
+            error: err,
+          });
       }
     }
   );
@@ -270,7 +274,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (error) {
       fastify.log.error("Error uploading image:", error);
       return reply.status(500).send({
-        message: "Failed to upload image",
+        message: "Unable to upload image at this time. Please try again later.",
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
@@ -327,7 +331,8 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error) {
         fastify.log.error("Error getting images by family:", error);
         return reply.status(500).send({
-          message: "Failed to get images for family",
+          message:
+            "Unable to retrieve family images at this time. Please try again later.",
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
@@ -373,7 +378,11 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         fastify.log.error(err);
         return reply
           .status(500)
-          .send({ message: "Failed to delete image", error: err });
+          .send({
+            message:
+              "Unable to delete the image at this time. Please try again later.",
+            error: err,
+          });
       }
     }
   );
@@ -414,7 +423,8 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error) {
         fastify.log.error("Error getting images by families:", error);
         return reply.status(500).send({
-          message: "Failed to get images for families",
+          message:
+            "Unable to retrieve images at this time. Please try again later.",
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }

@@ -143,7 +143,11 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
         fastify.log.error(err);
         return reply
           .status(500)
-          .send({ message: "Failed to delete tag", error: err });
+          .send({
+            message:
+              "Unable to delete the tag at this time. Please try again later.",
+            error: err,
+          });
       }
     }
   );
