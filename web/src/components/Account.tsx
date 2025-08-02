@@ -1286,30 +1286,17 @@ function Account({ user, onUserUpdate }: AccountProps) {
         )}
 
         {joinFamilyInfo && (
-          <div className="family-preview">
-            <h3>Family Information</h3>
-            <div className="family-group-card">
-              <div className="family-group-header">
-                <h3 className="family-group-name">{joinFamilyInfo.name}</h3>
-              </div>
-              <div className="family-group-details">
-                <div className="family-group-info">
-                  <span className="family-id-container">
-                    <span className="family-id-display">
-                      {joinFamilyInfo.id}
-                    </span>
-                  </span>
-                </div>
+          <div className="family-group-card">
+            <div className="family-group-header">
+              <h3 className="family-group-name">{joinFamilyInfo.name}</h3>
+            </div>
+            <div className="family-group-details">
+              <div className="family-group-info">
+                <span className="family-id-container">
+                  <span className="family-id-display">{joinFamilyInfo.id}</span>
+                </span>
               </div>
             </div>
-
-            <button
-              className="auth-submit"
-              onClick={handleJoinFamilySubmit}
-              disabled={joinFamilyLoading}
-            >
-              {joinFamilyLoading ? "Joining..." : "Join Family"}
-            </button>
           </div>
         )}
       </Modal>
