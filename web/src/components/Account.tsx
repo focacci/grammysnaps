@@ -167,7 +167,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const loadUserFamilies = useCallback(async () => {
     try {
       setLoadingFamilies(true);
-      const response = await fetch(`${API_BASE_URL}/family/user/${user.id}`);
+      const response = await authService.apiCall(
+        `${API_BASE_URL}/family/user/${user.id}`
+      );
       if (response.ok) {
         const families = await response.json();
         setFamilyGroups(families);
@@ -302,7 +304,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setCreateFamilyLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/family`, {
+      const response = await authService.apiCall(`${API_BASE_URL}/family`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +359,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     if (familyId.trim()) {
       setLoadingJoinFamilyInfo(true);
       try {
-        const response = await fetch(
+        const response = await authService.apiCall(
           `${API_BASE_URL}/family/${familyId.trim()}`
         );
         if (response.ok) {
@@ -383,7 +385,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setJoinFamilyError("");
 
     try {
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${joinFamilyInfo.id}/members`,
         {
           method: "POST",
@@ -439,7 +441,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const loadFamilyMembers = async (familyId: string) => {
     try {
       setLoadingMembers(true);
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${familyId}/members`
       );
       if (response.ok) {
@@ -468,7 +470,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const loadRelatedFamilies = async (familyId: string) => {
     try {
       setLoadingRelatedFamilies(true);
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${familyId}/related`
       );
       if (response.ok) {
@@ -494,7 +496,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setRelatedFamilyError("");
 
     try {
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${selectedFamily.id}/related`,
         {
           method: "POST",
@@ -531,7 +533,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     if (!selectedFamily || !relatedFamilyToRemove) return;
 
     try {
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`,
         {
           method: "DELETE",
@@ -576,7 +578,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       // First, find the user by email
-      const userResponse = await fetch(
+      const userResponse = await authService.apiCall(
         `${API_BASE_URL}/user/email/${encodeURIComponent(
           addMemberEmail.trim()
         )}`
@@ -589,7 +591,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       const userData = await userResponse.json();
 
       // Add the user to the family
-      const addResponse = await fetch(
+      const addResponse = await authService.apiCall(
         `${API_BASE_URL}/family/${selectedFamily.id}/members`,
         {
           method: "POST",
@@ -626,7 +628,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     if (!selectedFamily || !memberToRemove) return;
 
     try {
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${selectedFamily.id}/members/${memberToRemove.id}`,
         {
           method: "DELETE",
@@ -669,7 +671,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setManageFamilyError("");
 
     try {
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${selectedFamily.id}`,
         {
           method: "DELETE",
@@ -720,7 +722,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const loadViewFamilyMembers = async (familyId: string) => {
     try {
       setLoadingViewMembers(true);
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${familyId}/members`
       );
       if (response.ok) {
@@ -762,7 +764,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLeaveFamilyLoading(familyToLeave.id);
 
-      const response = await fetch(
+      const response = await authService.apiCall(
         `${API_BASE_URL}/family/${familyToLeave.id}/members/${user.id}`,
         {
           method: "DELETE",
@@ -871,7 +873,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       console.log("Birthday:", editForm.birthday);
       // Then, update user profile data
-      const userUpdateResponse = await fetch(
+      const userUpdateResponse = await authService.apiCall(
         `${API_BASE_URL}/user/${user.id}`,
         {
           method: "PUT",
@@ -979,13 +981,16 @@ function Account({ user, onUserUpdate }: AccountProps) {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/user/${user.id}/security`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await authService.apiCall(
+        `${API_BASE_URL}/user/${user.id}/security`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
 
