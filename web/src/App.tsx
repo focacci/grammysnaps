@@ -1,19 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import "./App.css";
 import PhotoView from "./components/PhotoView";
 import Account from "./components/Account";
 import Auth from "./components/Auth";
 import authService from "./services/auth.service";
 
+// Protected Route component
+const ProtectedRoute = ({
+  children,
+  user,
+  isLoadingAuth,
+}: {
+  children: React.ReactNode;
+  user: any;
+  isLoadingAuth: boolean;
+}) => {
+  if (isLoadingAuth) {
+    return <div className="loading-state">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
+
 function App() {
-  const [currentView, setCurrentView] = useState<"home" | "photos" | "account">(
-    "home"
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
+}
+
+// Main App Content (moved inside Router)
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Check for system preference and saved preference on mount
@@ -29,25 +66,33 @@ function App() {
       setDarkMode(systemPrefersDark);
     }
 
-    // Validate current session
+    // Validate current session on mount
     const validateSession = async () => {
       try {
         const sessionUser = await authService.validateSession();
         if (sessionUser) {
           setUser(sessionUser);
-          // If user is logged in, go directly to photos
-          setCurrentView("photos");
         } else {
           setUser(null);
         }
       } catch (error) {
         console.error("Session validation failed:", error);
         setUser(null);
+      } finally {
+        setIsLoadingAuth(false);
       }
     };
 
     validateSession();
   }, []);
+
+  // Handle redirect logic separately when user state changes
+  useEffect(() => {
+    // Only redirect to photo-view if user just logged in and is on the root path
+    if (user && location.pathname === "/") {
+      navigate("/photo-view", { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
 
   // Apply theme to document
   useEffect(() => {
@@ -86,7 +131,7 @@ function App() {
   const handleLogin = (userData: any) => {
     setUser(userData);
     setShowAuth(false);
-    setCurrentView("photos");
+    navigate("/photo-view");
   };
 
   const handleLogout = async () => {
@@ -96,53 +141,12 @@ function App() {
       console.error("Logout failed:", error);
     }
     setUser(null);
-    setCurrentView("home");
+    navigate("/");
     setDropdownOpen(false);
   };
 
   const handleGetStarted = () => {
     setShowAuth(true);
-  };
-
-  const handleUserUpdate = (updatedUser: any) => {
-    setUser(updatedUser);
-  };
-
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case "photos":
-        if (!user) {
-          setShowAuth(true);
-          setCurrentView("home");
-          return null;
-        }
-        return <PhotoView user={user} />;
-      case "account":
-        if (!user) {
-          setShowAuth(true);
-          setCurrentView("home");
-          return null;
-        }
-        return <Account user={user} onUserUpdate={handleUserUpdate} />;
-      case "home":
-      default:
-        // If user is logged in and somehow on home, redirect to photos
-        if (user) {
-          setCurrentView("photos");
-          return <PhotoView user={user} />;
-        }
-        return (
-          <div className="home-view">
-            <div className="home-content">
-              <h1>Welcome to Grammysnaps</h1>
-              <p>Your family photo management system</p>
-              <button className="get-started-btn" onClick={handleGetStarted}>
-                Get Started
-              </button>
-            </div>
-          </div>
-        );
-    }
   };
 
   return (
@@ -151,7 +155,7 @@ function App() {
         <div className="navbar-left">
           <div
             className="logo"
-            onClick={() => setCurrentView(user ? "photos" : "home")}
+            onClick={() => navigate(user ? "/photo-view" : "/")}
           >
             Grammysnaps
           </div>
@@ -182,7 +186,7 @@ function App() {
                   <button
                     className="dropdown-item"
                     onClick={() => {
-                      setCurrentView("account");
+                      navigate("/account");
                       setDropdownOpen(false);
                     }}
                   >
@@ -219,7 +223,50 @@ function App() {
           )}
         </div>
       </nav>
-      <main className="main-content">{renderCurrentView()}</main>
+      <main className="main-content">
+        {" "}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              isLoadingAuth ? (
+                <div className="loading-state">Loading...</div>
+              ) : user ? (
+                <Navigate to="/photo-view" replace />
+              ) : (
+                <div className="home-view">
+                  <div className="home-content">
+                    <h1>Welcome to Grammy's Snaps</h1>
+                    <p>Your family photo sharing app</p>
+                    <button
+                      onClick={() => setShowAuth(true)}
+                      className="get-started-btn"
+                    >
+                      Get Started
+                    </button>
+                  </div>
+                </div>
+              )
+            }
+          />
+          <Route
+            path="/photo-view"
+            element={
+              <ProtectedRoute user={user} isLoadingAuth={isLoadingAuth}>
+                <PhotoView user={user} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute user={user} isLoadingAuth={isLoadingAuth}>
+                <Account user={user} onUserUpdate={handleLogin} />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
       {showAuth && (
         <Auth onLogin={handleLogin} onCancel={() => setShowAuth(false)} />
       )}
