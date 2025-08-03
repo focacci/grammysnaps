@@ -154,7 +154,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     async getMembers(familyId: string): Promise<FamilyMember[]> {
       try {
         const { rows } = await fastify.pg.query<any>(
-          `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, f.owner_id,
+          `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, u.profile_picture_thumbnail_url, f.owner_id,
                   f.created_at as joined_at
            FROM users u
            JOIN family_members fm ON u.id = fm.user_id
@@ -172,6 +172,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           birthday: row.birthday
             ? new Date(row.birthday).toISOString().split("T")[0]
             : undefined,
+          profile_picture_thumbnail_url: row.profile_picture_thumbnail_url,
           role: row.id === row.owner_id ? "owner" : "member",
           joined_at: row.joined_at,
         }));
@@ -240,12 +241,20 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         // Delete orphaned images from S3 and database
         for (const image of orphanedImages) {
           try {
-            // Delete from S3 if s3_url exists
-            if (image.s3_url) {
+            // Delete from S3 if original_url exists
+            if (image.original_url) {
               // Extract S3 key from the public URL
-              const url = new URL(image.s3_url);
+              const url = new URL(image.original_url);
               const s3Key = url.pathname.substring(1); // Remove leading slash
               await fastify.s3.delete(s3Key);
+            }
+
+            // Delete thumbnail from S3 if thumbnail_url exists
+            if (image.thumbnail_url) {
+              // Extract S3 key from the public URL
+              const thumbnailUrl = new URL(image.thumbnail_url);
+              const thumbnailS3Key = thumbnailUrl.pathname.substring(1); // Remove leading slash
+              await fastify.s3.delete(thumbnailS3Key);
             }
 
             // Delete from database (will cascade delete image_tags and image_families)

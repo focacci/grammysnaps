@@ -10,6 +10,7 @@ export interface User {
   birthday?: string | null; // YYYY-MM-DD format
   families: string[];
   profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +35,7 @@ export interface UserUpdate {
   birthday?: string | null;
   families?: string[];
   profile_picture_url?: string;
+  profile_picture_thumbnail_url?: string;
 }
 
 export interface UserPublic {
@@ -45,6 +47,7 @@ export interface UserPublic {
   birthday?: string | null;
   families: string[];
   profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
   created_at: string;
   updated_at: string;
 }

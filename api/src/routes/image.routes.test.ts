@@ -47,8 +47,10 @@ describe("Image Routes", () => {
     filename: "test.jpg",
     tags: ["tag1", "tag2"],
     family_ids: ["family-1", "family-2"],
-    s3_url:
+    original_url:
       "https://grammysnaps.s3.us-east-2.amazonaws.com/family-photos/uuid/test.jpg",
+    thumbnail_url:
+      "https://grammysnaps.s3.us-east-2.amazonaws.com/family-photos/thumbnails/uuid/thumb_test.jpg",
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
@@ -236,9 +238,9 @@ describe("Image Routes", () => {
       });
     });
 
-    it("should return 404 when image has no s3_url", async () => {
-      const imageWithoutS3 = { ...mockImage, s3_url: undefined };
-      mockImageGetById.mockResolvedValue(imageWithoutS3);
+    it("should return 404 when image has no original_url", async () => {
+      const imageWithoutOriginal = { ...mockImage, original_url: undefined };
+      mockImageGetById.mockResolvedValue(imageWithoutOriginal);
 
       const response = await fastify.inject({
         method: "GET",
@@ -342,7 +344,8 @@ describe("Image Routes", () => {
       expect(JSON.parse(response.body)).toEqual({ image: updatedImage });
       expect(mockImageUpdate).toHaveBeenCalledWith(validImageId, {
         ...updateData,
-        s3Url: mockImage.s3_url,
+        original_url: mockImage.original_url,
+        thumbnail_url: mockImage.thumbnail_url,
       });
     });
 
@@ -506,12 +509,20 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(204);
+      expect(mockS3Delete).toHaveBeenCalledTimes(2); // Both original and thumbnail
       expect(mockS3Delete).toHaveBeenCalledWith("family-photos/uuid/test.jpg");
+      expect(mockS3Delete).toHaveBeenCalledWith(
+        "family-photos/thumbnails/uuid/thumb_test.jpg"
+      );
       expect(mockImageDelete).toHaveBeenCalledWith(validImageId);
     });
 
     it("should delete image without S3 file", async () => {
-      const imageWithoutS3 = { ...mockImage, s3_url: undefined };
+      const imageWithoutS3 = {
+        ...mockImage,
+        original_url: undefined,
+        thumbnail_url: undefined,
+      };
       mockImageGetById.mockResolvedValue(imageWithoutS3);
       mockImageDelete.mockResolvedValue(undefined);
 
@@ -522,6 +533,24 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(204);
       expect(mockS3Delete).not.toHaveBeenCalled();
+      expect(mockImageDelete).toHaveBeenCalledWith(validImageId);
+    });
+
+    it("should delete image with only thumbnail", async () => {
+      const imageWithOnlyThumbnail = { ...mockImage, original_url: undefined };
+      mockImageGetById.mockResolvedValue(imageWithOnlyThumbnail);
+      mockS3Delete.mockResolvedValue(undefined);
+      mockImageDelete.mockResolvedValue(undefined);
+
+      const response = await fastify.inject({
+        method: "DELETE",
+        url: `/${validImageId}`,
+      });
+
+      expect(response.statusCode).toBe(204);
+      expect(mockS3Delete).toHaveBeenCalledWith(
+        "family-photos/thumbnails/uuid/thumb_test.jpg"
+      );
       expect(mockImageDelete).toHaveBeenCalledWith(validImageId);
     });
 

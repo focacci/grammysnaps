@@ -55,7 +55,8 @@ describe("Image Plugin", () => {
         filename: "test.jpg",
         tags: ["tag-1", "tag-2"],
         family_ids: ["family-1"],
-        s3Url: "https://bucket.s3.amazonaws.com/test.jpg",
+        original_url: "https://bucket.s3.amazonaws.com/test.jpg",
+        thumbnail_url: "https://bucket.s3.amazonaws.com/thumb_test.jpg",
       };
       const mockImage: Image = {
         id: "image-123",
@@ -63,7 +64,8 @@ describe("Image Plugin", () => {
         filename: "test.jpg",
         tags: ["tag-1", "tag-2"],
         family_ids: ["family-1"],
-        s3_url: "https://bucket.s3.amazonaws.com/test.jpg",
+        original_url: "https://bucket.s3.amazonaws.com/test.jpg",
+        thumbnail_url: "https://bucket.s3.amazonaws.com/thumb_test.jpg",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -75,8 +77,15 @@ describe("Image Plugin", () => {
       const result = await fastify.image.create(imageInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO images (title, filename, tags, family_ids, s3_url) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-        ["Test Image", "test.jpg", ["tag-1", "tag-2"], ["family-1"], "https://bucket.s3.amazonaws.com/test.jpg"]
+        "INSERT INTO images (title, filename, tags, family_ids, original_url, thumbnail_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+        [
+          "Test Image",
+          "test.jpg",
+          ["tag-1", "tag-2"],
+          ["family-1"],
+          "https://bucket.s3.amazonaws.com/test.jpg",
+          "https://bucket.s3.amazonaws.com/thumb_test.jpg",
+        ]
       );
       expect(result).toEqual(mockImage);
     });
@@ -101,8 +110,8 @@ describe("Image Plugin", () => {
       const result = await fastify.image.create(imageInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO images (title, filename, tags, family_ids, s3_url) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-        [null, "test.jpg", [], ["family-1"], null]
+        "INSERT INTO images (title, filename, tags, family_ids, original_url, thumbnail_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+        [null, "test.jpg", [], ["family-1"], null, null]
       );
       expect(result).toEqual(mockImage);
     });
@@ -249,8 +258,15 @@ describe("Image Plugin", () => {
       const result = await fastify.image.update("image-123", imageUpdate);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE images SET title = $1, tags = $2, family_ids = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Updated Image", ["tag-1", "tag-3"], ["family-1", "family-2"], "image-123"]
+        "UPDATE images SET title = $1, tags = $2, family_ids = $3, original_url = $4, thumbnail_url = $5, updated_at = NOW() WHERE id = $6 RETURNING *",
+        [
+          "Updated Image",
+          ["tag-1", "tag-3"],
+          ["family-1", "family-2"],
+          null, // original_url not provided in update
+          null, // thumbnail_url not provided in update
+          "image-123",
+        ]
       );
       expect(result).toEqual(mockUpdatedImage);
     });
@@ -302,7 +318,7 @@ describe("Image Plugin", () => {
   describe("applyTags", () => {
     it("should apply tags to image successfully", async () => {
       const tags = ["tag-1", "tag-2", "tag-3"];
-      
+
       mockQuery.mockResolvedValue({ rows: [] });
 
       await fastify.image.applyTags("image-123", tags);
@@ -343,7 +359,7 @@ describe("Image Plugin", () => {
   describe("applyFamilies", () => {
     it("should apply families to image successfully", async () => {
       const familyIds = ["family-1", "family-2"];
-      
+
       // Mock delete existing associations
       mockQuery.mockResolvedValueOnce({ rows: [] });
       // Mock insert new associations
@@ -493,7 +509,10 @@ describe("Image Plugin", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: mockImages });
 
-      const result = await fastify.image.getByFamilies(["family-1", "family-2"]);
+      const result = await fastify.image.getByFamilies([
+        "family-1",
+        "family-2",
+      ]);
 
       expect(mockQuery).toHaveBeenCalledWith(
         `SELECT DISTINCT i.* FROM images i 
@@ -515,9 +534,9 @@ describe("Image Plugin", () => {
     it("should throw error when database fails", async () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(
-        fastify.image.getByFamilies(["family-1"])
-      ).rejects.toThrow("Failed to get images by families");
+      await expect(fastify.image.getByFamilies(["family-1"])).rejects.toThrow(
+        "Failed to get images by families"
+      );
     });
   });
 

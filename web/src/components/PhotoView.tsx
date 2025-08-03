@@ -35,7 +35,8 @@ interface Image {
   filename: string;
   tags?: string[];
   family_ids?: string[];
-  s3_url?: string;
+  original_url?: string;
+  thumbnail_url?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -1247,10 +1248,10 @@ function PhotoView({ user }: PhotoViewProps) {
                   className="image-card"
                   onClick={() => handleImageClick(image)}
                 >
-                  {image.s3_url ? (
+                  {image.thumbnail_url ? (
                     <div className="image-container">
                       <img
-                        src={image.s3_url}
+                        src={image.thumbnail_url}
                         alt={image.filename}
                         className="image-display"
                         onError={(e) => {
@@ -1613,10 +1614,11 @@ function PhotoView({ user }: PhotoViewProps) {
         rightButtonClass="edit-btn"
         maxWidth="600px"
         headerSection={
-          selectedImage && selectedImage.s3_url ? (
+          selectedImage &&
+          (selectedImage.original_url || selectedImage.thumbnail_url) ? (
             <div className="image-preview-container">
               <img
-                src={selectedImage.s3_url}
+                src={selectedImage.original_url || selectedImage.thumbnail_url}
                 alt={selectedImage.filename}
                 className="image-preview-display"
                 onError={(e) => {
@@ -1686,10 +1688,11 @@ function PhotoView({ user }: PhotoViewProps) {
         deleteButtonClass="delete-btn"
         maxWidth="600px"
         headerSection={
-          selectedImage && selectedImage.s3_url ? (
+          selectedImage &&
+          (selectedImage.original_url || selectedImage.thumbnail_url) ? (
             <div className="image-preview-container">
               <img
-                src={selectedImage.s3_url}
+                src={selectedImage.original_url || selectedImage.thumbnail_url}
                 alt={selectedImage.filename}
                 className="image-preview-display"
                 onError={(e) => {

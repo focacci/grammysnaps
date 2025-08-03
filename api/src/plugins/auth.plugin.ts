@@ -3,12 +3,8 @@ import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import { UserPublic } from "../types/user.types";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  "your-super-secret-jwt-key-change-this-in-production";
-const JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET ||
-  "your-super-secret-refresh-key-change-this-in-production";
+const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 const JWT_EXPIRES_IN = "15m"; // Access token expires in 15 minutes
 const REFRESH_EXPIRES_IN = "7d"; // Refresh token expires in 7 days
 

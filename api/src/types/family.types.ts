@@ -37,6 +37,8 @@ export interface FamilyMember {
   last_name: string;
   email: string;
   birthday?: string;
+  profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
   role: "owner" | "member";
   joined_at: string;
 }

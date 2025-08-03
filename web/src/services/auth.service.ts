@@ -11,6 +11,7 @@ interface User {
   created_at: string;
   updated_at: string;
   profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
 }
 
 interface AuthTokens {

@@ -155,17 +155,23 @@ describe("S3 Plugin", () => {
     });
 
     it("should create correct S3 key format", () => {
-      const result = s3Decorator.createKey("images", "123", "photo.jpg");
-      expect(result).toBe("images/123/photo.jpg");
+      const result = s3Decorator.createKey(
+        "testing",
+        "images",
+        "123",
+        "photo.jpg"
+      );
+      expect(result).toBe("testing/images/123/photo.jpg");
     });
 
     it("should handle different types and filenames", () => {
       const result = s3Decorator.createKey(
+        "testing",
         "thumbnails",
         "abc-def",
         "thumb.png"
       );
-      expect(result).toBe("thumbnails/abc-def/thumb.png");
+      expect(result).toBe("testing/thumbnails/abc-def/thumb.png");
     });
   });
 
