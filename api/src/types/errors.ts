@@ -149,6 +149,8 @@ export const IMAGE_ERRORS = {
     "Unable to delete the image at this time. Please try again later.",
   GET_BY_FAMILIES_FAILED:
     "Unable to retrieve images at this time. Please try again later.",
+  GET_FOR_USER_FAILED:
+    "Unable to retrieve user images at this time. Please try again later.",
 } as const;
 
 // Tag Errors

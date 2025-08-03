@@ -416,33 +416,59 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  /* Get images by multiple families */
-  fastify.post(
-    "/families",
+  /* Get paginated images for user */
+  fastify.get(
+    "/user/:userId",
     {
       schema: {
-        body: {
+        params: {
           type: "object",
-          required: ["family_ids"],
+          required: ["userId"],
           properties: {
-            family_ids: {
+            userId: { type: "string", format: "uuid" },
+          },
+        },
+        querystring: {
+          type: "object",
+          properties: {
+            limit: { type: "number", minimum: 1, maximum: 100, default: 50 },
+            offset: { type: "number", minimum: 0, default: 0 },
+            order: { type: "string", enum: ["asc", "desc"], default: "desc" },
+            tags: {
               type: "array",
               items: { type: "string", format: "uuid" },
-              minItems: 1,
             },
           },
         },
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { family_ids } = request.body as { family_ids: string[] };
+      const { userId } = request.params as { userId: string };
+      const {
+        limit = 50,
+        offset = 0,
+        order = "desc",
+        tags = [],
+      } = request.query as {
+        limit?: number;
+        offset?: number;
+        order?: "asc" | "desc";
+        tags?: string[];
+      };
+
       try {
-        const images = await fastify.image.getByFamilies(family_ids);
+        const images = await fastify.image.getForUser(
+          userId,
+          tags,
+          limit,
+          offset,
+          order
+        );
         return reply.status(200).send({ images });
       } catch (error) {
-        fastify.log.error("Error getting images by families:", error);
+        fastify.log.error("Error getting images for user:", error);
         return reply.status(500).send({
-          message: IMAGE_ERRORS.GET_BY_FAMILIES_FAILED,
+          message: IMAGE_ERRORS.GET_FOR_USER_FAILED,
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
