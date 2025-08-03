@@ -9,6 +9,18 @@ import {
 } from "../types/family.types";
 import { FAMILY_ERRORS } from "../types/errors";
 
+// Mock auth middleware to always pass
+jest.mock("../middleware/auth.middleware", () => ({
+  requireAuth: jest.fn(async (request) => {
+    // Mock successful authentication by setting user on request
+    request.user = {
+      userId: "user-123",
+      email: "test@example.com",
+    };
+    // Don't call reply.send() or return anything - just let the request continue
+  }),
+}));
+
 const mockFamilyCreate = jest.fn();
 const mockFamilyGet = jest.fn();
 const mockFamilyGetById = jest.fn();

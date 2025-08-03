@@ -3,6 +3,7 @@ import { ImageInput } from "../types/image.types";
 import { MultipartFile } from "@fastify/multipart";
 import { v4 as uuidv4 } from "uuid";
 import { IMAGE_ERRORS } from "../types/errors";
+import { requireAuth } from "../middleware/auth.middleware";
 
 interface GetImageParams {
   imageId: string;
@@ -44,6 +45,9 @@ const updateImageBodySchema = {
 };
 
 const imageRoutes: FastifyPluginAsync = async (fastify) => {
+  // Add auth middleware to all image routes
+  fastify.addHook("preHandler", requireAuth);
+
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const images = await fastify.image.get();
     return reply.status(200).send({ images });

@@ -11,6 +11,18 @@ jest.mock("../utils/validation", () => ({
   },
 }));
 
+// Mock auth middleware to always pass
+jest.mock("../middleware/auth.middleware", () => ({
+  requireAuth: jest.fn(async (request) => {
+    // Mock successful authentication by setting user on request
+    request.user = {
+      userId: "user-123",
+      email: "test@example.com",
+    };
+    // Don't call reply.send() or return anything - just let the request continue
+  }),
+}));
+
 // User plugin mocks
 const mockUserCreate = jest.fn();
 const mockUserGet = jest.fn();
@@ -358,6 +370,9 @@ describe("Auth Routes", () => {
         method: "POST",
         url: "/logout",
         payload: validLogoutData,
+        headers: {
+          authorization: "Bearer mock-token", // Required for auth middleware
+        },
       });
 
       expect(response.statusCode).toBe(200);
@@ -372,6 +387,27 @@ describe("Auth Routes", () => {
         method: "POST",
         url: "/logout",
         payload: {},
+        headers: {
+          authorization: "Bearer mock-token", // Required for auth middleware
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody).toEqual({
+        message: "Logged out successfully",
+      });
+    });
+
+    it("should work with mocked auth middleware", async () => {
+      // This test verifies that the auth middleware mock is working
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/logout",
+        payload: validLogoutData,
+        headers: {
+          authorization: "Bearer any-token-works-with-mock",
+        },
       });
 
       expect(response.statusCode).toBe(200);

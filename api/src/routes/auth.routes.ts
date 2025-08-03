@@ -3,6 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { LoginInput } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
 import { AUTH_ERRORS } from "../types/errors";
+import { requireAuth } from "../middleware/auth.middleware";
 
 interface RefreshTokenBody {
   refreshToken: string;
@@ -142,6 +143,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   // Logout endpoint
   fastify.post<{ Body: LogoutBody }>(
     "/logout",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Body: LogoutBody }>,
       reply: FastifyReply

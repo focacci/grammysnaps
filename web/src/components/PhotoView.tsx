@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "./PhotoView.css";
 import Modal from "./Modal";
+import authService from "../services/auth.service";
+import { API_BASE_URL } from "../services/api.service";
 
 // Type definitions
 interface User {
@@ -132,7 +134,9 @@ function PhotoView({ user }: PhotoViewProps) {
         setError(null);
 
         // First fetch user's families
-        const familiesResponse = await fetch(`/api/family/user/${user.id}`);
+        const familiesResponse = await authService.apiCall(
+          `${API_BASE_URL}/family/user/${user.id}`
+        );
         if (!familiesResponse.ok) {
           throw new Error(
             `Failed to fetch families: ${familiesResponse.status}`
@@ -152,13 +156,16 @@ function PhotoView({ user }: PhotoViewProps) {
 
         let imagesResponse;
         if (familyIds.length > 0) {
-          imagesResponse = await fetch("/api/image/families", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ family_ids: familyIds }),
-          });
+          imagesResponse = await authService.apiCall(
+            `${API_BASE_URL}/image/families`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ family_ids: familyIds }),
+            }
+          );
         } else {
           // If user has no families, set empty images
           setImages([]);
@@ -168,7 +175,7 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         const tagPromises = familiesData.map((family: FamilyGroup) =>
-          fetch(`/api/tag/family/${family.id}`)
+          authService.apiCall(`${API_BASE_URL}/tag/family/${family.id}`)
         );
 
         const [, ...tagResponses] = await Promise.all([
@@ -372,8 +379,16 @@ function PhotoView({ user }: PhotoViewProps) {
       formData.append("tags", JSON.stringify(selectedUploadTags));
       formData.append("family_ids", JSON.stringify(selectedUploadFamilies));
 
-      const response = await fetch("/api/image", {
+      const authHeader = await authService.getAuthHeader();
+      if (!authHeader) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/image`, {
         method: "POST",
+        headers: {
+          Authorization: authHeader,
+        },
         body: formData, // Don't set Content-Type header, let browser handle it
       });
 
@@ -487,7 +502,7 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setCreatingTag(true);
     try {
-      const response = await fetch("/api/tag", {
+      const response = await authService.apiCall(`${API_BASE_URL}/tag`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -558,17 +573,20 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setSavingTag(true);
     try {
-      const response = await fetch(`/api/tag/${editingTag.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: editTagName.trim(),
-          type: editTagType,
-          family_id: editTagFamilyId,
-        }),
-      });
+      const response = await authService.apiCall(
+        `${API_BASE_URL}/tag/${editingTag.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: editTagName.trim(),
+            type: editTagType,
+            family_id: editTagFamilyId,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to update tag: ${response.status}`);
@@ -595,9 +613,12 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setDeletingTag(true);
     try {
-      const response = await fetch(`/api/tag/${editingTag.id}`, {
-        method: "DELETE",
-      });
+      const response = await authService.apiCall(
+        `${API_BASE_URL}/tag/${editingTag.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to delete tag: ${response.status}`);
@@ -687,17 +708,20 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setSavingImage(true);
     try {
-      const response = await fetch(`/api/image/${selectedImage.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: editTitle.trim() || null,
-          tags: editImageTags,
-          family_ids: editImageFamilies,
-        }),
-      });
+      const response = await authService.apiCall(
+        `${API_BASE_URL}/image/${selectedImage.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: editTitle.trim() || null,
+            tags: editImageTags,
+            family_ids: editImageFamilies,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to update image: ${response.status}`);
@@ -726,9 +750,12 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setDeletingImage(true);
     try {
-      const response = await fetch(`/api/image/${selectedImage.id}`, {
-        method: "DELETE",
-      });
+      const response = await authService.apiCall(
+        `${API_BASE_URL}/image/${selectedImage.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to delete image: ${response.status}`);
@@ -751,7 +778,19 @@ function PhotoView({ user }: PhotoViewProps) {
     if (!selectedImage) return;
 
     try {
-      const response = await fetch(`/api/image/${selectedImage.id}/download`);
+      const authHeader = await authService.getAuthHeader();
+      if (!authHeader) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/image/${selectedImage.id}/download`,
+        {
+          headers: {
+            Authorization: authHeader,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to download image: ${response.status}`);

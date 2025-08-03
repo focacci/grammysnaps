@@ -1,6 +1,7 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import { TagInput, TagUpdateInput } from "../plugins/tag.plugin";
 import { TAG_ERRORS } from "../types/errors";
+import { requireAuth } from "../middleware/auth.middleware";
 
 const createTagRequestBodySchema = {
   type: "object",
@@ -50,6 +51,9 @@ const updateTagParamsSchema = {
 };
 
 const tagRoutes: FastifyPluginAsync = async (fastify) => {
+  // Add auth middleware to all tag routes
+  fastify.addHook("preHandler", requireAuth);
+
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const tags = await fastify.tag.get();
     return reply.status(200).send({ tags });

@@ -4,6 +4,18 @@ import { Tag } from "../types/tag.types";
 import { TagInput, TagUpdateInput } from "../plugins/tag.plugin";
 import { TAG_ERRORS } from "../types/errors";
 
+// Mock auth middleware to always pass
+jest.mock("../middleware/auth.middleware", () => ({
+  requireAuth: jest.fn(async (request) => {
+    // Mock successful authentication by setting user on request
+    request.user = {
+      userId: "user-123",
+      email: "test@example.com",
+    };
+    // Don't call reply.send() or return anything - just let the request continue
+  }),
+}));
+
 const mockTagCreate = jest.fn();
 const mockTagGet = jest.fn();
 const mockTagGetByFamily = jest.fn();

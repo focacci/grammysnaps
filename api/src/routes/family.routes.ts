@@ -1,8 +1,11 @@
 import { FastifyPluginAsync } from "fastify";
 import { FamilyInput, FamilyUpdate } from "../types/family.types";
 import { FAMILY_ERRORS } from "../types/errors";
+import { requireAuth } from "../middleware/auth.middleware";
 
 const familyRoutes: FastifyPluginAsync = async (fastify) => {
+  // Add auth middleware to all family routes
+  fastify.addHook("preHandler", requireAuth);
   // Get all families (admin only)
   fastify.get("/", async (request, reply) => {
     try {

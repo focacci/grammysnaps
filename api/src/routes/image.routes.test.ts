@@ -3,6 +3,18 @@ import imageRoutes from "./image.routes";
 import { Image, ImageInput } from "../types/image.types";
 import { IMAGE_ERRORS } from "../types/errors";
 
+// Mock auth middleware to always pass
+jest.mock("../middleware/auth.middleware", () => ({
+  requireAuth: jest.fn(async (request) => {
+    // Mock successful authentication by setting user on request
+    request.user = {
+      userId: "user-123",
+      email: "test@example.com",
+    };
+    // Don't call reply.send() or return anything - just let the request continue
+  }),
+}));
+
 const mockImageGet = jest.fn();
 const mockImageGetById = jest.fn();
 const mockImageCreate = jest.fn();

@@ -7,6 +7,7 @@ import {
 import { ValidationUtils } from "../utils/validation";
 import { MultipartFile } from "@fastify/multipart";
 import { USER_ERRORS } from "../types/errors";
+import { requireAuth } from "../middleware/auth.middleware";
 
 interface UserParams {
   id: string;
@@ -67,8 +68,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
   );
 
   // Get all users
-  fastify.get(
+  fastify.get<{ Querystring: UserQueryParams }>(
     "/",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Querystring: UserQueryParams }>,
       reply: FastifyReply
@@ -88,6 +90,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Get user by ID
   fastify.get<{ Params: UserParams }>(
     "/:id",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Params: UserParams }>,
       reply: FastifyReply
@@ -117,8 +120,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
   );
 
   // Get user by email
-  fastify.get(
+  fastify.get<{ Params: { email: string } }>(
     "/email/:email",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Params: { email: string } }>,
       reply: FastifyReply
@@ -149,6 +153,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Update user
   fastify.put<{ Params: UserParams; Body: UserUpdate }>(
     "/:id",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Params: UserParams; Body: UserUpdate }>,
       reply: FastifyReply
@@ -182,6 +187,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Update user security (email/password)
   fastify.put<{ Params: UserParams; Body: SecurityUpdateInput }>(
     "/:id/security",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{
         Params: UserParams;
@@ -229,6 +235,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Delete user
   fastify.delete<{ Params: UserParams }>(
     "/:id",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Params: UserParams }>,
       reply: FastifyReply
@@ -256,6 +263,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Add user to family
   fastify.post<{ Params: FamilyParams }>(
     "/:userId/family/:familyId",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Params: FamilyParams }>,
       reply: FastifyReply
@@ -291,6 +299,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Remove user from family
   fastify.delete<{ Params: FamilyParams }>(
     "/:userId/family/:familyId",
+    { preHandler: requireAuth },
     async (
       request: FastifyRequest<{ Params: FamilyParams }>,
       reply: FastifyReply
@@ -327,6 +336,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.post(
     "/:id/profile-picture",
     {
+      preHandler: requireAuth,
       schema: {
         consumes: ["multipart/form-data"],
         params: {
