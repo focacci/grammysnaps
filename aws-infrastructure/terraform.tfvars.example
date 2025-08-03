@@ -1,0 +1,27 @@
+# AWS Configuration
+aws_region = "us-east-2"
+environment = "dev"
+project_name = "grammysnaps"
+domain_name = "grannysnaps.dev"
+
+# ECS Configuration
+api_cpu = 512
+api_memory = 1024
+web_cpu = 256
+web_memory = 512
+
+# Database Configuration
+db_instance_class = "db.t3.micro"
+db_allocated_storage = 20
+db_max_allocated_storage = 100
+db_backup_retention_period = 7
+db_backup_window = "03:00-04:00"
+db_maintenance_window = "sun:04:00-sun:05:00"
+
+# GitHub Repository
+github_repo = "focacci/grammysnaps"
+
+# Secrets (set these in your terraform.tfvars file - DO NOT COMMIT)
+# jwt_secret = "your-super-secret-jwt-key-here"
+# aws_access_key_id = "your-aws-access-key-id"
+# aws_secret_access_key = "your-aws-secret-access-key"

@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from "fastify";
 import fastifyPostgres from "@fastify/postgres";
 import fastifyMultipart from "@fastify/multipart";
-// import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyRateLimit from "@fastify/rate-limit";
 
 import imagePlugin from "./plugins/image.plugin";
 import imageRoutes from "./routes/image.routes";
@@ -14,7 +14,7 @@ import familyPlugin from "./plugins/family.plugin";
 import familyRoutes from "./routes/family.routes";
 import authPlugin from "./plugins/auth.plugin";
 import authRoutes from "./routes/auth.routes";
-import { SERVER_ERRORS } from "./types/errors";
+import { SERVER_ERRORS, RATE_LIMIT_ERRORS } from "./types/errors";
 
 const server: FastifyInstance = Fastify({ logger: true });
 
@@ -64,19 +64,22 @@ const main = async () => {
     }
   });
 
-  // Register rate limiting for security - TEMPORARILY DISABLED
-  /*
-  server.register(fastifyRateLimit, {
-    max: 100, // Maximum 100 requests per timeWindow
-    timeWindow: "1 minute", // per 1 minute
-    errorResponseBuilder: (req: any, context: any) => {
-      return {
-        error: RATE_LIMIT_ERRORS.TOO_MANY_REQUESTS,
-        expiresIn: Math.round(context.ttl / 1000), // seconds
-      };
-    },
-  });
-  */
+  // Register rate limiting for security
+  if (
+    process.env.NODE_ENV &&
+    (process.env.NODE_ENV === "dev" || process.env.NODE_ENV === "production")
+  ) {
+    server.register(fastifyRateLimit, {
+      max: 300, // Maximum 300 requests per timeWindow
+      timeWindow: "1 minute", // per 1 minute
+      errorResponseBuilder: (context: any) => {
+        return {
+          error: RATE_LIMIT_ERRORS.TOO_MANY_REQUESTS,
+          expiresIn: Math.round(context.ttl / 1000), // seconds
+        };
+      },
+    });
+  }
 
   // Register multipart for file uploads
   server.register(fastifyMultipart, {
