@@ -16,6 +16,7 @@ interface User {
   created_at: string;
   updated_at: string;
   profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
 }
 
 interface FamilyGroup {
@@ -37,6 +38,8 @@ interface FamilyMember {
   birthday?: string | null;
   role: "owner" | "member";
   joined_at: string;
+  profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
 }
 
 interface RelatedFamily {
@@ -1045,9 +1048,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
             className="profile-picture-container"
             onClick={handleProfilePictureClick}
           >
-            {user.profile_picture_url ? (
+            {user.profile_picture_thumbnail_url ? (
               <img
-                src={user.profile_picture_url}
+                src={user.profile_picture_thumbnail_url}
                 alt={`${getFullName(user)}'s profile`}
                 className="profile-picture"
               />
@@ -1442,10 +1445,18 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 {familyMembers.map((member) => (
                   <div key={member.id} className="member-row">
                     <div className="member-avatar">
-                      <span className="avatar-placeholder">
-                        {member.first_name?.[0] || "?"}
-                        {member.last_name?.[0] || "?"}
-                      </span>
+                      {member.profile_picture_thumbnail_url ? (
+                        <img
+                          src={member.profile_picture_thumbnail_url}
+                          alt={`${member.first_name || "Member"}'s profile`}
+                          className="member-avatar-image"
+                        />
+                      ) : (
+                        <span className="avatar-placeholder">
+                          {member.first_name?.[0] || "?"}
+                          {member.last_name?.[0] || "?"}
+                        </span>
+                      )}
                     </div>
 
                     <div className="member-info">
@@ -1509,10 +1520,18 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 {viewMembersList.map((member) => (
                   <div key={member.id} className="member-row">
                     <div className="member-avatar">
-                      <span className="avatar-placeholder">
-                        {member.first_name?.[0] || "?"}
-                        {member.last_name?.[0] || "?"}
-                      </span>
+                      {member.profile_picture_thumbnail_url ? (
+                        <img
+                          src={member.profile_picture_thumbnail_url}
+                          alt={`${member.first_name || "Member"}'s profile`}
+                          className="member-avatar-image"
+                        />
+                      ) : (
+                        <span className="avatar-placeholder">
+                          {member.first_name?.[0] || "?"}
+                          {member.last_name?.[0] || "?"}
+                        </span>
+                      )}
                     </div>
 
                     <div className="member-info">

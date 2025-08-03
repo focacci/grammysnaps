@@ -301,6 +301,8 @@ describe("Family Plugin", () => {
           last_name: "Doe",
           email: "john@example.com",
           birthday: new Date("1990-01-01"),
+          profile_picture_thumbnail_url:
+            "https://example.com/thumb_profile.jpg",
           owner_id: "user-1",
           joined_at: new Date(),
         },
@@ -310,6 +312,7 @@ describe("Family Plugin", () => {
           last_name: "Smith",
           email: "jane@example.com",
           birthday: null,
+          profile_picture_thumbnail_url: null,
           owner_id: "user-1",
           joined_at: new Date(),
         },
@@ -320,7 +323,7 @@ describe("Family Plugin", () => {
       const result = await fastify.family.getMembers("family-123");
 
       expect(mockQuery).toHaveBeenCalledWith(
-        `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, f.owner_id,
+        `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, u.profile_picture_thumbnail_url, f.owner_id,
                   f.created_at as joined_at
            FROM users u
            JOIN family_members fm ON u.id = fm.user_id
@@ -334,6 +337,10 @@ describe("Family Plugin", () => {
       expect(result[1].role).toBe("member");
       expect(result[0].birthday).toBe("1990-01-01");
       expect(result[1].birthday).toBeUndefined();
+      expect(result[0].profile_picture_thumbnail_url).toBe(
+        "https://example.com/thumb_profile.jpg"
+      );
+      expect(result[1].profile_picture_thumbnail_url).toBeNull();
     });
 
     it("should throw error when database fails", async () => {

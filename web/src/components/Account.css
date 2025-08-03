@@ -675,6 +675,14 @@
   color: white; /* White text for high contrast */
   font-weight: 600; /* Semi-bold weight for avatar initials */
   font-size: 0.9rem; /* Medium font size for avatar text */
+  overflow: hidden; /* Hide any overflow from images */
+}
+
+.member-avatar-image {
+  width: 100%; /* Fill the avatar container */
+  height: 100%; /* Fill the avatar container */
+  object-fit: cover; /* Cover the entire container while maintaining aspect ratio */
+  border-radius: 50%; /* Make image circular */
 }
 
 .avatar-placeholder {

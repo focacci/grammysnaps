@@ -154,7 +154,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     async getMembers(familyId: string): Promise<FamilyMember[]> {
       try {
         const { rows } = await fastify.pg.query<any>(
-          `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, f.owner_id,
+          `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, u.profile_picture_thumbnail_url, f.owner_id,
                   f.created_at as joined_at
            FROM users u
            JOIN family_members fm ON u.id = fm.user_id
@@ -172,6 +172,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           birthday: row.birthday
             ? new Date(row.birthday).toISOString().split("T")[0]
             : undefined,
+          profile_picture_thumbnail_url: row.profile_picture_thumbnail_url,
           role: row.id === row.owner_id ? "owner" : "member",
           joined_at: row.joined_at,
         }));
