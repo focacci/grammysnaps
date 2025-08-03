@@ -269,6 +269,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         .resize(400, 400, {
           fit: "cover", // Crop to fill the 400x400 square
           position: "center", // Center the crop
+          withoutEnlargement: true, // Prevent upscaling
         })
         .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality for consistent format
         .toBuffer();

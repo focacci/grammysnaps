@@ -463,6 +463,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
           .resize(400, 400, {
             fit: "cover",
             position: "center",
+            withoutEnlargement: true, // Prevent upscaling
           })
           .jpeg({ quality: 80 })
           .toBuffer();
