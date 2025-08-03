@@ -1287,3 +1287,59 @@ body.modal-open {
     outline-offset: 2px; /* Offset outline for better visibility */
   }
 }
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex; /* Use flexbox for centering */
+  justify-content: center; /* Center the load more button */
+  padding: 20px 0; /* Vertical padding */
+  margin-top: 20px; /* Space above pagination controls */
+}
+
+.load-more-btn {
+  background-color: var(--primary-orange); /* Orange background */
+  color: white; /* White text */
+  border: none; /* Remove default border */
+  border-radius: 6px; /* Rounded corners */
+  padding: 12px 24px; /* Comfortable padding */
+  font-size: 16px; /* Clear, readable font size */
+  font-weight: 500; /* Medium font weight */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.2s ease; /* Smooth transition for interactions */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background-color: var(
+    --primary-orange-dark,
+    #e67e22
+  ); /* Darker orange on hover */
+  transform: translateY(-1px); /* Subtle lift effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+}
+
+.load-more-btn:active:not(:disabled) {
+  transform: translateY(0); /* Reset transform on click */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Reset shadow on click */
+}
+
+.load-more-btn:disabled {
+  background-color: var(--bg-tertiary, #ccc); /* Disabled background */
+  color: var(--text-secondary, #666); /* Disabled text color */
+  cursor: not-allowed; /* Not-allowed cursor for disabled state */
+  transform: none; /* No transform when disabled */
+  box-shadow: none; /* No shadow when disabled */
+}
+
+/* Mobile responsiveness for pagination */
+@media (max-width: 768px) {
+  .pagination-controls {
+    padding: 16px 0; /* Reduced padding on mobile */
+    margin-top: 16px; /* Reduced margin on mobile */
+  }
+
+  .load-more-btn {
+    padding: 10px 20px; /* Slightly smaller padding on mobile */
+    font-size: 15px; /* Slightly smaller font on mobile */
+  }
+}

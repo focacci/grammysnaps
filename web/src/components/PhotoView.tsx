@@ -102,6 +102,12 @@ function PhotoView({ user }: PhotoViewProps) {
   const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
   const [selectedFamily, setSelectedFamily] = useState<string>("all");
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(50);
+  const [hasMoreImages, setHasMoreImages] = useState(true);
+  const [loadingMoreImages, setLoadingMoreImages] = useState(false);
+
   // Mobile sidebar collapse state
   const [isSidebarCollapsedMobile, setIsSidebarCollapsedMobile] =
     useState(false);
@@ -151,20 +157,27 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         // Fetch images and tags for all user's families in parallel
-        // Use the new family-specific endpoint to ensure users only see images from their families
+        // Use the new paginated user endpoint
         const familyIds = familiesData.map((family: FamilyGroup) => family.id);
 
         let imagesResponse;
         if (familyIds.length > 0) {
+          // Build query parameters for pagination
+          const queryParams = new URLSearchParams({
+            limit: pageSize.toString(),
+            offset: (currentPage * pageSize).toString(),
+            order: "desc",
+          });
+
+          // Add selected tags to query if any
+          if (selectedTags.length > 0) {
+            selectedTags.forEach((tagId) => {
+              queryParams.append("tags", tagId);
+            });
+          }
+
           imagesResponse = await authService.apiCall(
-            `${API_BASE_URL}/image/families`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ family_ids: familyIds }),
-            }
+            `${API_BASE_URL}/image/user/${user.id}?${queryParams.toString()}`
           );
         } else {
           // If user has no families, set empty images
@@ -188,7 +201,17 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         const imagesData = await imagesResponse.json();
-        setImages(imagesData.images || []);
+
+        // For initial load, replace images; for pagination, append images
+        if (currentPage === 0) {
+          setImages(imagesData.images || []);
+        } else {
+          setImages((prev) => [...prev, ...(imagesData.images || [])]);
+        }
+
+        // Check if there are more images to load
+        const receivedImages = imagesData.images || [];
+        setHasMoreImages(receivedImages.length === pageSize);
 
         // Combine tags from all families
         const allTags: Tag[] = [];
@@ -209,6 +232,99 @@ function PhotoView({ user }: PhotoViewProps) {
 
     fetchData();
   }, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Function to load more images (pagination)
+  const loadMoreImages = async () => {
+    if (loadingMoreImages || !hasMoreImages) return;
+
+    try {
+      setLoadingMoreImages(true);
+      const nextPage = currentPage + 1;
+
+      // Build query parameters for pagination
+      const queryParams = new URLSearchParams({
+        limit: pageSize.toString(),
+        offset: (nextPage * pageSize).toString(),
+        order: "desc",
+      });
+
+      // Add selected tags to query if any
+      if (selectedTags.length > 0) {
+        selectedTags.forEach((tagId) => {
+          queryParams.append("tags", tagId);
+        });
+      }
+
+      const imagesResponse = await authService.apiCall(
+        `${API_BASE_URL}/image/user/${user.id}?${queryParams.toString()}`
+      );
+
+      if (!imagesResponse.ok) {
+        throw new Error(
+          `Failed to fetch more images: ${imagesResponse.status}`
+        );
+      }
+
+      const imagesData = await imagesResponse.json();
+      const newImages = imagesData.images || [];
+
+      // Append new images to existing ones
+      setImages((prev) => [...prev, ...newImages]);
+      setCurrentPage(nextPage);
+      setHasMoreImages(newImages.length === pageSize);
+    } catch (err) {
+      console.error("Error loading more images:", err);
+    } finally {
+      setLoadingMoreImages(false);
+    }
+  };
+
+  // Handle tag filtering - reset to first page when tags change
+  useEffect(() => {
+    const refetchWithTags = async () => {
+      if (loading) return; // Don't refetch while initial load is happening
+
+      try {
+        setLoading(true);
+        setCurrentPage(0);
+
+        // Build query parameters for pagination
+        const queryParams = new URLSearchParams({
+          limit: pageSize.toString(),
+          offset: "0",
+          order: "desc",
+        });
+
+        // Add selected tags to query if any
+        if (selectedTags.length > 0) {
+          selectedTags.forEach((tagId) => {
+            queryParams.append("tags", tagId);
+          });
+        }
+
+        const imagesResponse = await authService.apiCall(
+          `${API_BASE_URL}/image/user/${user.id}?${queryParams.toString()}`
+        );
+
+        if (!imagesResponse.ok) {
+          throw new Error(
+            `Failed to fetch filtered images: ${imagesResponse.status}`
+          );
+        }
+
+        const imagesData = await imagesResponse.json();
+        setImages(imagesData.images || []);
+        setHasMoreImages((imagesData.images || []).length === pageSize);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Error fetching filtered images:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    refetchWithTags();
+  }, [selectedTags]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize mobile sidebar state based on screen size
   useEffect(() => {
@@ -1163,6 +1279,19 @@ function PhotoView({ user }: PhotoViewProps) {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && hasMoreImages && (
+            <div className="pagination-controls">
+              <button
+                className="load-more-btn"
+                onClick={loadMoreImages}
+                disabled={loadingMoreImages}
+              >
+                {loadingMoreImages ? "Loading..." : "Load More Images"}
+              </button>
             </div>
           )}
         </section>

@@ -16,6 +16,13 @@ declare module "fastify" {
       getByFamily: (familyId: string) => Promise<Image[]>;
       getByFamilies: (familyIds: string[]) => Promise<Image[]>;
       getOrphanedByFamily: (familyId: string) => Promise<Image[]>;
+      getForUser: (
+        userId: string,
+        tags: string[],
+        limit: number,
+        offset: number,
+        order: "asc" | "desc"
+      ) => Promise<Image[]>;
     };
   }
 }
@@ -238,6 +245,51 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to get orphaned images by family");
+      }
+    },
+
+    async getForUser(
+      userId: string,
+      tags: string[],
+      limit: number,
+      offset: number,
+      order: "asc" | "desc"
+    ): Promise<Image[]> {
+      try {
+        // Build the query dynamically based on whether tags are provided
+        let query = `
+          SELECT DISTINCT i.* FROM images i 
+          JOIN image_families if ON i.id = if.image_id 
+          JOIN family_members fm ON if.family_id = fm.family_id 
+          WHERE fm.user_id = $1
+        `;
+
+        const params: (string | number)[] = [userId];
+        let paramCount = 1;
+
+        // Add tag filtering if tags are provided
+        if (tags && tags.length > 0) {
+          query += ` AND i.id IN (
+            SELECT it.image_id FROM image_tags it 
+            WHERE it.tag_id IN (${tags
+              .map(() => `$${++paramCount}`)
+              .join(", ")})
+          )`;
+          params.push(...tags);
+        }
+
+        // Add ordering
+        query += ` ORDER BY i.created_at ${order.toUpperCase()}`;
+
+        // Add pagination
+        query += ` LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+        params.push(limit, offset);
+
+        const { rows } = await fastify.pg.query<Image>(query, params);
+        return rows;
+      } catch (err) {
+        fastify.log.error(err);
+        throw new Error("Failed to get images for user");
       }
     },
   });

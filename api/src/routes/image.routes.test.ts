@@ -26,6 +26,7 @@ const mockImageGetByFamily = jest.fn();
 const mockImageGetByFamilies = jest.fn();
 const mockImageGetAllWithTag = jest.fn();
 const mockImageGetOrphanedByFamily = jest.fn();
+const mockImageGetForUser = jest.fn();
 
 const mockS3Upload = jest.fn();
 const mockS3Download = jest.fn();
@@ -76,6 +77,7 @@ describe("Image Routes", () => {
       getByFamilies: mockImageGetByFamilies,
       getAllWithTag: mockImageGetAllWithTag,
       getOrphanedByFamily: mockImageGetOrphanedByFamily,
+      getForUser: mockImageGetForUser,
     });
 
     fastify.decorate("s3", {
@@ -619,99 +621,172 @@ describe("Image Routes", () => {
     });
   });
 
-  describe("POST /families", () => {
-    const validFamilyIds = [
-      "550e8400-e29b-41d4-a716-446655440001",
-      "550e8400-e29b-41d4-a716-446655440002",
-    ];
+  describe("GET /user/:userId", () => {
+    const validUserId = "550e8400-e29b-41d4-a716-446655440000";
 
-    it("should return images for multiple families", async () => {
+    it("should return paginated images for user with default parameters", async () => {
       const mockImages = [mockImage];
-      mockImageGetByFamilies.mockResolvedValue(mockImages);
+      mockImageGetForUser.mockResolvedValue(mockImages);
 
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: { family_ids: validFamilyIds },
+        method: "GET",
+        url: `/user/${validUserId}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.body)).toEqual({ images: mockImages });
-      expect(mockImageGetByFamilies).toHaveBeenCalledWith(validFamilyIds);
+      expect(mockImageGetForUser).toHaveBeenCalledWith(
+        validUserId,
+        [],
+        50,
+        0,
+        "desc"
+      );
     });
 
-    it("should return empty array when no images found", async () => {
-      mockImageGetByFamilies.mockResolvedValue([]);
+    it("should return paginated images with custom parameters", async () => {
+      const mockImages = [mockImage];
+      mockImageGetForUser.mockResolvedValue(mockImages);
+      const tag1 = "550e8400-e29b-41d4-a716-446655440010";
+      const tag2 = "550e8400-e29b-41d4-a716-446655440011";
 
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: { family_ids: validFamilyIds },
+        method: "GET",
+        url: `/user/${validUserId}?limit=10&offset=20&order=asc&tags=${tag1}&tags=${tag2}`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(JSON.parse(response.body)).toEqual({ images: mockImages });
+      expect(mockImageGetForUser).toHaveBeenCalledWith(
+        validUserId,
+        [tag1, tag2],
+        10,
+        20,
+        "asc"
+      );
+    });
+
+    it("should return empty array when no images found for user", async () => {
+      mockImageGetForUser.mockResolvedValue([]);
+
+      const response = await fastify.inject({
+        method: "GET",
+        url: `/user/${validUserId}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.body)).toEqual({ images: [] });
     });
 
-    it("should reject missing family_ids", async () => {
+    it("should reject invalid UUID format for userId", async () => {
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: {},
+        method: "GET",
+        url: "/user/invalid-uuid",
       });
 
       expect(response.statusCode).toBe(400);
     });
 
-    it("should reject empty family_ids array", async () => {
+    it("should reject invalid limit parameter", async () => {
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: { family_ids: [] },
+        method: "GET",
+        url: `/user/${validUserId}?limit=0`,
       });
 
       expect(response.statusCode).toBe(400);
     });
 
-    it("should reject invalid UUID format in family_ids", async () => {
+    it("should reject limit exceeding maximum", async () => {
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: { family_ids: ["invalid-uuid"] },
+        method: "GET",
+        url: `/user/${validUserId}?limit=101`,
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("should reject negative offset", async () => {
+      const response = await fastify.inject({
+        method: "GET",
+        url: `/user/${validUserId}?offset=-1`,
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("should reject invalid order parameter", async () => {
+      const response = await fastify.inject({
+        method: "GET",
+        url: `/user/${validUserId}?order=invalid`,
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("should reject invalid tag UUID format", async () => {
+      const response = await fastify.inject({
+        method: "GET",
+        url: `/user/${validUserId}?tags=invalid-uuid`,
       });
 
       expect(response.statusCode).toBe(400);
     });
 
     it("should handle database errors", async () => {
-      mockImageGetByFamilies.mockRejectedValue(new Error("Database error"));
+      mockImageGetForUser.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: { family_ids: validFamilyIds },
+        method: "GET",
+        url: `/user/${validUserId}`,
       });
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
-        message: IMAGE_ERRORS.GET_BY_FAMILIES_FAILED,
+        message: IMAGE_ERRORS.GET_FOR_USER_FAILED,
         error: "Database error",
       });
     });
 
-    it("should handle single family ID", async () => {
-      const singleFamilyId = ["550e8400-e29b-41d4-a716-446655440001"];
+    it("should handle empty tags array", async () => {
       const mockImages = [mockImage];
-      mockImageGetByFamilies.mockResolvedValue(mockImages);
+      mockImageGetForUser.mockResolvedValue(mockImages);
 
       const response = await fastify.inject({
-        method: "POST",
-        url: "/families",
-        payload: { family_ids: singleFamilyId },
+        method: "GET",
+        url: `/user/${validUserId}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.body)).toEqual({ images: mockImages });
+      expect(mockImageGetForUser).toHaveBeenCalledWith(
+        validUserId,
+        [],
+        50,
+        0,
+        "desc"
+      );
+    });
+
+    it("should handle multiple tag parameters correctly", async () => {
+      const mockImages = [mockImage];
+      mockImageGetForUser.mockResolvedValue(mockImages);
+      const tag1 = "550e8400-e29b-41d4-a716-446655440010";
+      const tag2 = "550e8400-e29b-41d4-a716-446655440011";
+
+      const response = await fastify.inject({
+        method: "GET",
+        url: `/user/${validUserId}?tags=${tag1}&tags=${tag2}`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(JSON.parse(response.body)).toEqual({ images: mockImages });
+      expect(mockImageGetForUser).toHaveBeenCalledWith(
+        validUserId,
+        [tag1, tag2],
+        50,
+        0,
+        "desc"
+      );
     });
   });
 });
