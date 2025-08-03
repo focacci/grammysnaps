@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
   birthday DATE,
   families UUID[] NOT NULL,
   profile_picture_url VARCHAR(2047),
+  profile_picture_thumbnail_url VARCHAR(2047),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -188,6 +188,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         birthday,
         families,
         profile_picture_url,
+        profile_picture_thumbnail_url,
       } = input;
       fastify.log.info(`Updating user: ${input}`);
 
@@ -223,6 +224,10 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const sanitizedProfilePictureUrl = profile_picture_url
           ? ValidationUtils.sanitizeURL(profile_picture_url)
           : null;
+        const sanitizedProfilePictureThumbnailUrl =
+          profile_picture_thumbnail_url
+            ? ValidationUtils.sanitizeURL(profile_picture_thumbnail_url)
+            : null;
 
         // Validate family IDs
         const sanitizedAndValidFamilies = sanitizedFamilies?.length
@@ -267,6 +272,12 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         if (sanitizedProfilePictureUrl) {
           updateFields.push(`profile_picture_url = $${paramCount}`);
           values.push(sanitizedProfilePictureUrl);
+          paramCount++;
+        }
+
+        if (sanitizedProfilePictureThumbnailUrl) {
+          updateFields.push(`profile_picture_thumbnail_url = $${paramCount}`);
+          values.push(sanitizedProfilePictureThumbnailUrl);
           paramCount++;
         }
 

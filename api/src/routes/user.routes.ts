@@ -8,6 +8,7 @@ import { ValidationUtils } from "../utils/validation";
 import { MultipartFile } from "@fastify/multipart";
 import { USER_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
+import sharp from "sharp";
 
 interface UserParams {
   id: string;
@@ -440,33 +441,69 @@ export default async function userRoutes(fastify: FastifyInstance) {
           `Uploading file: ${file.filename}, size: ${buffer.length} bytes`
         );
 
-        // Generate a unique key for S3
+        // Generate a unique key for S3 (original)
         const fileExtension = file.filename?.split(".").pop() || "jpg";
-        const s3Key = fastify.s3.createKey(
+        const originalS3Key = fastify.s3.createKey(
+          process.env.NODE_ENV || "local",
           "profile-pictures",
           id,
           `profile.${fileExtension}`
         );
 
-        // Upload to S3 (assumes fastify.s3 is configured)
+        // Generate thumbnail key
+        const thumbnailS3Key = fastify.s3.createKey(
+          process.env.NODE_ENV || "local",
+          "profile-pictures",
+          id,
+          `thumb_profile.${fileExtension}`
+        );
+
+        // Create 400x400 thumbnail using Sharp
+        const thumbnailBuffer = await sharp(buffer)
+          .resize(400, 400, {
+            fit: "cover",
+            position: "center",
+          })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+
+        // Upload original to S3
         await fastify.s3.upload({
-          key: s3Key,
+          key: originalS3Key,
           buffer: buffer,
           contentType: file.mimetype,
           metadata: {
             userId: id,
             uploadedAt: new Date().toISOString(),
+            type: "original",
           },
         });
 
-        const publicUrl = fastify.s3.getPublicUrl(s3Key);
-
-        // Optionally, update user record with the S3 URL
-        await fastify.user.update(id, {
-          profile_picture_url: publicUrl,
+        // Upload thumbnail to S3
+        await fastify.s3.upload({
+          key: thumbnailS3Key,
+          buffer: thumbnailBuffer,
+          contentType: "image/jpeg",
+          metadata: {
+            userId: id,
+            uploadedAt: new Date().toISOString(),
+            type: "thumbnail",
+          },
         });
 
-        return reply.send({ url: publicUrl });
+        const publicUrl = fastify.s3.getPublicUrl(originalS3Key);
+        const thumbnailUrl = fastify.s3.getPublicUrl(thumbnailS3Key);
+
+        // Update user record with both URLs
+        await fastify.user.update(id, {
+          profile_picture_url: publicUrl,
+          profile_picture_thumbnail_url: thumbnailUrl,
+        });
+
+        return reply.send({
+          url: publicUrl,
+          thumbnail_url: thumbnailUrl,
+        });
       } catch (error) {
         fastify.log.error("Profile picture upload error:", error);
 
