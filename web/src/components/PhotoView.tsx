@@ -1408,9 +1408,9 @@ function PhotoView({ user }: PhotoViewProps) {
 
         <div className="form-group">
           <label>Select Families (required):</label>
-          <div className="family-selection">
-            {familyGroups.length > 0 ? (
-              familyGroups.map((family) => (
+          {familyGroups.length > 0 ? (
+            <div className="family-selection">
+              {familyGroups.map((family) => (
                 <div
                   key={family.id}
                   className={`family-checkbox ${
@@ -1420,16 +1420,16 @@ function PhotoView({ user }: PhotoViewProps) {
                 >
                   <span>{family.name}</span>
                 </div>
-              ))
-            ) : (
-              <div className="empty-families-message">
-                <span>
-                  You are not a member of any families. Please join or create a
-                  family to upload photos.
-                </span>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-families-message">
+              <span>
+                You are not a member of any families. Please join or create a
+                family to upload photos.
+              </span>
+            </div>
+          )}
         </div>
 
         {uploadError && (
