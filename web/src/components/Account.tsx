@@ -1044,10 +1044,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <div className="account-container">
         {/* Profile Section */}
         <div className="profile-section">
-          <div
-            className="profile-picture-container"
-            onClick={handleProfilePictureClick}
-          >
+          <div className="profile-picture-container">
             {user.profile_picture_thumbnail_url ? (
               <img
                 src={user.profile_picture_thumbnail_url}
@@ -1059,9 +1056,6 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 <span className="profile-avatar-icon">👤</span>
               </div>
             )}
-            <div className="profile-picture-overlay">
-              <span>📷</span>
-            </div>
           </div>
           <div className="user-info">
             <h1 className="user-name">{getFullName(user)}</h1>
@@ -1209,24 +1203,22 @@ function Account({ user, onUserUpdate }: AccountProps) {
           )}
         </div>
 
-        {/* Account Settings Section */}
+        {/* Action Buttons */}
         <div className="account-section">
           <h2 className="section-title-static">Account Settings</h2>
           <div className="section-content">
             <div className="settings-grid">
+              <button
+                className="setting-item"
+                onClick={handleProfilePictureClick}
+              >
+                <span className="setting-icon">👤</span>
+                <span className="setting-label">Edit Profile</span>
+                <span className="setting-arrow">→</span>
+              </button>
               <button className="setting-item" onClick={handleSecuritySettings}>
                 <span className="setting-icon">🔒</span>
                 <span className="setting-label">Security</span>
-                <span className="setting-arrow">→</span>
-              </button>
-              <button className="setting-item">
-                <span className="setting-icon">🔔</span>
-                <span className="setting-label">Notifications</span>
-                <span className="setting-arrow">→</span>
-              </button>
-              <button className="setting-item">
-                <span className="setting-icon">📱</span>
-                <span className="setting-label">Devices</span>
                 <span className="setting-arrow">→</span>
               </button>
             </div>

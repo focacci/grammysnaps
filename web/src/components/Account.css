@@ -68,32 +68,6 @@
 
 .profile-picture-container {
   position: relative; /* Enable positioning for overlay element */
-  cursor: pointer; /* Show pointer cursor to indicate clickable area */
-  transition: transform 0.2s ease; /* Smooth scaling animation on hover */
-}
-
-.profile-picture-container:hover {
-  transform: scale(1.02); /* Slightly enlarge container on hover for feedback */
-}
-
-.profile-picture-overlay {
-  position: absolute; /* Position overlay on top of profile picture */
-  top: 0; /* Align to top edge of container */
-  left: 0; /* Align to left edge of container */
-  right: 0; /* Align to right edge of container */
-  bottom: 0; /* Align to bottom edge of container */
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent dark overlay */
-  border-radius: 12px; /* Match container border radius */
-  display: flex; /* Use flexbox for icon centering */
-  align-items: center; /* Center icon vertically */
-  justify-content: center; /* Center icon horizontally */
-  opacity: 0; /* Hide overlay by default */
-  transition: opacity 0.2s ease; /* Smooth fade in/out animation */
-  font-size: 1.5rem; /* Large icon size for clear visibility */
-}
-
-.profile-picture-container:hover .profile-picture-overlay {
-  opacity: 1; /* Show overlay on hover for edit indication */
 }
 
 .profile-picture {
