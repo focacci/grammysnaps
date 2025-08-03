@@ -414,7 +414,8 @@ describe("Family Plugin", () => {
       const mockOrphanedImages = [
         {
           id: "image-1",
-          s3_url: "https://bucket.s3.amazonaws.com/image1.jpg",
+          original_url: "https://bucket.s3.amazonaws.com/image1.jpg",
+          thumbnail_url: "https://bucket.s3.amazonaws.com/thumb_image1.jpg",
         },
       ];
 

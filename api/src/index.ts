@@ -20,9 +20,11 @@ const server: FastifyInstance = Fastify({ logger: true });
 
 const main = async () => {
   // Load environment variables from .env file in development only
-  if (!["dev", "production"].includes(process.env.NODE_ENV || "local")) {
+  if (process.env.NODE_ENV && process.env.NODE_ENV !== "production") {
     const { config } = await import("dotenv");
-    config();
+    config({
+      path: process.env.NODE_ENV === "testing" ? "./.testing.env" : "./.env",
+    });
   }
 
   // Add CORS headers manually

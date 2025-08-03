@@ -4,6 +4,7 @@ import { MultipartFile } from "@fastify/multipart";
 import { v4 as uuidv4 } from "uuid";
 import { IMAGE_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
+import sharp from "sharp";
 
 interface GetImageParams {
   imageId: string;
@@ -87,14 +88,14 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
         }
 
-        if (!image.s3_url) {
+        if (!image.original_url) {
           return reply
             .status(404)
             .send({ message: IMAGE_ERRORS.FILE_NOT_FOUND });
         }
 
         // Extract S3 key from the public URL
-        const url = new URL(image.s3_url);
+        const url = new URL(image.original_url);
         const s3Key = url.pathname.substring(1); // Remove leading slash
 
         // Download the file from S3
@@ -263,16 +264,33 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         `Uploading file: ${fileData.filename}, size: ${buffer.length} bytes`
       );
 
-      // Generate S3 key first
-      const s3Key = fastify.s3.createKey(
+      // Create thumbnail copy
+      const thumbnailBuffer = await sharp(buffer)
+        .resize(400, 400, {
+          fit: "cover", // Crop to fill the 400x400 square
+          position: "center", // Center the crop
+        })
+        .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality for consistent format
+        .toBuffer();
+
+      fastify.log.info(`Created thumbnail: ${thumbnailBuffer.length} bytes`);
+
+      // Generate S3 keys for both original and thumbnail
+      const originalS3Key = fastify.s3.createKey(
         "family-photos",
         uuidv4(),
         fileData.filename
       );
 
-      // Upload to S3 first
+      const thumbnailS3Key = fastify.s3.createKey(
+        "family-photos",
+        uuidv4(),
+        `thumb_${fileData.filename}`
+      );
+
+      // Upload original image to S3
       await fastify.s3.upload({
-        key: s3Key,
+        key: originalS3Key,
         buffer: buffer,
         contentType: fileData.mimetype,
         metadata: {
@@ -281,16 +299,30 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
 
-      // Get public URL for immediate access
-      const publicUrl = fastify.s3.getPublicUrl(s3Key);
+      // Upload thumbnail to S3
+      await fastify.s3.upload({
+        key: thumbnailS3Key,
+        buffer: thumbnailBuffer,
+        contentType: "image/jpeg", // Thumbnails are always JPEG
+        metadata: {
+          originalName: fileData.filename || "unknown",
+          uploadedAt: new Date().toISOString(),
+          type: "thumbnail",
+        },
+      });
 
-      // Create image record in database with S3 key
+      // Get public URLs for both images
+      const publicUrl = fastify.s3.getPublicUrl(originalS3Key);
+      const thumbnailUrl = fastify.s3.getPublicUrl(thumbnailS3Key);
+
+      // Create image record in database with S3 URLs
       const image = await fastify.image.create({
         filename: fileData.filename,
         title,
         tags,
         family_ids,
-        s3Url: publicUrl, // Store the public S3 url
+        original_url: publicUrl, // Store the public S3 url
+        thumbnail_url: thumbnailUrl, // Store the thumbnail S3 url
       });
 
       return reply.status(201).send({ image });
@@ -315,18 +347,19 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       const { imageId } = request.params as UpdateImageParams;
       const { title, tags, family_ids } = request.body as ImageInput;
 
-      // First get the existing image to preserve s3_url and filename
+      // First get the existing image to preserve and filename
       const existingImage = await fastify.image.getById(imageId);
       if (!existingImage) {
         return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
       }
 
-      // Update with preserved s3_url and filename
+      // Update with preserved, thumbnail_url and filename
       const image = await fastify.image.update(imageId, {
         title,
         tags,
         family_ids,
-        s3Url: existingImage.s3_url, // Preserve existing s3_url
+        original_url: existingImage.original_url, // Preserve existing original_url
+        thumbnail_url: existingImage.thumbnail_url, // Preserve existing thumbnail_url
       });
       return reply.status(200).send({ image });
     }
@@ -377,18 +410,39 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
         }
 
-        // Delete from S3 if s3_url exists
-        if (image.s3_url) {
+        // Delete from S3 if original_url exists
+        if (image.original_url) {
           try {
             // Extract S3 key from the public URL
             // URL format: https://grammysnaps.s3.us-east-2.amazonaws.com/grammysnaps/familyId/imageId/filename
-            const url = new URL(image.s3_url);
-            const s3Key = url.pathname.substring(1); // Remove leading slash
+            const originalS3Key = new URL(
+              image.original_url
+            ).pathname.substring(1); // Remove leading slash
 
-            fastify.log.info(`Deleting S3 object with key: ${s3Key}`);
-            await fastify.s3.delete(s3Key);
+            fastify.log.info(`Deleting S3 object with key: ${originalS3Key}`);
+            await fastify.s3.delete(originalS3Key);
           } catch (s3Error) {
             fastify.log.warn(`Failed to delete S3 object: ${s3Error}`);
+            // Continue with database deletion even if S3 deletion fails
+          }
+        }
+
+        // Delete thumbnail from S3 if thumbnail_url exists
+        if (image.thumbnail_url) {
+          try {
+            // Extract S3 key from the public URL
+            const thumbnailS3Key = new URL(
+              image.thumbnail_url
+            ).pathname.substring(1); // Remove leading slash
+
+            fastify.log.info(
+              `Deleting S3 thumbnail object with key: ${thumbnailS3Key}`
+            );
+            await fastify.s3.delete(thumbnailS3Key);
+          } catch (s3Error) {
+            fastify.log.warn(
+              `Failed to delete S3 thumbnail object: ${s3Error}`
+            );
             // Continue with database deletion even if S3 deletion fails
           }
         }

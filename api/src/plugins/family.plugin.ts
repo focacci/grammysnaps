@@ -240,12 +240,20 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         // Delete orphaned images from S3 and database
         for (const image of orphanedImages) {
           try {
-            // Delete from S3 if s3_url exists
-            if (image.s3_url) {
+            // Delete from S3 if original_url exists
+            if (image.original_url) {
               // Extract S3 key from the public URL
-              const url = new URL(image.s3_url);
+              const url = new URL(image.original_url);
               const s3Key = url.pathname.substring(1); // Remove leading slash
               await fastify.s3.delete(s3Key);
+            }
+
+            // Delete thumbnail from S3 if thumbnail_url exists
+            if (image.thumbnail_url) {
+              // Extract S3 key from the public URL
+              const thumbnailUrl = new URL(image.thumbnail_url);
+              const thumbnailS3Key = thumbnailUrl.pathname.substring(1); // Remove leading slash
+              await fastify.s3.delete(thumbnailS3Key);
             }
 
             // Delete from database (will cascade delete image_tags and image_families)

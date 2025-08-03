@@ -4,7 +4,8 @@ export interface ImageInput {
   filename?: string;
   tags?: string[];
   family_ids?: string[];
-  s3Url?: string;
+  original_url?: string;
+  thumbnail_url?: string;
 }
 
 export interface Image {
@@ -15,5 +16,6 @@ export interface Image {
   updated_at: string;
   tags?: string[];
   family_ids?: string[];
-  s3_url?: string;
+  original_url?: string;
+  thumbnail_url?: string;
 }

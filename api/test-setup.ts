@@ -1,6 +1,10 @@
 // Test setup file
 // This file runs before each test file
 
+// Load testing environment variables
+import dotenv from "dotenv";
+dotenv.config({ path: "./testing.env" });
+
 // Global test timeout
 jest.setTimeout(10000);
 
