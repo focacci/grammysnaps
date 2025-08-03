@@ -276,15 +276,18 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.info(`Created thumbnail: ${thumbnailBuffer.length} bytes`);
 
       // Generate S3 keys for both original and thumbnail
+      const s3Id = uuidv4();
       const originalS3Key = fastify.s3.createKey(
+        process.env.NODE_ENV || "local",
         "family-photos",
-        uuidv4(),
+        s3Id,
         fileData.filename
       );
 
       const thumbnailS3Key = fastify.s3.createKey(
+        process.env.NODE_ENV || "local",
         "family-photos",
-        uuidv4(),
+        s3Id,
         `thumb_${fileData.filename}`
       );
 
