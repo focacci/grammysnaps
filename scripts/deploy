@@ -161,7 +161,7 @@ cd web
 
 # Set build arguments based on environment
 if [[ "$ENVIRONMENT" == "staging" ]]; then
-    API_URL="https://$DOMAIN/api"
+    API_URL="http://$DOMAIN/api"
     NODE_ENV="staging"
 else
     API_URL="https://$DOMAIN/api"
