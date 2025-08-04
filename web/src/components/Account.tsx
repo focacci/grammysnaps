@@ -544,7 +544,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`),
+        getApiEndpoint(
+          `/api/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`
+        ),
         {
           method: "DELETE",
         }
@@ -589,9 +591,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       // First, find the user by email
       const userResponse = await authService.apiCall(
-        getApiEndpoint(`/api/user/email/${encodeURIComponent(
-          addMemberEmail.trim()
-        )}`)
+        getApiEndpoint(
+          `/api/user/email/${encodeURIComponent(addMemberEmail.trim())}`
+        )
       );
 
       if (!userResponse.ok) {
@@ -639,7 +641,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/family/${selectedFamily.id}/members/${memberToRemove.id}`),
+        getApiEndpoint(
+          `/api/family/${selectedFamily.id}/members/${memberToRemove.id}`
+        ),
         {
           method: "DELETE",
         }

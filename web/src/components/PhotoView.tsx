@@ -178,7 +178,9 @@ function PhotoView({ user }: PhotoViewProps) {
           }
 
           imagesResponse = await authService.apiCall(
-            getApiEndpoint(`/api/image/user/${user.id}?${queryParams.toString()}`)
+            getApiEndpoint(
+              `/api/image/user/${user.id}?${queryParams.toString()}`
+            )
           );
         } else {
           // If user has no families, set empty images
