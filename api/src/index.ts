@@ -38,6 +38,9 @@ const main = async () => {
       "http://192.168.1.156:8080",
       "http://192.168.1.156:5173",
       "http://192.168.1.156:3000",
+      // Staging ALB
+      "http://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com",
+      "https://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com",
       // Production domains
       "https://grannysnaps.dev",
       "https://www.grannysnaps.dev",
@@ -45,9 +48,10 @@ const main = async () => {
 
     const origin = request.headers.origin;
 
-    // Allow origins from localhost, local network, or production domains
+    // Allow origins from localhost, local network, staging ALB, or production domains
     const isLocalhost = origin && origin.includes("localhost");
     const isLocalNetwork = origin && origin.includes("192.168.1.");
+    const isStagingALB = origin && origin.includes("grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com");
     const isProductionDomain =
       origin &&
       (origin === "https://grannysnaps.dev" ||
@@ -58,6 +62,7 @@ const main = async () => {
       (allowedOrigins.includes(origin) ||
         isLocalhost ||
         isLocalNetwork ||
+        isStagingALB ||
         isProductionDomain)
     ) {
       reply.header("Access-Control-Allow-Origin", origin);
