@@ -193,7 +193,7 @@ class AuthService {
   // Login method
   async login(email: string, password: string): Promise<User> {
     const response = await this.fetchWithTimeout(
-      getApiEndpoint("/api/auth/login"),
+      getApiEndpoint("/auth/login"),
       {
         method: "POST",
         headers: {
@@ -226,7 +226,7 @@ class AuthService {
 
     if (user) {
       try {
-        await this.fetchWithTimeout(getApiEndpoint("/api/auth/logout"), {
+        await this.fetchWithTimeout(getApiEndpoint("/auth/logout"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -251,7 +251,7 @@ class AuthService {
 
     try {
       const response = await this.fetchWithTimeout(
-        getApiEndpoint("/api/auth/refresh"),
+        getApiEndpoint("/auth/refresh"),
         {
           method: "POST",
           headers: {
@@ -313,7 +313,7 @@ class AuthService {
     // Try to use current token first
     try {
       const response = await this.fetchWithTimeout(
-        getApiEndpoint("/api/auth/validate"),
+        getApiEndpoint("/auth/validate"),
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -354,7 +354,7 @@ class AuthService {
 
     try {
       const response = await this.fetchWithTimeout(
-        getApiEndpoint("/api/auth/validate"),
+        getApiEndpoint("/auth/validate"),
         {
           headers: {
             Authorization: authHeader,
@@ -423,12 +423,9 @@ class AuthService {
   // Check API connectivity
   async checkConnectivity(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        getApiEndpoint("/api/health"),
-        {
-          method: "GET",
-        }
-      );
+      const response = await this.fetchWithTimeout(getApiEndpoint("/health"), {
+        method: "GET",
+      });
       return response.ok;
     } catch (error) {
       console.error("API connectivity check failed:", error);
@@ -444,12 +441,9 @@ class AuthService {
   }> {
     const startTime = Date.now();
     try {
-      const response = await this.fetchWithTimeout(
-        getApiEndpoint("/api/health"),
-        {
-          method: "GET",
-        }
-      );
+      const response = await this.fetchWithTimeout(getApiEndpoint("/health"), {
+        method: "GET",
+      });
       const latency = Date.now() - startTime;
 
       if (response.ok) {

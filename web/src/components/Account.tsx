@@ -312,7 +312,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setCreateFamilyLoading(true);
 
     try {
-      const response = await authService.apiCall(getApiEndpoint("/api/family"), {
+      const response = await authService.apiCall(getApiEndpoint("/family"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

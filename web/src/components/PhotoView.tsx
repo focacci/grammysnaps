@@ -142,7 +142,7 @@ function PhotoView({ user }: PhotoViewProps) {
 
         // First fetch user's families
         const familiesResponse = await authService.apiCall(
-          getApiEndpoint("/api/family/user/" + user.id)
+          getApiEndpoint("/family/user/" + user.id)
         );
         if (!familiesResponse.ok) {
           throw new Error(
@@ -501,7 +501,7 @@ function PhotoView({ user }: PhotoViewProps) {
         throw new Error("Not authenticated");
       }
 
-      const response = await fetch(getApiEndpoint("/api/image"), {
+      const response = await fetch(getApiEndpoint("/image"), {
         method: "POST",
         headers: {
           Authorization: authHeader,
@@ -619,7 +619,7 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setCreatingTag(true);
     try {
-      const response = await authService.apiCall(getApiEndpoint("/api/tag"), {
+      const response = await authService.apiCall(getApiEndpoint("/tag"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

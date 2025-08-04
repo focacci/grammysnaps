@@ -137,7 +137,7 @@ if (env.isProduction()) {
 }
 
 // Make API calls with proper URL
-fetch(env.getApiEndpoint("/api/users"))
+fetch(env.getApiEndpoint("/users"))
   .then((response) => response.json())
   .then((data) => console.log(data));
 ```

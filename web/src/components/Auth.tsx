@@ -277,7 +277,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
         }
 
         // First step of signup - create user with email and password only
-        const response = await fetch(getApiEndpoint("/api/user"), {
+        const response = await fetch(getApiEndpoint("/user"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
