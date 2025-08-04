@@ -137,6 +137,11 @@ echo -e "${GREEN}✅ AWS credentials verified${NC}"
 
 # Login to ECR
 echo -e "${YELLOW}🔐 Logging into ECR...${NC}"
+
+# Configure Docker to not use credential store to avoid pass initialization issues
+mkdir -p ~/.docker
+echo '{"credsStore": ""}' > ~/.docker/config.json
+
 aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
 # Build and push API image
