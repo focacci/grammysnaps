@@ -1,8 +1,5 @@
 import { env } from "../utils/environment";
 
-// API configuration using environment service
-const API_BASE_URL = env.getApiUrl();
-
 // Utility functions for API endpoints
 export const getApiEndpoint = (path: string): string => {
   return env.getApiEndpoint(path);
@@ -43,5 +40,3 @@ export const apiRequest = async (
 
   return fetch(url, requestOptions);
 };
-
-export { API_BASE_URL };

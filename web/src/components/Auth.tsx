@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./Auth.css";
 import authService from "../services/auth.service";
 import { ClientValidationUtils } from "../utils/validation";
-import { API_BASE_URL } from "../services/api.service";
+import { getApiEndpoint } from "../services/api.service";
 import { env } from "../utils/environment";
 
 interface AuthProps {
@@ -277,7 +277,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
         }
 
         // First step of signup - create user with email and password only
-        const response = await fetch(`${API_BASE_URL}/user`, {
+        const response = await fetch(getApiEndpoint("/api/user"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -379,7 +379,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
 
         // Update user profile
         const response = await authService.apiCall(
-          `${API_BASE_URL}/user/${createdUser.id}`,
+          getApiEndpoint(`/api/user/${createdUser.id}`),
           {
             method: "PUT",
             body: JSON.stringify({

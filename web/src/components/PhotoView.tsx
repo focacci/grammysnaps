@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./PhotoView.css";
 import Modal from "./Modal";
 import authService from "../services/auth.service";
-import { API_BASE_URL } from "../services/api.service";
+import { getApiEndpoint } from "../services/api.service";
 
 // Type definitions
 interface User {
@@ -142,7 +142,7 @@ function PhotoView({ user }: PhotoViewProps) {
 
         // First fetch user's families
         const familiesResponse = await authService.apiCall(
-          `${API_BASE_URL}/family/user/${user.id}`
+          getApiEndpoint("/api/family/user/" + user.id)
         );
         if (!familiesResponse.ok) {
           throw new Error(
@@ -178,7 +178,7 @@ function PhotoView({ user }: PhotoViewProps) {
           }
 
           imagesResponse = await authService.apiCall(
-            `${API_BASE_URL}/image/user/${user.id}?${queryParams.toString()}`
+            getApiEndpoint(`/api/image/user/${user.id}?${queryParams.toString()}`)
           );
         } else {
           // If user has no families, set empty images
@@ -189,7 +189,7 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         const tagPromises = familiesData.map((family: FamilyGroup) =>
-          authService.apiCall(`${API_BASE_URL}/tag/family/${family.id}`)
+          authService.apiCall(getApiEndpoint(`/api/tag/family/${family.id}`))
         );
 
         const [, ...tagResponses] = await Promise.all([
@@ -257,7 +257,7 @@ function PhotoView({ user }: PhotoViewProps) {
       }
 
       const imagesResponse = await authService.apiCall(
-        `${API_BASE_URL}/image/user/${user.id}?${queryParams.toString()}`
+        getApiEndpoint(`/api/image/user/${user.id}?${queryParams.toString()}`)
       );
 
       if (!imagesResponse.ok) {
@@ -304,7 +304,7 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         const imagesResponse = await authService.apiCall(
-          `${API_BASE_URL}/image/user/${user.id}?${queryParams.toString()}`
+          getApiEndpoint(`/api/image/user/${user.id}?${queryParams.toString()}`)
         );
 
         if (!imagesResponse.ok) {
@@ -501,7 +501,7 @@ function PhotoView({ user }: PhotoViewProps) {
         throw new Error("Not authenticated");
       }
 
-      const response = await fetch(`${API_BASE_URL}/image`, {
+      const response = await fetch(getApiEndpoint("/api/image"), {
         method: "POST",
         headers: {
           Authorization: authHeader,
@@ -619,7 +619,7 @@ function PhotoView({ user }: PhotoViewProps) {
 
     setCreatingTag(true);
     try {
-      const response = await authService.apiCall(`${API_BASE_URL}/tag`, {
+      const response = await authService.apiCall(getApiEndpoint("/api/tag"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -691,7 +691,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setSavingTag(true);
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/tag/${editingTag.id}`,
+        getApiEndpoint(`/api/tag/${editingTag.id}`),
         {
           method: "PUT",
           headers: {
@@ -731,7 +731,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setDeletingTag(true);
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/tag/${editingTag.id}`,
+        getApiEndpoint(`/api/tag/${editingTag.id}`),
         {
           method: "DELETE",
         }
@@ -826,7 +826,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setSavingImage(true);
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/image/${selectedImage.id}`,
+        getApiEndpoint(`/api/image/${selectedImage.id}`),
         {
           method: "PUT",
           headers: {
@@ -868,7 +868,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setDeletingImage(true);
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/image/${selectedImage.id}`,
+        getApiEndpoint(`/api/image/${selectedImage.id}`),
         {
           method: "DELETE",
         }
@@ -901,7 +901,7 @@ function PhotoView({ user }: PhotoViewProps) {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/image/${selectedImage.id}/download`,
+        getApiEndpoint(`/api/image/${selectedImage.id}/download`),
         {
           headers: {
             Authorization: authHeader,
