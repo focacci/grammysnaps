@@ -240,7 +240,7 @@ function AppContent() {
               ) : (
                 <div className="home-view">
                   <div className="home-content">
-                    <h1>Welcome to Grammy's Snaps</h1>
+                    <h1>Welcome to Grammysnaps</h1>
                     <p>Your family photo sharing app</p>
                     <button
                       onClick={() => setShowAuth(true)}

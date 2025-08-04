@@ -59,7 +59,7 @@ resource "random_password" "db_password" {
 
 # S3 bucket for storing uploaded images
 resource "aws_s3_bucket" "images" {
-  bucket = "grammysnaps"
+  bucket = "grammysnaps-${var.environment}"
 }
 
 resource "aws_s3_bucket_versioning" "images" {

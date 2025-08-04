@@ -39,15 +39,15 @@ output "alb_zone_id" {
   value       = aws_lb.main.zone_id
 }
 
-output "cloudfront_domain_name" {
-  description = "Domain name of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.main.domain_name
-}
+# output "cloudfront_domain_name" {
+#   description = "Domain name of the CloudFront distribution"
+#   value       = aws_cloudfront_distribution.main.domain_name
+# }
 
-output "cloudfront_hosted_zone_id" {
-  description = "Hosted zone ID of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.main.hosted_zone_id
-}
+# output "cloudfront_hosted_zone_id" {
+#   description = "Hosted zone ID of the CloudFront distribution"
+#   value       = aws_cloudfront_distribution.main.hosted_zone_id
+# }
 
 output "s3_bucket_name" {
   description = "Name of the S3 bucket for images"
@@ -99,13 +99,16 @@ output "nameservers_instructions" {
   value = <<-EOT
     To complete the setup, you need to:
     
-    1. Set up DNS records for your domain ${var.domain_name}:
-       - Create an ALIAS record for ${var.domain_name} pointing to ${aws_cloudfront_distribution.main.domain_name}
-       - Create an ALIAS record for www.${var.domain_name} pointing to ${aws_cloudfront_distribution.main.domain_name}
+    1. For now, you can access the application directly via the load balancer:
+       - Application: http://${aws_lb.main.dns_name}
+       - API Health Check: http://${aws_lb.main.dns_name}/api/health
     
-    2. Validate the SSL certificate by creating the following DNS records:
+    2. To set up proper DNS and HTTPS later:
+       - Uncomment the certificate validation and CloudFront resources in load-balancer.tf
+       - Create DNS validation records for SSL certificates
+       - Set up domain CNAME records pointing to the load balancer or CloudFront
+    
+    3. SSL Certificate validation records needed:
        ${join("\n       ", [for dvo in aws_acm_certificate.main.domain_validation_options : "${dvo.resource_record_name} CNAME ${dvo.resource_record_value}"])}
-    
-    3. Update your domain's nameservers at Porkbun to point to your DNS provider (if using Route53 or another service).
   EOT
 }

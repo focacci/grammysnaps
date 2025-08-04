@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./api.service";
+import { getApiEndpoint } from "./api.service";
 
 interface User {
   id: string;
@@ -192,7 +192,7 @@ class AuthService {
 
   // Login method
   async login(email: string, password: string): Promise<User> {
-    const response = await this.fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
+    const response = await this.fetchWithTimeout(getApiEndpoint("/api/auth/login"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -223,7 +223,7 @@ class AuthService {
 
     if (user) {
       try {
-        await this.fetchWithTimeout(`${API_BASE_URL}/auth/logout`, {
+        await this.fetchWithTimeout(getApiEndpoint("/api/auth/logout"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -248,7 +248,7 @@ class AuthService {
 
     try {
       const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/auth/refresh`,
+        getApiEndpoint("/api/auth/refresh"),
         {
           method: "POST",
           headers: {
@@ -310,7 +310,7 @@ class AuthService {
     // Try to use current token first
     try {
       const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/auth/validate`,
+        getApiEndpoint("/api/auth/validate"),
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -351,7 +351,7 @@ class AuthService {
 
     try {
       const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/auth/validate`,
+        getApiEndpoint("/api/auth/validate"),
         {
           headers: {
             Authorization: authHeader,
@@ -420,7 +420,7 @@ class AuthService {
   // Check API connectivity
   async checkConnectivity(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/health`, {
+      const response = await this.fetchWithTimeout(getApiEndpoint("/api/health"), {
         method: "GET",
       });
       return response.ok;
@@ -438,7 +438,7 @@ class AuthService {
   }> {
     const startTime = Date.now();
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/health`, {
+      const response = await this.fetchWithTimeout(getApiEndpoint("/api/health"), {
         method: "GET",
       });
       const latency = Date.now() - startTime;
