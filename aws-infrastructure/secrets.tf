@@ -34,6 +34,28 @@ resource "aws_secretsmanager_secret_version" "jwt_secret" {
   secret_string = random_password.jwt_secret.result
 }
 
+# JWT Refresh Secret
+resource "aws_secretsmanager_secret" "jwt_refresh_secret" {
+  name        = "${var.project_name}-${var.environment}-jwt-refresh-secret"
+  description = "JWT refresh token signing secret for ${var.project_name}"
+
+  tags = {
+    Name        = "${var.project_name}-jwt-refresh-secret"
+    Environment = var.environment
+  }
+}
+
+# Generate a secure JWT refresh secret
+resource "random_password" "jwt_refresh_secret" {
+  length  = 64
+  special = true
+}
+
+resource "aws_secretsmanager_secret_version" "jwt_refresh_secret" {
+  secret_id     = aws_secretsmanager_secret.jwt_refresh_secret.id
+  secret_string = random_password.jwt_refresh_secret.result
+}
+
 # Database secrets (consolidated)
 resource "aws_secretsmanager_secret" "database_secrets" {
   name        = "${var.project_name}-${var.environment}-database-secrets"
@@ -131,6 +153,7 @@ resource "aws_iam_role_policy" "ecs_secrets_access" {
         Resource = [
           aws_secretsmanager_secret.app_secrets.arn,
           aws_secretsmanager_secret.jwt_secret.arn,
+          aws_secretsmanager_secret.jwt_refresh_secret.arn,
           aws_secretsmanager_secret.database_secrets.arn,
           aws_secretsmanager_secret.aws_credentials.arn
         ]
@@ -143,10 +166,11 @@ resource "aws_iam_role_policy" "ecs_secrets_access" {
 output "secrets_arns" {
   description = "ARNs of the secrets for use in ECS task definitions"
   value = {
-    app_secrets      = aws_secretsmanager_secret.app_secrets.arn
-    jwt_secret       = aws_secretsmanager_secret.jwt_secret.arn
-    database_secrets = aws_secretsmanager_secret.database_secrets.arn
-    aws_credentials  = aws_secretsmanager_secret.aws_credentials.arn
+    app_secrets        = aws_secretsmanager_secret.app_secrets.arn
+    jwt_secret         = aws_secretsmanager_secret.jwt_secret.arn
+    jwt_refresh_secret = aws_secretsmanager_secret.jwt_refresh_secret.arn
+    database_secrets   = aws_secretsmanager_secret.database_secrets.arn
+    aws_credentials    = aws_secretsmanager_secret.aws_credentials.arn
   }
   sensitive = true
 }

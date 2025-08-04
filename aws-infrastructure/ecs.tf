@@ -236,6 +236,10 @@ resource "aws_ecs_task_definition" "api" {
           valueFrom = aws_secretsmanager_secret.jwt_secret.arn
         },
         {
+          name      = "JWT_REFRESH_SECRET"
+          valueFrom = aws_secretsmanager_secret.jwt_refresh_secret.arn
+        },
+        {
           name      = "DATABASE_URL"
           valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:database_url::"
         },
