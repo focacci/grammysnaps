@@ -41,9 +41,9 @@ const main = async () => {
       // Staging ALB
       "http://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com",
       "https://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com",
+      // Staging domains (us-east-2)
       "https://grammysnaps.dev",
       "https://www.grammysnaps.dev",
-      // Production domains
     ];
 
     const origin = request.headers.origin;
@@ -54,10 +54,12 @@ const main = async () => {
     const isStagingALB =
       origin &&
       origin.includes("grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com");
-    const isProductionDomain =
+    const isStagingDomain =
       origin &&
       (origin === "https://grammysnaps.dev" ||
-        origin === "https://www.grammysnaps.dev");
+        origin === "https://www.grammysnaps.dev" ||
+        origin ===
+          "http://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com");
 
     if (
       origin &&
@@ -65,7 +67,7 @@ const main = async () => {
         isLocalhost ||
         isLocalNetwork ||
         isStagingALB ||
-        isProductionDomain)
+        isStagingDomain)
     ) {
       reply.header("Access-Control-Allow-Origin", origin);
     }
