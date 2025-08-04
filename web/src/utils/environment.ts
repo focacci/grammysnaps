@@ -85,7 +85,7 @@ class FrontendEnvironment {
   getApiEndpoint(path: string): string {
     const baseUrl = this.getApiUrl().replace(/\/$/, ""); // Remove trailing slash
     const endpoint = path.startsWith("/") ? path : `/${path}`;
-    return `${baseUrl}${endpoint}`;
+    return `${baseUrl}/api${endpoint}`;
   }
 
   /**
@@ -130,7 +130,7 @@ if (env.isDevelopment()) {
 }
 
 // Make API calls
-fetch(env.getApiEndpoint('/api/users'))
+fetch(env.getApiEndpoint('/users'))
   .then(response => response.json())
   .then(data => console.log(data));
 */
