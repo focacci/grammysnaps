@@ -14,7 +14,7 @@ import familyPlugin from "./plugins/family.plugin";
 import familyRoutes from "./routes/family.routes";
 import authPlugin from "./plugins/auth.plugin";
 import authRoutes from "./routes/auth.routes";
-import { SERVER_ERRORS, RATE_LIMIT_ERRORS } from "./types/errors";
+import { RATE_LIMIT_ERRORS } from "./types/errors";
 
 const server: FastifyInstance = Fastify({ logger: true });
 
@@ -130,32 +130,30 @@ const main = async () => {
   await server.register(familyRoutes, { prefix: "/family" });
   await server.register(authRoutes, { prefix: "/auth" });
 
-  // Health check
+  // Health check - simple and reliable
   server.get("/health", async (request, reply) => {
     try {
+      // Test database connection - this is critical
       const client = await server.pg.connect();
-      await client.query("SELECT NOW()");
+      await client.query("SELECT 1");
       client.release();
 
-      // Test S3 connection
-      let s3Status = "unknown";
-      try {
-        await server.s3.listImages("");
-        s3Status = "connected";
-      } catch (s3Error) {
-        server.log.error("S3 connection failed:", s3Error);
-        s3Status = "failed";
-      }
-
-      return reply.status(200).send({
-        status: "ok",
+      // Basic health info
+      const health = {
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
         database: "connected",
-        s3: s3Status,
-      });
+        version: process.env.npm_package_version || "unknown",
+        environment: process.env.NODE_ENV || "unknown"
+      };
+
+      return reply.status(200).send(health);
     } catch (err) {
+      server.log.error("Health check failed:", err);
       return reply.status(500).send({
-        status: "error",
-        message: SERVER_ERRORS.HEALTH_CHECK_FAILED,
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
         error: err instanceof Error ? err.message : String(err),
       });
     }
