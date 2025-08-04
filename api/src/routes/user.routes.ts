@@ -40,9 +40,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
             });
           }
 
-          // Validate invite key (you can customize this validation logic)
-          const validInviteKey = process.env.DEV_INVITE_KEY || "dev123";
-          if (request.body.invite_key !== validInviteKey) {
+          // Validate invite key using the one from AWS Secrets Manager
+          const validInviteKey = process.env.INVITE_KEY;
+          if (!validInviteKey || request.body.invite_key !== validInviteKey) {
             return reply.status(400).send({
               error: USER_ERRORS.INVITE_KEY_INVALID,
             });

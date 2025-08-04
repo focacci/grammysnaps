@@ -142,11 +142,11 @@ const main = async () => {
   server.register(authPlugin);
 
   // Routes
-  await server.register(imageRoutes, { prefix: "/image" });
-  await server.register(tagRoutes, { prefix: "/tag" });
-  await server.register(userRoutes, { prefix: "/user" });
-  await server.register(familyRoutes, { prefix: "/family" });
-  await server.register(authRoutes, { prefix: "/auth" });
+  await server.register(imageRoutes, { prefix: "/api/image" });
+  await server.register(tagRoutes, { prefix: "/api/tag" });
+  await server.register(userRoutes, { prefix: "/api/user" });
+  await server.register(familyRoutes, { prefix: "/api/family" });
+  await server.register(authRoutes, { prefix: "/api/auth" });
 
   // Health check for load balancer routing (/api/health)
   server.get("/api/health", async (request, reply) => {
