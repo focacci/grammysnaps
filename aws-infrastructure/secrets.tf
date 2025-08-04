@@ -23,15 +23,9 @@ resource "aws_secretsmanager_secret" "jwt_secret" {
   }
 }
 
-# Generate a secure JWT secret
-resource "random_password" "jwt_secret" {
-  length  = 64
-  special = true
-}
-
 resource "aws_secretsmanager_secret_version" "jwt_secret" {
   secret_id     = aws_secretsmanager_secret.jwt_secret.id
-  secret_string = random_password.jwt_secret.result
+  secret_string = var.jwt_secret
 }
 
 # JWT Refresh Secret
@@ -45,15 +39,9 @@ resource "aws_secretsmanager_secret" "jwt_refresh_secret" {
   }
 }
 
-# Generate a secure JWT refresh secret
-resource "random_password" "jwt_refresh_secret" {
-  length  = 64
-  special = true
-}
-
 resource "aws_secretsmanager_secret_version" "jwt_refresh_secret" {
   secret_id     = aws_secretsmanager_secret.jwt_refresh_secret.id
-  secret_string = random_password.jwt_refresh_secret.result
+  secret_string = var.jwt_refresh_secret
 }
 
 # Database secrets (consolidated)

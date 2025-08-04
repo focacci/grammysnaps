@@ -5,7 +5,7 @@ This guide walks you through deploying the GrammySnaps application to AWS using 
 ## Prerequisites
 
 1. **AWS Account** with appropriate permissions
-2. **Domain** registered (grannysnaps.dev via Porkbun)
+2. **Domain** registered (grammysnaps.dev via Porkbun)
 3. **GitHub repository** with the code
 4. **Local tools**:
    - [Terraform](https://terraform.io) (>= 1.0)
@@ -154,8 +154,8 @@ Then update your domain's nameservers at Porkbun to use Route 53's nameservers.
 ### Option B: Manual DNS Setup
 
 1. **At your DNS provider** (Porkbun or another), create these records:
-   - `grannysnaps.dev` → ALIAS/CNAME to CloudFront domain
-   - `www.grannysnaps.dev` → ALIAS/CNAME to CloudFront domain
+   - `grammysnaps.dev` → ALIAS/CNAME to CloudFront domain
+   - `www.grammysnaps.dev` → ALIAS/CNAME to CloudFront domain
    - Certificate validation CNAME records (shown in Terraform output)
 
 ## Step 6: Complete Infrastructure Deployment
@@ -205,9 +205,9 @@ aws ecs run-task \
 
 After deployment:
 
-- **Main site**: https://grannysnaps.dev
-- **API**: https://grannysnaps.dev/api
-- **Health check**: https://grannysnaps.dev/api/health
+- **Main site**: https://grammysnaps.dev
+- **API**: https://grammysnaps.dev/api
+- **Health check**: https://grammysnaps.dev/api/health
 
 ## Monitoring and Maintenance
 

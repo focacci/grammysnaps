@@ -15,10 +15,10 @@ curl -I -X OPTIONS \
 echo ""
 echo "Testing production domain (should work once deployed):"
 curl -I -X OPTIONS \
-  -H "Origin: https://grannysnaps.dev" \
+  -H "Origin: https://grammysnaps.dev" \
   -H "Access-Control-Request-Method: GET" \
   -H "Access-Control-Request-Headers: Content-Type, Authorization" \
-  https://grannysnaps.dev/api/health
+  https://grammysnaps.dev/api/health
 
 echo ""
 echo "Testing unauthorized origin (should fail):"
@@ -26,4 +26,4 @@ curl -I -X OPTIONS \
   -H "Origin: https://malicious-site.com" \
   -H "Access-Control-Request-Method: GET" \
   -H "Access-Control-Request-Headers: Content-Type, Authorization" \
-  https://grannysnaps.dev/api/health
+  https://grammysnaps.dev/api/health

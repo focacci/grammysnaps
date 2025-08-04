@@ -15,14 +15,14 @@ MAIN_CERT_ARN="arn:aws:acm:us-east-2:124314579010:certificate/de4542cf-11a4-47f6
 CLOUDFRONT_CERT_ARN="arn:aws:acm:us-east-1:124314579010:certificate/b8ef0859-50ee-4c75-9089-e69d38e47e26"
 
 echo -e "${BLUE}🔍 Starting SSL Certificate Status Monitor${NC}"
-echo -e "${BLUE}Domain: grannysnaps.dev${NC}"
+echo -e "${BLUE}Domain: grammysnaps.dev${NC}"
 echo -e "${BLUE}Press Ctrl+C to stop monitoring${NC}"
 echo ""
 
 # Required DNS validation record
 echo -e "${YELLOW}Required DNS Record:${NC}"
 echo -e "Type: CNAME"
-echo -e "Name: _9cef9ce554dcf98220a44d1e284713c7.grannysnaps.dev"
+echo -e "Name: _9cef9ce554dcf98220a44d1e284713c7.grammysnaps.dev"
 echo -e "Value: _89f6c50e0a2bbc7ad3ef0b90e80ccb3b.xlfgrmvvlj.acm-validations.aws"
 echo ""
 echo "============================================================"
@@ -70,7 +70,7 @@ check_dns_record() {
     echo -e "${BLUE}Checking DNS validation record...${NC}"
     
     # Check if DNS record exists
-    local dns_result=$(nslookup -type=CNAME _9cef9ce554dcf98220a44d1e284713c7.grannysnaps.dev 2>/dev/null | grep -i "canonical name" || echo "NOT_FOUND")
+    local dns_result=$(nslookup -type=CNAME _9cef9ce554dcf98220a44d1e284713c7.grammysnaps.dev 2>/dev/null | grep -i "canonical name" || echo "NOT_FOUND")
     
     if [[ "$dns_result" == "NOT_FOUND" ]]; then
         echo -e "${RED}❌ DNS validation record NOT found${NC}"

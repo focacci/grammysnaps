@@ -45,7 +45,7 @@ if [[ "$ENVIRONMENT" == "production" ]]; then
     AWS_REGION="us-east-1"
     CLUSTER_NAME="grammysnaps-prod-cluster"
     SERVICE_PREFIX="grammysnaps-prod"
-    DOMAIN="grannysnaps.dev"
+    DOMAIN="grammysnaps.dev"
 else
     AWS_REGION="us-east-2"
     CLUSTER_NAME="grammysnaps-cluster"

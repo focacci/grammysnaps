@@ -183,9 +183,9 @@ aws ecs run-task --cluster grammysnaps-cluster --task-definition grammysnaps-api
 
 Your application will be available at:
 
-- **Primary**: https://grannysnaps.dev
-- **API**: https://grannysnaps.dev/api
-- **Health Check**: https://grannysnaps.dev/api/health
+- **Primary**: https://grammysnaps.dev
+- **API**: https://grammysnaps.dev/api
+- **Health Check**: https://grammysnaps.dev/api/health
 
 ## 💰 Estimated Monthly Costs
 

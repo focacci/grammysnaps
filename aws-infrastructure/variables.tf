@@ -24,7 +24,7 @@ variable "project_name" {
 variable "domain_name" {
   description = "Domain name for the application"
   type        = string
-  default     = "grannysnaps.dev"
+  default     = "grammysnaps.dev"
 }
 
 variable "api_cpu" {
@@ -95,6 +95,12 @@ variable "github_repo" {
 
 variable "jwt_secret" {
   description = "JWT secret for API authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "jwt_refresh_secret" {
+  description = "JWT refresh secret for API authentication"
   type        = string
   sensitive   = true
 }
