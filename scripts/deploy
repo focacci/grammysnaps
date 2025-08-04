@@ -172,14 +172,16 @@ aws ecs update-service \
     --cluster "$CLUSTER_NAME" \
     --service "$SERVICE_PREFIX-api" \
     --force-new-deployment \
-    --region "$AWS_REGION"
+    --region "$AWS_REGION" \
+    --no-cli-pager
 
 echo -e "${YELLOW}🔄 Updating Web ECS service...${NC}"
 aws ecs update-service \
     --cluster "$CLUSTER_NAME" \
     --service "$SERVICE_PREFIX-web" \
     --force-new-deployment \
-    --region "$AWS_REGION"
+    --region "$AWS_REGION" \
+    --no-cli-pager
 
 echo ""
 echo -e "${GREEN}🎉 Deployment initiated successfully!${NC}"
