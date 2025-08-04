@@ -32,8 +32,8 @@ export default async function userRoutes(fastify: FastifyInstance) {
       reply: FastifyReply
     ) => {
       try {
-        // Check if invite key is required in dev environment
-        if (process.env.NODE_ENV === "dev") {
+        // Check if invite key is required in staging environment
+        if (process.env.NODE_ENV === "staging") {
           if (!request.body.invite_key) {
             return reply.status(400).send({
               error: USER_ERRORS.INVITE_KEY_REQUIRED,

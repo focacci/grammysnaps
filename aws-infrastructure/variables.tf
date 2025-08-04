@@ -5,9 +5,14 @@ variable "aws_region" {
 }
 
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (development, staging, production)"
   type        = string
-  default     = "dev"
+  default     = "staging"
+  
+  validation {
+    condition = can(regex("^(development|staging|production)$", var.environment))
+    error_message = "Environment must be one of: development, staging, production."
+  }
 }
 
 variable "project_name" {
@@ -103,5 +108,62 @@ variable "aws_access_key_id" {
 variable "aws_secret_access_key" {
   description = "AWS secret access key for S3"
   type        = string
+  sensitive   = true
+}
+
+# Email/SMTP Configuration
+variable "smtp_host" {
+  description = "SMTP host for email sending"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "SMTP port for email sending"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_user" {
+  description = "SMTP username for email sending"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "smtp_password" {
+  description = "SMTP password for email sending"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# External service API keys (add as needed)
+variable "google_client_id" {
+  description = "Google OAuth client ID"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "google_client_secret" {
+  description = "Google OAuth client secret"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "stripe_secret_key" {
+  description = "Stripe secret key for payments"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# Invite Key for family invitations
+variable "invite_key" {
+  description = "Secret key for generating family invitation codes"
+  type        = string
+  default     = ""
   sensitive   = true
 }

@@ -9,16 +9,30 @@ terraform {
 
   # Configure remote state storage
   backend "s3" {
-    bucket         = "grammysnaps-terraform-state-dev"
-    key            = "dev/terraform.tfstate"
+    bucket         = "grammysnaps"
+    key            = "terraform-state/staging/terraform.tfstate"
     region         = "us-east-2"
     encrypt        = true
-    dynamodb_table = "grammysnaps-terraform-locks-dev"
+    dynamodb_table = "grammysnaps-terraform-locks-staging"
   }
 }
 
 provider "aws" {
   region = var.aws_region
+
+  default_tags {
+    tags = {
+      Project     = "grammysnaps"
+      Environment = var.environment
+      ManagedBy   = "terraform"
+    }
+  }
+}
+
+# Provider for us-east-1 (required for CloudFront certificates)
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
 
   default_tags {
     tags = {
@@ -40,6 +54,7 @@ data "aws_caller_identity" "current" {}
 resource "random_password" "db_password" {
   length  = 32
   special = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 # S3 bucket for storing uploaded images
@@ -54,14 +69,12 @@ resource "aws_s3_bucket_versioning" "images" {
   }
 }
 
-resource "aws_s3_bucket_encryption" "images" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "images" {
   bucket = aws_s3_bucket.images.id
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
     }
   }
 }
@@ -87,46 +100,5 @@ resource "aws_s3_bucket_public_access_block" "images" {
   restrict_public_buckets = true
 }
 
-# S3 bucket for Terraform state (created manually first)
-resource "aws_s3_bucket" "terraform_state" {
-  bucket = "grammysnaps-terraform-state-dev"
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "aws_s3_bucket_versioning" "terraform_state" {
-  bucket = aws_s3_bucket.terraform_state.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_encryption" "terraform_state" {
-  bucket = aws_s3_bucket.terraform_state.id
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-}
-
-# DynamoDB table for Terraform state locking
-resource "aws_dynamodb_table" "terraform_locks" {
-  name           = "grammysnaps-terraform-locks-dev"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
+# Note: Terraform state S3 bucket and DynamoDB table are created manually
+# and imported separately to avoid conflicts during initial deployment

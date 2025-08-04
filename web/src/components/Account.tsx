@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import "./Account.css";
 import authService from "../services/auth.service";
 import { API_BASE_URL } from "../services/api.service";
+import { env } from "../utils/environment";
 import Modal from "./Modal";
 
 // Type definitions
@@ -266,7 +267,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(familyId);
         setCopiedFamilyId(familyId);
-        console.log("Copied via clipboard API:", familyId);
+        if (env.isDevelopment()) {
+          console.log("Copied via clipboard API:", familyId);
+        }
       } else {
         // Fallback for browsers without clipboard API
         const textArea = document.createElement("textarea");
@@ -280,7 +283,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
         document.execCommand("copy");
         document.body.removeChild(textArea);
         setCopiedFamilyId(familyId);
-        console.log("Copied via fallback method:", familyId);
+        if (env.isDevelopment()) {
+          console.log("Copied via fallback method:", familyId);
+        }
       }
 
       // Clear the feedback after 3 seconds
@@ -429,8 +434,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
   // Manage Family Handlers
   const handleManageFamily = async (family: FamilyGroup) => {
-    console.log("Managing family:", family);
-    console.log("User role:", family.user_role);
+    if (env.isDevelopment()) {
+      console.log("Managing family:", family);
+      console.log("User role:", family.user_role);
+    }
     setSelectedFamily(family);
     setShowManageFamilyModal(true);
     setManageFamilyError("");
@@ -874,7 +881,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
         profilePictureUrl = data.url;
       }
 
-      console.log("Birthday:", editForm.birthday);
+      if (env.isDevelopment()) {
+        console.log("Birthday:", editForm.birthday);
+      }
       // Then, update user profile data
       const userUpdateResponse = await authService.apiCall(
         `${API_BASE_URL}/user/${user.id}`,

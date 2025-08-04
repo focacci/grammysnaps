@@ -28,14 +28,15 @@ fi
 echo "🔐 Checking AWS credentials..."
 aws sts get-caller-identity > /dev/null || { echo "❌ AWS credentials not configured. Run 'aws configure' first." >&2; exit 1; }
 
-# Create S3 bucket for Terraform state if it doesn't exist
-BUCKET_NAME="grammysnaps-terraform-state-dev"
+# Use existing S3 bucket for Terraform state
+BUCKET_NAME="grammysnaps"
 REGION="us-east-2"
 
-echo "🪣 Checking if S3 bucket for Terraform state exists..."
+echo "🪣 Using existing S3 bucket for Terraform state: $BUCKET_NAME"
 if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
-    echo "📦 Creating S3 bucket for Terraform state..."
-    aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION"
+    echo "❌ Bucket $BUCKET_NAME not found or not accessible"
+    exit 1
+fi
     aws s3api put-bucket-encryption --bucket "$BUCKET_NAME" --server-side-encryption-configuration '{
         "Rules": [
             {
@@ -52,7 +53,7 @@ else
 fi
 
 # Create DynamoDB table for state locking if it doesn't exist
-TABLE_NAME="grammysnaps-terraform-locks-dev"
+TABLE_NAME="grammysnaps-terraform-locks-staging"
 echo "🔒 Checking if DynamoDB table for state locking exists..."
 if ! aws dynamodb describe-table --table-name "$TABLE_NAME" 2>/dev/null; then
     echo "📋 Creating DynamoDB table for state locking..."

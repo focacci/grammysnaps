@@ -30,6 +30,7 @@ const main = async () => {
   // Add CORS headers manually
   server.addHook("preHandler", async (request, reply) => {
     const allowedOrigins = [
+      // Local development
       "http://localhost:5173",
       "http://localhost:8080",
       "http://localhost:3000",
@@ -37,17 +38,27 @@ const main = async () => {
       "http://192.168.1.156:8080",
       "http://192.168.1.156:5173",
       "http://192.168.1.156:3000",
+      // Production domains
+      "https://grannysnaps.dev",
+      "https://www.grannysnaps.dev",
     ];
 
     const origin = request.headers.origin;
 
-    // Allow origins from localhost or the 192.168.1.x network
+    // Allow origins from localhost, local network, or production domains
     const isLocalhost = origin && origin.includes("localhost");
     const isLocalNetwork = origin && origin.includes("192.168.1.");
+    const isProductionDomain =
+      origin &&
+      (origin === "https://grannysnaps.dev" ||
+        origin === "https://www.grannysnaps.dev");
 
     if (
       origin &&
-      (allowedOrigins.includes(origin) || isLocalhost || isLocalNetwork)
+      (allowedOrigins.includes(origin) ||
+        isLocalhost ||
+        isLocalNetwork ||
+        isProductionDomain)
     ) {
       reply.header("Access-Control-Allow-Origin", origin);
     }
@@ -67,7 +78,8 @@ const main = async () => {
   // Register rate limiting for security
   if (
     process.env.NODE_ENV &&
-    (process.env.NODE_ENV === "dev" || process.env.NODE_ENV === "production")
+    (process.env.NODE_ENV === "staging" ||
+      process.env.NODE_ENV === "production")
   ) {
     server.register(fastifyRateLimit, {
       max: 300, // Maximum 300 requests per timeWindow

@@ -3,6 +3,7 @@ import "./Auth.css";
 import authService from "../services/auth.service";
 import { ClientValidationUtils } from "../utils/validation";
 import { API_BASE_URL } from "../services/api.service";
+import { env } from "../utils/environment";
 
 interface AuthProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -252,9 +253,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
         }
 
         // Check if invite key is required (development mode)
-        const isDevelopment = import.meta.env.VITE_NODE_ENV === "dev";
-
-        if (isDevelopment && !inviteKey.trim()) {
+        if (env.isStaging() && !inviteKey.trim()) {
           setError(
             "An invite key is required to create an account in development mode"
           );
@@ -272,8 +271,8 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
           password,
         };
 
-        // Add invite key if in development mode
-        if (isDevelopment && inviteKey.trim()) {
+        // Add invite key if in staging mode
+        if (env.isStaging() && inviteKey.trim()) {
           signupData.invite_key = inviteKey.trim();
         }
 
@@ -662,7 +661,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
               </div>
             )}
 
-            {!isLogin && import.meta.env.VITE_NODE_ENV === "dev" && (
+            {!isLogin && env.isStaging() && (
               <div className="form-group">
                 <label htmlFor="inviteKey">Invite Key *</label>
                 <input

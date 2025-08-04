@@ -16,29 +16,29 @@ COPY . .
 # Build TypeScript code
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS production
+### STAGING & PRODUCTION ######################################################
+# FROM node:20-alpine AS production
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# # Create non-root user for security
+# RUN addgroup -g 1001 -S nodejs
+# RUN adduser -S nodejs -u 1001
 
-# Set working directory
-WORKDIR /app
+# # Set working directory
+# WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# # Copy package files
+# COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+# RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src ./src
+# # Copy built application from builder stage (source files for tsx)
+# COPY --from=builder /app/src ./src
+# COPY --from=builder /app/package*.json ./
 
-# Change ownership to nodejs user
-RUN chown -R nodejs:nodejs /app
-USER nodejs
+# # Change ownership to nodejs user
+# RUN chown -R nodejs:nodejs /app
+# USER nodejs
+###############################################################################
 
 # Expose the port Fastify will run on
 EXPOSE 3000

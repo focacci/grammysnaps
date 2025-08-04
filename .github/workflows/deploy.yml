@@ -1,4 +1,4 @@
-name: Deploy to AWS
+name: Deploy to Staging
 
 on:
   push:
@@ -7,12 +7,11 @@ on:
       - "api/**"
       - "web/**"
       - ".github/workflows/deploy.yml"
-  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-2
   PROJECT_NAME: grammysnaps
-  ENVIRONMENT: dev
+  ENVIRONMENT: staging
 
 jobs:
   test-api:
@@ -90,7 +89,7 @@ jobs:
         working-directory: ./web
         run: npm run build
         env:
-          REACT_APP_API_URL: https://grannysnaps.dev/api
+          VITE_API_URL: https://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com/api
 
   build-and-deploy:
     name: Build and Deploy

@@ -13,6 +13,43 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
+# Certificate validation (will wait for DNS records to be added)
+resource "aws_acm_certificate_validation" "main" {
+  certificate_arn = aws_acm_certificate.main.arn
+  # Note: DNS validation records must be added manually to your domain
+  # Use terraform output domain_validation_options to see required records
+  
+  timeouts {
+    create = "10m"
+  }
+}
+
+# ACM Certificate for CloudFront (must be in us-east-1)
+resource "aws_acm_certificate" "cloudfront" {
+  provider                  = aws.us_east_1
+  domain_name               = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
+  validation_method         = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "${var.project_name}-cloudfront-cert"
+  }
+}
+
+# Certificate validation for CloudFront certificate
+resource "aws_acm_certificate_validation" "cloudfront" {
+  provider        = aws.us_east_1
+  certificate_arn = aws_acm_certificate.cloudfront.arn
+  
+  timeouts {
+    create = "10m"
+  }
+}
+
 # Application Load Balancer
 resource "aws_lb" "main" {
   name               = "${var.project_name}-alb"
@@ -84,16 +121,12 @@ resource "aws_lb_listener" "web_http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.web.arn
   }
 }
 
+# HTTPS listener for web traffic
 resource "aws_lb_listener" "web_https" {
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
@@ -107,7 +140,24 @@ resource "aws_lb_listener" "web_https" {
   }
 }
 
-# API routing rule
+# API routing rule for HTTP listener
+resource "aws_lb_listener_rule" "api_http" {
+  listener_arn = aws_lb_listener.web_http.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
+
+# API routing rule for HTTPS listener
 resource "aws_lb_listener_rule" "api" {
   listener_arn = aws_lb_listener.web_https.arn
   priority     = 100
@@ -220,7 +270,7 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.main.arn
+    acm_certificate_arn      = aws_acm_certificate.cloudfront.arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }

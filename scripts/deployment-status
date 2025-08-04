@@ -1,0 +1,215 @@
+#!/bin/bash
+
+# Deployment Status Monitor
+# Usage: ./scripts/deployment-status <environment>
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Function to display usage
+usage() {
+    echo "Usage: $0 <environment>"
+    echo ""
+    echo "Arguments:"
+    echo "  environment    staging or production"
+    echo ""
+    echo "Examples:"
+    echo "  $0 staging"
+    echo "  $0 production"
+    exit 1
+}
+
+# Validate arguments
+if [[ $# -ne 1 ]]; then
+    echo -e "${RED}Error: Environment argument required${NC}"
+    usage
+fi
+
+ENVIRONMENT="$1"
+
+# Validate environment
+if [[ "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "production" ]]; then
+    echo -e "${RED}Error: Environment must be 'staging' or 'production'${NC}"
+    usage
+fi
+
+# Set environment-specific variables
+if [[ "$ENVIRONMENT" == "production" ]]; then
+    AWS_REGION="us-east-1"
+    CLUSTER_NAME="grammysnaps-prod-cluster"
+    SERVICE_PREFIX="grammysnaps-prod"
+    DOMAIN="grannysnaps.dev"
+else
+    AWS_REGION="us-east-2"
+    CLUSTER_NAME="grammysnaps-cluster"
+    SERVICE_PREFIX="grammysnaps"
+    DOMAIN="grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com"
+fi
+
+API_SERVICE="$SERVICE_PREFIX-api"
+WEB_SERVICE="$SERVICE_PREFIX-web"
+
+echo -e "${BLUE}📊 Monitoring $ENVIRONMENT deployment status...${NC}"
+echo -e "${BLUE}📍 Region: $AWS_REGION${NC}"
+echo -e "${BLUE}🎯 Cluster: $CLUSTER_NAME${NC}"
+echo ""
+
+# Function to get service status
+get_service_status() {
+    local service_name="$1"
+    aws ecs describe-services \
+        --cluster "$CLUSTER_NAME" \
+        --services "$service_name" \
+        --region "$AWS_REGION" \
+        --query 'services[0].{
+            Status: status,
+            RunningCount: runningCount,
+            PendingCount: pendingCount,
+            DesiredCount: desiredCount,
+            TaskDefinition: taskDefinition,
+            Deployments: deployments[?status==`PRIMARY`].{
+                Status: status,
+                RolloutState: rolloutState,
+                CreatedAt: createdAt,
+                UpdatedAt: updatedAt
+            }
+        }' \
+        --output json 2>/dev/null
+}
+
+# Function to format timestamp
+format_time() {
+    local timestamp="$1"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        date -j -f "%Y-%m-%dT%H:%M:%S" "${timestamp%.*}" "+%H:%M:%S" 2>/dev/null || echo "$timestamp"
+    else
+        # Linux
+        date -d "$timestamp" "+%H:%M:%S" 2>/dev/null || echo "$timestamp"
+    fi
+}
+
+# Function to display service status
+display_service_status() {
+    local service_name="$1"
+    local status_json="$2"
+    
+    if [[ -z "$status_json" || "$status_json" == "null" ]]; then
+        echo -e "${RED}❌ $service_name: Service not found${NC}"
+        return 1
+    fi
+    
+    local status=$(echo "$status_json" | jq -r '.Status // "UNKNOWN"')
+    local running=$(echo "$status_json" | jq -r '.RunningCount // 0')
+    local pending=$(echo "$status_json" | jq -r '.PendingCount // 0')
+    local desired=$(echo "$status_json" | jq -r '.DesiredCount // 0')
+    local rollout_state=$(echo "$status_json" | jq -r '.Deployments[0].RolloutState // "UNKNOWN"')
+    local deployment_status=$(echo "$status_json" | jq -r '.Deployments[0].Status // "UNKNOWN"')
+    local created_at=$(echo "$status_json" | jq -r '.Deployments[0].CreatedAt // ""')
+    local updated_at=$(echo "$status_json" | jq -r '.Deployments[0].UpdatedAt // ""')
+    
+    # Status indicators
+    local status_indicator=""
+    local color=""
+    
+    if [[ "$rollout_state" == "COMPLETED" && "$running" == "$desired" && "$pending" == "0" ]]; then
+        status_indicator="✅"
+        color="$GREEN"
+    elif [[ "$rollout_state" == "IN_PROGRESS" || "$pending" -gt 0 ]]; then
+        status_indicator="🔄"
+        color="$YELLOW"
+    elif [[ "$rollout_state" == "FAILED" ]]; then
+        status_indicator="❌"
+        color="$RED"
+    else
+        status_indicator="⏳"
+        color="$CYAN"
+    fi
+    
+    echo -e "${color}${status_indicator} $service_name${NC}"
+    echo -e "   Status: $status | Rollout: $rollout_state"
+    echo -e "   Tasks: $running/$desired running, $pending pending"
+    
+    if [[ -n "$created_at" && "$created_at" != "null" ]]; then
+        echo -e "   Started: $(format_time "$created_at")"
+    fi
+    
+    if [[ -n "$updated_at" && "$updated_at" != "null" && "$updated_at" != "$created_at" ]]; then
+        echo -e "   Updated: $(format_time "$updated_at")"
+    fi
+    
+    echo ""
+    
+    # Return status for overall completion check
+    if [[ "$rollout_state" == "COMPLETED" && "$running" == "$desired" && "$pending" == "0" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Check if jq is available
+if ! command -v jq &> /dev/null; then
+    echo -e "${RED}❌ Error: 'jq' is required but not installed${NC}"
+    echo -e "${YELLOW}Please install jq: brew install jq (macOS) or apt-get install jq (Ubuntu)${NC}"
+    exit 1
+fi
+
+# Check AWS credentials
+if ! aws sts get-caller-identity --region "$AWS_REGION" >/dev/null 2>&1; then
+    echo -e "${RED}❌ Error: AWS credentials not configured or invalid${NC}"
+    exit 1
+fi
+
+# Main monitoring loop
+start_time=$(date +%s)
+api_complete=false
+web_complete=false
+
+while true; do
+    clear
+    echo -e "${BLUE}📊 Deployment Status - $ENVIRONMENT${NC}"
+    echo -e "${BLUE}📍 Region: $AWS_REGION | Cluster: $CLUSTER_NAME${NC}"
+    echo -e "${CYAN}⏰ Monitoring since: $(date)${NC}"
+    echo ""
+    
+    # Get service statuses
+    api_status=$(get_service_status "$API_SERVICE")
+    web_status=$(get_service_status "$WEB_SERVICE")
+    
+    # Display API status
+    if display_service_status "API Service" "$api_status"; then
+        api_complete=true
+    else
+        api_complete=false
+    fi
+    
+    # Display Web status
+    if display_service_status "Web Service" "$web_status"; then
+        web_complete=true
+    else
+        web_complete=false
+    fi
+    
+    # Check if both services are complete
+    if [[ "$api_complete" == true && "$web_complete" == true ]]; then
+        elapsed=$(($(date +%s) - start_time))
+        echo -e "${GREEN}🎉 DEPLOYMENT COMPLETED SUCCESSFULLY! 🎉${NC}"
+        echo -e "${GREEN}✅ All services are running and stable${NC}"
+        echo -e "${BLUE}⏱️  Total deployment time: ${elapsed}s${NC}"
+        echo -e "${BLUE}🌐 Application URL: https://$DOMAIN${NC}"
+        echo ""
+        exit 0
+    fi
+    
+    # Wait before next check
+    echo -e "${CYAN}🔄 Refreshing in 10 seconds... (Ctrl+C to exit)${NC}"
+    sleep 10
+done

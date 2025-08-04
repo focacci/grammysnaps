@@ -177,6 +177,22 @@ resource "aws_ssm_parameter" "s3_bucket_name" {
   }
 }
 
+resource "aws_ssm_parameter" "invite_key" {
+  name  = "/${var.project_name}/${var.environment}/api/invite_key"
+  type  = "SecureString"
+  value = var.invite_key != "" ? var.invite_key : random_password.invite_key.result
+
+  tags = {
+    Name = "${var.project_name}-invite-key"
+  }
+}
+
+# Generate a secure invite key if not provided
+resource "random_password" "invite_key" {
+  length  = 32
+  special = true
+}
+
 # API Task Definition
 resource "aws_ecs_task_definition" "api" {
   family                   = "${var.project_name}-api"
@@ -216,44 +232,68 @@ resource "aws_ecs_task_definition" "api" {
 
       secrets = [
         {
+          name      = "JWT_SECRET"
+          valueFrom = aws_secretsmanager_secret.jwt_secret.arn
+        },
+        {
           name      = "DATABASE_URL"
-          valueFrom = aws_ssm_parameter.db_host.arn
+          valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:database_url::"
         },
         {
           name      = "DB_HOST"
-          valueFrom = aws_ssm_parameter.db_host.arn
+          valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:host::"
         },
         {
           name      = "DB_PORT"
-          valueFrom = aws_ssm_parameter.db_port.arn
+          valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:port::"
         },
         {
           name      = "DB_NAME"
-          valueFrom = aws_ssm_parameter.db_name.arn
+          valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:database::"
         },
         {
           name      = "DB_USER"
-          valueFrom = aws_ssm_parameter.db_username.arn
+          valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:username::"
         },
         {
           name      = "DB_PASSWORD"
-          valueFrom = aws_ssm_parameter.db_password.arn
-        },
-        {
-          name      = "JWT_SECRET"
-          valueFrom = aws_ssm_parameter.jwt_secret.arn
+          valueFrom = "${aws_secretsmanager_secret.database_secrets.arn}:password::"
         },
         {
           name      = "AWS_ACCESS_KEY_ID"
-          valueFrom = aws_ssm_parameter.aws_access_key_id.arn
+          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:access_key_id::"
         },
         {
           name      = "AWS_SECRET_ACCESS_KEY"
-          valueFrom = aws_ssm_parameter.aws_secret_access_key.arn
+          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:secret_access_key::"
         },
         {
           name      = "S3_BUCKET_NAME"
-          valueFrom = aws_ssm_parameter.s3_bucket_name.arn
+          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:s3_bucket_name::"
+        },
+        {
+          name      = "CORS_ORIGINS"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:cors_origins::"
+        },
+        {
+          name      = "SMTP_HOST"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:smtp_host::"
+        },
+        {
+          name      = "SMTP_PORT"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:smtp_port::"
+        },
+        {
+          name      = "SMTP_USER"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:smtp_user::"
+        },
+        {
+          name      = "SMTP_PASSWORD"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:smtp_password::"
+        },
+        {
+          name      = "INVITE_KEY"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:invite_key::"
         }
       ]
 
@@ -306,8 +346,19 @@ resource "aws_ecs_task_definition" "web" {
 
       environment = [
         {
-          name  = "REACT_APP_API_URL"
-          value = "https://${var.domain_name}/api"
+          name  = "NODE_ENV"
+          value = var.environment == "dev" ? "development" : "production"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "VITE_API_URL"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:vite_api_url::"
+        },
+        {
+          name      = "VITE_NODE_ENV"
+          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:vite_node_env::"
         }
       ]
 
@@ -350,7 +401,7 @@ resource "aws_ecs_service" "api" {
   }
 
   depends_on = [
-    aws_lb_listener.web_https,
+    aws_lb_listener.web_http,
     aws_iam_role_policy_attachment.ecs_task_execution_role
   ]
 
@@ -379,7 +430,7 @@ resource "aws_ecs_service" "web" {
   }
 
   depends_on = [
-    aws_lb_listener.web_https,
+    aws_lb_listener.web_http,
     aws_iam_role_policy_attachment.ecs_task_execution_role
   ]
 
