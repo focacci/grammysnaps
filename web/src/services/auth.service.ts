@@ -192,13 +192,16 @@ class AuthService {
 
   // Login method
   async login(email: string, password: string): Promise<User> {
-    const response = await this.fetchWithTimeout(getApiEndpoint("/api/auth/login"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await this.fetchWithTimeout(
+      getApiEndpoint("/api/auth/login"),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.json();
@@ -420,9 +423,12 @@ class AuthService {
   // Check API connectivity
   async checkConnectivity(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(getApiEndpoint("/api/health"), {
-        method: "GET",
-      });
+      const response = await this.fetchWithTimeout(
+        getApiEndpoint("/api/health"),
+        {
+          method: "GET",
+        }
+      );
       return response.ok;
     } catch (error) {
       console.error("API connectivity check failed:", error);
@@ -438,9 +444,12 @@ class AuthService {
   }> {
     const startTime = Date.now();
     try {
-      const response = await this.fetchWithTimeout(getApiEndpoint("/api/health"), {
-        method: "GET",
-      });
+      const response = await this.fetchWithTimeout(
+        getApiEndpoint("/api/health"),
+        {
+          method: "GET",
+        }
+      );
       const latency = Date.now() - startTime;
 
       if (response.ok) {
