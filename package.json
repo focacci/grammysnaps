@@ -1,5 +1,10 @@
 {
   "scripts": {
+    "tf:staging": "cd aws-infrastructure && terraform apply -var-file=terraform.staging.tfvars",
+    "tf:production": "cd aws-infrastructure && terraform apply -var-file=terraform.production.tfvars",
+    "tf:plan:staging": "cd aws-infrastructure && terraform plan -var-file=terraform.staging.tfvars",
+    "tf:plan:production": "cd aws-infrastructure && terraform plan -var-file=terraform.production.tfvars",
+    "tf:unlock": "cd aws-infrastructure && terraform force-unlock",
     "deploy:staging": "./scripts/deploy -e staging -b $(git branch --show-current)",
     "deploy:production": "./scripts/deploy -e production -b $(git branch --show-current)",
     "status": "./scripts/deployment-status"

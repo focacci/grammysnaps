@@ -12,11 +12,11 @@ This project uses a two-tier deployment strategy:
 ### NPM Scripts (Recommended)
 
 ```bash
-# Deploy current branch to staging
-npm run deploy:staging
+# Plan changes first (optional)
+npm run tf:plan:\<staging \| production\>
 
-# Deploy current branch to production (requires RELEASE- branch name)
-npm run deploy:production
+# Deploy current branch
+npm run deploy:\<staging \| production\>
 
 # Monitor deployment status
 npm run status staging
