@@ -104,11 +104,29 @@ const main = async () => {
   });
 
   // Connect data stores
-  server.register(fastifyPostgres, {
-    connectionString:
-      process.env.DATABASE_URL ||
-      "postgres://grammysnaps:password@localhost:5432/grammysnaps",
-  });
+  const databaseUrl =
+    process.env.DATABASE_URL ||
+    "postgres://grammysnaps:password@localhost:5432/grammysnaps";
+
+  // Configure SSL for RDS PostgreSQL connection
+  const isProduction =
+    process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging";
+
+  if (isProduction) {
+    // For RDS, use SSL with proper certificate handling
+    server.register(fastifyPostgres, {
+      connectionString: databaseUrl,
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Allow RDS self-signed certificates
+      },
+    });
+  } else {
+    // Local development without SSL
+    server.register(fastifyPostgres, {
+      connectionString: databaseUrl,
+    });
+  }
   server.register(s3Plugin, {
     region: "us-east-2",
     bucket: process.env.S3_BUCKET_NAME!,
@@ -130,8 +148,8 @@ const main = async () => {
   await server.register(familyRoutes, { prefix: "/family" });
   await server.register(authRoutes, { prefix: "/auth" });
 
-  // Health check - simple and reliable
-  server.get("/health", async (request, reply) => {
+  // Health check for load balancer routing (/api/health)
+  server.get("/api/health", async (request, reply) => {
     try {
       // Test database connection - this is critical
       const client = await server.pg.connect();
@@ -145,7 +163,7 @@ const main = async () => {
         uptime: process.uptime(),
         database: "connected",
         version: process.env.npm_package_version || "unknown",
-        environment: process.env.NODE_ENV || "unknown"
+        environment: process.env.NODE_ENV || "unknown",
       };
 
       return reply.status(200).send(health);
