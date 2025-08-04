@@ -41,9 +41,9 @@ const main = async () => {
       // Staging ALB
       "http://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com",
       "https://grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com",
+      "https://grammysnaps.dev",
+      "https://www.grammysnaps.dev",
       // Production domains
-      "https://grannysnaps.dev",
-      "https://www.grannysnaps.dev",
     ];
 
     const origin = request.headers.origin;
@@ -51,11 +51,13 @@ const main = async () => {
     // Allow origins from localhost, local network, staging ALB, or production domains
     const isLocalhost = origin && origin.includes("localhost");
     const isLocalNetwork = origin && origin.includes("192.168.1.");
-    const isStagingALB = origin && origin.includes("grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com");
+    const isStagingALB =
+      origin &&
+      origin.includes("grammysnaps-alb-1397736712.us-east-2.elb.amazonaws.com");
     const isProductionDomain =
       origin &&
-      (origin === "https://grannysnaps.dev" ||
-        origin === "https://www.grannysnaps.dev");
+      (origin === "https://grammysnaps.dev" ||
+        origin === "https://www.grammysnaps.dev");
 
     if (
       origin &&

@@ -311,7 +311,7 @@ resource "aws_ecs_task_definition" "api" {
       }
 
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+        command     = ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
@@ -352,6 +352,10 @@ resource "aws_ecs_task_definition" "web" {
         {
           name  = "NODE_ENV"
           value = var.environment
+        },
+        {
+          name  = "VITE_API_URL"
+          value = var.environment == "production" ? "https://${var.domain_name}" : "http://${aws_lb.main.dns_name}"
         }
       ]
 
