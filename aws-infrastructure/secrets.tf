@@ -48,13 +48,14 @@ resource "aws_secretsmanager_secret" "database_secrets" {
 resource "aws_secretsmanager_secret_version" "database_secrets" {
   secret_id = aws_secretsmanager_secret.database_secrets.id
   secret_string = jsonencode({
-    host     = aws_db_instance.main.endpoint
+    host     = split(":", aws_db_instance.main.endpoint)[0]
     port     = aws_db_instance.main.port
     database = aws_db_instance.main.db_name
+    dbname   = aws_db_instance.main.db_name  # Add dbname field for migration script compatibility
     username = aws_db_instance.main.username
     password = random_password.db_password.result
     # Construct the full DATABASE_URL for easier use
-    database_url = "postgresql://${aws_db_instance.main.username}:${random_password.db_password.result}@${aws_db_instance.main.endpoint}:${aws_db_instance.main.port}/${aws_db_instance.main.db_name}"
+    database_url = "postgresql://${aws_db_instance.main.username}:${random_password.db_password.result}@${split(":", aws_db_instance.main.endpoint)[0]}:${aws_db_instance.main.port}/${aws_db_instance.main.db_name}"
   })
 }
 
