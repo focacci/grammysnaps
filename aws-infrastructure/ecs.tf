@@ -218,7 +218,7 @@ resource "aws_ecs_task_definition" "api" {
       environment = [
         {
           name  = "NODE_ENV"
-          value = "production"
+          value = var.environment
         },
         {
           name  = "PORT"
@@ -347,18 +347,7 @@ resource "aws_ecs_task_definition" "web" {
       environment = [
         {
           name  = "NODE_ENV"
-          value = var.environment == "dev" ? "development" : "production"
-        }
-      ]
-
-      secrets = [
-        {
-          name      = "VITE_API_URL"
-          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:vite_api_url::"
-        },
-        {
-          name      = "VITE_NODE_ENV"
-          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:vite_node_env::"
+          value = var.environment
         }
       ]
 
@@ -426,7 +415,7 @@ resource "aws_ecs_service" "web" {
   load_balancer {
     target_group_arn = aws_lb_target_group.web.arn
     container_name   = "web"
-    container_port   = 80
+    container_port   = 8080
   }
 
   depends_on = [

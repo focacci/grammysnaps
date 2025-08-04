@@ -158,7 +158,24 @@ cd ..
 # Build and push Web image
 echo -e "${YELLOW}🌐 Building Web Docker image...${NC}"
 cd web
-docker build -t "$ECR_REGISTRY/$SERVICE_PREFIX-web:$COMMIT_HASH" .
+
+# Set build arguments based on environment
+if [[ "$ENVIRONMENT" == "staging" ]]; then
+    API_URL="https://$DOMAIN/api"
+    NODE_ENV="staging"
+else
+    API_URL="https://$DOMAIN/api"
+    NODE_ENV="production"
+fi
+
+echo -e "${BLUE}🔧 Building with environment variables:${NC}"
+echo -e "${BLUE}   VITE_API_URL=$API_URL${NC}"
+echo -e "${BLUE}   VITE_NODE_ENV=$NODE_ENV${NC}"
+
+docker build \
+    --build-arg VITE_API_URL="$API_URL" \
+    --build-arg VITE_NODE_ENV="$NODE_ENV" \
+    -t "$ECR_REGISTRY/$SERVICE_PREFIX-web:$COMMIT_HASH" .
 docker tag "$ECR_REGISTRY/$SERVICE_PREFIX-web:$COMMIT_HASH" "$ECR_REGISTRY/$SERVICE_PREFIX-web:latest"
 
 echo -e "${YELLOW}📤 Pushing Web image to ECR...${NC}"
