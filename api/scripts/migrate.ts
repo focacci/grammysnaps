@@ -28,17 +28,6 @@ const DB_CONFIG = {
 };
 
 const SCHEMA_SQL = `
-
--- Drop all tables (in correct order to avoid foreign key constraints)
-DROP TABLE IF EXISTS image_families CASCADE;
-DROP TABLE IF EXISTS image_tags CASCADE;
-DROP TABLE IF EXISTS family_relations CASCADE;
-DROP TABLE IF EXISTS family_members CASCADE;
-DROP TABLE IF EXISTS tags CASCADE;
-DROP TABLE IF EXISTS images CASCADE;
-DROP TABLE IF EXISTS families CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -208,16 +197,16 @@ async function runMigration() {
     );
     console.log("📋 Existing tables:", existingTables);
 
-    // if (existingTables.length > 0) {
-    //   console.log(
-    //     "⚠️  Database already contains tables. Skipping migration to avoid conflicts."
-    //   );
-    //   console.log("🔍 To see the current schema, run:");
-    //   console.log(
-    //     '   docker exec grammysnaps-db-1 psql -U user -d grammysnaps -c "\\dt"'
-    //   );
-    //   return;
-    // }
+    if (existingTables.length > 0) {
+      console.log(
+        "⚠️  Database already contains tables. Skipping migration to avoid conflicts."
+      );
+      console.log("🔍 To see the current schema, run:");
+      console.log(
+        '   docker exec grammysnaps-db-1 psql -U user -d grammysnaps -c "\\dt"'
+      );
+      return;
+    }
 
     console.log("🗄️ Running database migrations...");
     await client.query(SCHEMA_SQL);
