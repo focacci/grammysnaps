@@ -59,26 +59,26 @@ jobs:
           const semver = require('semver');
           const currentVersion = '${{ steps.current-version.outputs.version }}';
           const mainVersion = '${{ steps.main-version.outputs.version }}';
-          
+
           console.log('Current API version:', currentVersion);
           console.log('Main branch API version:', mainVersion);
-          
+
           if (!semver.valid(currentVersion)) {
             console.error('❌ Current API version is not valid semver:', currentVersion);
             process.exit(1);
           }
-          
+
           if (!semver.valid(mainVersion)) {
             console.error('❌ Main branch API version is not valid semver:', mainVersion);
             process.exit(1);
           }
-          
+
           if (!semver.gt(currentVersion, mainVersion)) {
             console.error('❌ API version must be higher than main branch version');
             console.error('Current:', currentVersion, 'Main:', mainVersion);
             process.exit(1);
           }
-          
+
           console.log('✅ API version check passed');
           "
 
@@ -133,25 +133,25 @@ jobs:
           const semver = require('semver');
           const currentVersion = '${{ steps.current-version.outputs.version }}';
           const mainVersion = '${{ steps.main-version.outputs.version }}';
-          
+
           console.log('Current web version:', currentVersion);
           console.log('Main branch web version:', mainVersion);
-          
+
           if (!semver.valid(currentVersion)) {
             console.error('❌ Current web version is not valid semver:', currentVersion);
             process.exit(1);
           }
-          
+
           if (!semver.valid(mainVersion)) {
             console.error('❌ Main branch web version is not valid semver:', mainVersion);
             process.exit(1);
           }
-          
+
           if (!semver.gt(currentVersion, mainVersion)) {
             console.error('❌ Web version must be higher than main branch version');
             console.error('Current:', currentVersion, 'Main:', mainVersion);
             process.exit(1);
           }
-          
+
           console.log('✅ Web version check passed');
           "

@@ -14,16 +14,17 @@ resource "aws_acm_certificate" "main" {
 }
 
 # Certificate validation (will wait for DNS records to be added)
-# Commented out for initial deployment - enable after DNS is configured
-# resource "aws_acm_certificate_validation" "main" {
-#   certificate_arn = aws_acm_certificate.main.arn
-#   # Note: DNS validation records must be added manually to your domain
-#   # Use terraform output domain_validation_options to see required records
-#   
-#   timeouts {
-#     create = "10m"
-#   }
-# }
+# Note: DNS validation records must be added manually to your domain
+# Use terraform output domain_validation_options to see required records
+# Or uncomment the Route 53 configuration in route53.tf for automatic validation
+resource "aws_acm_certificate_validation" "main" {
+  certificate_arn         = aws_acm_certificate.main.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+  
+  timeouts {
+    create = "10m"
+  }
+}
 
 # ACM Certificate for CloudFront (must be in us-east-1)
 resource "aws_acm_certificate" "cloudfront" {
@@ -42,15 +43,15 @@ resource "aws_acm_certificate" "cloudfront" {
 }
 
 # Certificate validation for CloudFront certificate
-# Commented out for initial deployment - enable after DNS is configured
-# resource "aws_acm_certificate_validation" "cloudfront" {
-#   provider        = aws.us_east_1
-#   certificate_arn = aws_acm_certificate.cloudfront.arn
-#   
-#   timeouts {
-#     create = "10m"
-#   }
-# }
+resource "aws_acm_certificate_validation" "cloudfront" {
+  provider                = aws.us_east_1
+  certificate_arn         = aws_acm_certificate.cloudfront.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation_cloudfront : record.fqdn]
+  
+  timeouts {
+    create = "10m"
+  }
+}
 
 # Application Load Balancer
 resource "aws_lb" "main" {
@@ -123,29 +124,55 @@ resource "aws_lb_listener" "web_http" {
   protocol          = "HTTP"
 
   default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+# HTTPS listener for web traffic
+resource "aws_lb_listener" "web_https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate_validation.main.certificate_arn
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web.arn
   }
 }
 
-# HTTPS listener for web traffic
-# Commented out for initial deployment - enable after DNS is configured
-# resource "aws_lb_listener" "web_https" {
-#   load_balancer_arn = aws_lb.main.arn
-#   port              = "443"
-#   protocol          = "HTTPS"
-#   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-#   certificate_arn   = aws_acm_certificate.main.arn
-# 
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.web.arn
-#   }
-# }
-
-# API routing rule for HTTP listener
+# API routing rule for HTTP listener (redirect to HTTPS)
 resource "aws_lb_listener_rule" "api_http" {
   listener_arn = aws_lb_listener.web_http.arn
+  priority     = 100
+
+  action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
+
+# API routing rule for HTTPS listener
+resource "aws_lb_listener_rule" "api_https" {
+  listener_arn = aws_lb_listener.web_https.arn
   priority     = 100
 
   action {
@@ -159,24 +186,6 @@ resource "aws_lb_listener_rule" "api_http" {
     }
   }
 }
-
-# API routing rule for HTTPS listener
-# Commented out for initial deployment - enable after DNS is configured
-# resource "aws_lb_listener_rule" "api" {
-#   listener_arn = aws_lb_listener.web_https.arn
-#   priority     = 100
-# 
-#   action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.api.arn
-#   }
-# 
-#   condition {
-#     path_pattern {
-#       values = ["/api/*"]
-#     }
-#   }
-# }
 
 # CloudFront Distribution for static assets and caching
 # Commented out for initial deployment - enable after DNS is configured

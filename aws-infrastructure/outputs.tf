@@ -89,9 +89,45 @@ output "acm_certificate_arn" {
   value       = aws_acm_certificate.main.arn
 }
 
+output "route53_nameservers" {
+  description = "Route 53 nameservers for your domain"
+  value       = aws_route53_zone.main.name_servers
+}
+
 output "domain_validation_options" {
   description = "Domain validation options for ACM certificate"
   value       = aws_acm_certificate.main.domain_validation_options
+}
+
+output "cloudfront_domain_validation_options" {
+  description = "Domain validation options for CloudFront ACM certificate"
+  value       = aws_acm_certificate.cloudfront.domain_validation_options
+}
+
+output "ssl_setup_instructions" {
+  description = "Instructions for setting up SSL"
+  value = <<-EOT
+    🔐 SSL Certificate Setup:
+    
+    1. Add these DNS validation records to your domain (${var.domain_name}):
+       
+       For ALB Certificate (${aws_acm_certificate.main.arn}):
+       ${join("\n       ", [for dvo in aws_acm_certificate.main.domain_validation_options : "${dvo.resource_record_name} CNAME ${dvo.resource_record_value}"])}
+       
+       For CloudFront Certificate (${aws_acm_certificate.cloudfront.arn}):
+       ${join("\n       ", [for dvo in aws_acm_certificate.cloudfront.domain_validation_options : "${dvo.resource_record_name} CNAME ${dvo.resource_record_value}"])}
+    
+    2. After adding DNS records, certificates will validate automatically (may take 5-30 minutes)
+    
+    3. Once validated, access your app securely at:
+       - https://${var.domain_name}
+       - https://www.${var.domain_name}
+       - API: https://${var.domain_name}/api/health
+    
+    4. HTTP traffic will automatically redirect to HTTPS
+    
+    Alternative: Uncomment Route 53 configuration in route53.tf for automatic DNS management
+  EOT
 }
 
 output "nameservers_instructions" {
