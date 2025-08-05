@@ -355,7 +355,7 @@ resource "aws_ecs_task_definition" "web" {
         },
         {
           name  = "VITE_API_URL"
-          value = var.environment == "production" ? "https://${var.domain_name}" : "http://${aws_lb.main.dns_name}"
+          value = "https://${var.domain_name}"
         }
       ]
 

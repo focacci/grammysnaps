@@ -82,7 +82,7 @@ else
     ECR_REGISTRY="124314579010.dkr.ecr.us-east-2.amazonaws.com"
     CLUSTER_NAME="grammysnaps-cluster"
     SERVICE_PREFIX="grammysnaps"
-    DOMAIN="grammysnaps-alb-286162438.us-east-2.elb.amazonaws.com"
+    DOMAIN="grammysnaps.dev"
 fi
 
 PROJECT_NAME="grammysnaps"
@@ -184,7 +184,7 @@ cd web
 
 # Set build arguments based on environment
 if [[ "$ENVIRONMENT" == "staging" ]]; then
-    API_URL="http://$DOMAIN"
+    API_URL="https://$DOMAIN"
     NODE_ENV="staging"
 else
     API_URL="https://$DOMAIN"
