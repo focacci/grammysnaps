@@ -13,11 +13,26 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 PROJECT_NAME="grammysnaps"
-ENVIRONMENT="staging"  # Change to "production" for prod
-AWS_REGION="us-east-2"
 
-echo -e "${BLUE}🔐 GrammySnaps SSL Setup${NC}"
-echo -e "${BLUE}========================${NC}"
+# Allow environment to be passed as argument
+ENVIRONMENT="${1:-staging}"  # Default to staging if no argument provided
+
+# Validate environment
+if [[ "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "production" ]]; then
+    echo -e "${RED}❌ Error: Environment must be 'staging' or 'production'${NC}"
+    echo "Usage: $0 [staging|production]"
+    exit 1
+fi
+
+# Set region based on environment
+if [[ "$ENVIRONMENT" == "production" ]]; then
+    AWS_REGION="us-east-1"
+else
+    AWS_REGION="us-east-2"
+fi
+
+echo -e "${BLUE}🔐 GrammySnaps SSL Setup - ${ENVIRONMENT}${NC}"
+echo -e "${BLUE}========================================${NC}"
 echo ""
 
 # Check if we're in the right directory
@@ -43,18 +58,20 @@ if [[ ! -d ".terraform" ]]; then
 fi
 
 # Plan the SSL changes
-echo -e "${YELLOW}📋 Planning SSL infrastructure changes...${NC}"
+echo -e "${YELLOW}📋 Planning SSL infrastructure changes for ${ENVIRONMENT}...${NC}"
 terraform plan -var-file="terraform.${ENVIRONMENT}.tfvars" -out=ssl-plan
 
 echo ""
-echo -e "${BLUE}🔍 SSL Setup Plan Summary:${NC}"
+echo -e "${BLUE}🔍 SSL Setup Plan Summary for ${ENVIRONMENT}:${NC}"
 echo "  • ACM certificates will be created for your domain"
 echo "  • HTTPS listeners will be added to load balancer"  
 echo "  • HTTP traffic will redirect to HTTPS"
 echo "  • Certificate validation records will be generated"
+echo "  • Environment: ${ENVIRONMENT}"
+echo "  • Region: ${AWS_REGION}"
 echo ""
 
-read -p "Do you want to apply these SSL changes? (y/N): " -n 1 -r
+read -p "Do you want to apply these SSL changes to ${ENVIRONMENT}? (y/N): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo -e "${YELLOW}⏹️ SSL setup cancelled${NC}"
@@ -63,17 +80,23 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 # Apply the changes
-echo -e "${YELLOW}🚀 Applying SSL infrastructure...${NC}"
+echo -e "${YELLOW}🚀 Applying SSL infrastructure to ${ENVIRONMENT}...${NC}"
 terraform apply ssl-plan
 
 # Get the DNS validation records
 echo ""
-echo -e "${GREEN}✅ SSL infrastructure deployed!${NC}"
+echo -e "${GREEN}✅ SSL infrastructure deployed to ${ENVIRONMENT}!${NC}"
 echo ""
-echo -e "${YELLOW}📝 Next Steps:${NC}"
-echo "1. Add the DNS validation records shown above to your domain"
-echo "2. Wait for certificate validation (5-30 minutes)"
-echo "3. Your app will be available at https://grammysnaps.dev"
+echo -e "${YELLOW}📝 Next Steps for ${ENVIRONMENT}:${NC}"
+if [[ "$ENVIRONMENT" == "production" ]]; then
+    echo "1. Set up your production domain DNS"
+    echo "2. Wait for certificate validation (5-30 minutes)"
+    echo "3. Your production app will be available at https://grammysnaps.com"
+else
+    echo "1. Update nameservers in Porkbun if needed"
+    echo "2. Wait for certificate validation (5-30 minutes)"
+    echo "3. Your app will be available at https://grammysnaps.dev"
+fi
 echo ""
 
 # Check certificate status
