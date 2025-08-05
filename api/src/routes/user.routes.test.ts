@@ -128,18 +128,18 @@ describe("User Routes", () => {
       updated_at: "2024-01-01T00:00:00Z",
     };
 
-    describe("in development environment", () => {
+    describe("in staging environment", () => {
       const originalNodeEnv = process.env.NODE_ENV;
-      const originalInviteKey = process.env.DEV_INVITE_KEY;
+      const originalInviteKey = process.env.INVITE_KEY;
 
       beforeEach(() => {
-        process.env.NODE_ENV = "dev";
-        process.env.DEV_INVITE_KEY = "dev123";
+        process.env.NODE_ENV = "staging";
+        process.env.INVITE_KEY = "dev123";
       });
 
       afterEach(() => {
         process.env.NODE_ENV = originalNodeEnv;
-        process.env.DEV_INVITE_KEY = originalInviteKey;
+        process.env.INVITE_KEY = originalInviteKey;
       });
 
       it("should require invite key", async () => {

@@ -1,0 +1,245 @@
+name: Version Check
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "api/**"
+      - "web/**"
+
+jobs:
+  check-api-version:
+    name: Check API Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: api/**
+
+      - name: Skip if no API changes
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "No changes in API directory, skipping version check"
+          exit 0
+
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install semver
+        run: npm install semver
+
+      - name: Get current API version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./api/package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current API version: $CURRENT_VERSION"
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+
+      - name: Get main branch API version
+        id: main-version
+        run: |
+          MAIN_VERSION=$(node -p "require('./main-branch/api/package.json').version")
+          echo "version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+          echo "Main branch API version: $MAIN_VERSION"
+
+      - name: Compare versions
+        run: |
+          node -e "
+          const semver = require('semver');
+          const currentVersion = '${{ steps.current-version.outputs.version }}';
+          const mainVersion = '${{ steps.main-version.outputs.version }}';
+
+          console.log('Current API version:', currentVersion);
+          console.log('Main branch API version:', mainVersion);
+
+          if (!semver.valid(currentVersion)) {
+            console.error('❌ Current API version is not valid semver:', currentVersion);
+            process.exit(1);
+          }
+
+          if (!semver.valid(mainVersion)) {
+            console.error('❌ Main branch API version is not valid semver:', mainVersion);
+            process.exit(1);
+          }
+
+          if (!semver.gt(currentVersion, mainVersion)) {
+            console.error('❌ API version must be higher than main branch version');
+            console.error('Current:', currentVersion, 'Main:', mainVersion);
+            process.exit(1);
+          }
+
+          console.log('✅ API version check passed');
+          "
+
+  check-web-version:
+    name: Check Web Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: web/**
+
+      - name: Skip if no web changes
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "No changes in web directory, skipping version check"
+          exit 0
+
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install semver
+        run: npm install semver
+
+      - name: Get current web version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./web/package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current web version: $CURRENT_VERSION"
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+
+      - name: Get main branch web version
+        id: main-version
+        run: |
+          MAIN_VERSION=$(node -p "require('./main-branch/web/package.json').version")
+          echo "version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+          echo "Main branch web version: $MAIN_VERSION"
+
+      - name: Compare versions
+        run: |
+          node -e "
+          const semver = require('semver');
+          const currentVersion = '${{ steps.current-version.outputs.version }}';
+          const mainVersion = '${{ steps.main-version.outputs.version }}';
+
+          console.log('Current web version:', currentVersion);
+          console.log('Main branch web version:', mainVersion);
+
+          if (!semver.valid(currentVersion)) {
+            console.error('❌ Current web version is not valid semver:', currentVersion);
+            process.exit(1);
+          }
+
+          if (!semver.valid(mainVersion)) {
+            console.error('❌ Main branch web version is not valid semver:', mainVersion);
+            process.exit(1);
+          }
+
+          if (!semver.gt(currentVersion, mainVersion)) {
+            console.error('❌ Web version must be higher than main branch version');
+            console.error('Current:', currentVersion, 'Main:', mainVersion);
+            process.exit(1);
+          }
+
+          console.log('✅ Web version check passed');
+          "
+
+  check-grammysnaps-version:
+    name: Check Grammysnaps Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            web/**
+            api/**
+            pgdata/**
+            aws-infrastructure/**
+
+      - name: Skip if no relevant changes
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "No changes in web, api, pgdata, or aws-infrastructure directories, skipping version check"
+          exit 0
+
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install semver
+        run: npm install semver
+
+      - name: Get current Grammysnaps version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "const pkg = require('./package.json'); pkg.version || '0.0.0'")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current Grammysnaps version: $CURRENT_VERSION"
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+
+      - name: Get main branch Grammysnaps version
+        id: main-version
+        run: |
+          MAIN_VERSION=$(node -p "(function() { try { const pkg = require('./main-branch/package.json'); return pkg.version || '0.0.0'; } catch(e) { return '0.0.0'; } })()")
+          echo "version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+          echo "Main branch Grammysnaps version: $MAIN_VERSION"
+
+      - name: Compare versions
+        run: |
+          node -e "
+          const semver = require('semver');
+          const currentVersion = '${{ steps.current-version.outputs.version }}';
+          const mainVersion = '${{ steps.main-version.outputs.version }}';
+
+          console.log('Current Grammysnaps version:', currentVersion);
+          console.log('Main branch Grammysnaps version:', mainVersion);
+
+          if (!semver.valid(currentVersion)) {
+            console.error('❌ Current Grammysnaps version is not valid semver:', currentVersion);
+            process.exit(1);
+          }
+
+          if (!semver.valid(mainVersion)) {
+            console.error('❌ Main branch Grammysnaps version is not valid semver:', mainVersion);
+            process.exit(1);
+          }
+
+          if (!semver.gt(currentVersion, mainVersion)) {
+            console.error('❌ Grammysnaps version must be higher than main branch version');
+            console.error('Current:', currentVersion, 'Main:', mainVersion);
+            console.error('Please bump the version in the root package.json file when making changes to web, api, pgdata, or aws-infrastructure');
+            process.exit(1);
+          }
+
+          console.log('✅ Grammysnaps version check passed');
+          "

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import "./Account.css";
 import authService from "../services/auth.service";
-import { API_BASE_URL } from "../services/api.service";
+import { getApiEndpoint } from "../services/api.service";
+import { env } from "../utils/environment";
 import Modal from "./Modal";
 
 // Type definitions
@@ -171,7 +172,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingFamilies(true);
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/user/${user.id}`
+        getApiEndpoint(`/family/user/${user.id}`)
       );
       if (response.ok) {
         const families = await response.json();
@@ -266,7 +267,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(familyId);
         setCopiedFamilyId(familyId);
-        console.log("Copied via clipboard API:", familyId);
+        if (env.isDevelopment()) {
+          console.log("Copied via clipboard API:", familyId);
+        }
       } else {
         // Fallback for browsers without clipboard API
         const textArea = document.createElement("textarea");
@@ -280,7 +283,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
         document.execCommand("copy");
         document.body.removeChild(textArea);
         setCopiedFamilyId(familyId);
-        console.log("Copied via fallback method:", familyId);
+        if (env.isDevelopment()) {
+          console.log("Copied via fallback method:", familyId);
+        }
       }
 
       // Clear the feedback after 3 seconds
@@ -307,7 +312,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setCreateFamilyLoading(true);
 
     try {
-      const response = await authService.apiCall(`${API_BASE_URL}/family`, {
+      const response = await authService.apiCall(getApiEndpoint("/family"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -363,7 +368,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       setLoadingJoinFamilyInfo(true);
       try {
         const response = await authService.apiCall(
-          `${API_BASE_URL}/family/${familyId.trim()}`
+          getApiEndpoint(`/family/${familyId.trim()}`)
         );
         if (response.ok) {
           const familyData = await response.json();
@@ -389,7 +394,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${joinFamilyInfo.id}/members`,
+        getApiEndpoint(`/family/${joinFamilyInfo.id}/members`),
         {
           method: "POST",
           headers: {
@@ -429,8 +434,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
   // Manage Family Handlers
   const handleManageFamily = async (family: FamilyGroup) => {
-    console.log("Managing family:", family);
-    console.log("User role:", family.user_role);
+    if (env.isDevelopment()) {
+      console.log("Managing family:", family);
+      console.log("User role:", family.user_role);
+    }
     setSelectedFamily(family);
     setShowManageFamilyModal(true);
     setManageFamilyError("");
@@ -445,7 +452,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingMembers(true);
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${familyId}/members`
+        getApiEndpoint(`/family/${familyId}/members`)
       );
       if (response.ok) {
         const members = await response.json();
@@ -474,7 +481,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingRelatedFamilies(true);
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${familyId}/related`
+        getApiEndpoint(`/family/${familyId}/related`)
       );
       if (response.ok) {
         const relatedFams = await response.json();
@@ -500,7 +507,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${selectedFamily.id}/related`,
+        getApiEndpoint(`/family/${selectedFamily.id}/related`),
         {
           method: "POST",
           headers: {
@@ -537,7 +544,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`,
+        getApiEndpoint(
+          `/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`
+        ),
         {
           method: "DELETE",
         }
@@ -582,9 +591,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       // First, find the user by email
       const userResponse = await authService.apiCall(
-        `${API_BASE_URL}/user/email/${encodeURIComponent(
-          addMemberEmail.trim()
-        )}`
+        getApiEndpoint(
+          `/user/email/${encodeURIComponent(addMemberEmail.trim())}`
+        )
       );
 
       if (!userResponse.ok) {
@@ -595,7 +604,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       // Add the user to the family
       const addResponse = await authService.apiCall(
-        `${API_BASE_URL}/family/${selectedFamily.id}/members`,
+        getApiEndpoint(`/family/${selectedFamily.id}/members`),
         {
           method: "POST",
           headers: {
@@ -632,7 +641,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${selectedFamily.id}/members/${memberToRemove.id}`,
+        getApiEndpoint(
+          `/family/${selectedFamily.id}/members/${memberToRemove.id}`
+        ),
         {
           method: "DELETE",
         }
@@ -675,7 +686,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${selectedFamily.id}`,
+        getApiEndpoint(`/family/${selectedFamily.id}`),
         {
           method: "DELETE",
         }
@@ -726,7 +737,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingViewMembers(true);
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${familyId}/members`
+        getApiEndpoint(`/family/${familyId}/members`)
       );
       if (response.ok) {
         const members = await response.json();
@@ -768,7 +779,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       setLeaveFamilyLoading(familyToLeave.id);
 
       const response = await authService.apiCall(
-        `${API_BASE_URL}/family/${familyToLeave.id}/members/${user.id}`,
+        getApiEndpoint(`/family/${familyToLeave.id}/members/${user.id}`),
         {
           method: "DELETE",
         }
@@ -855,7 +866,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
         }
 
         const response = await fetch(
-          `${API_BASE_URL}/user/${user.id}/profile-picture`,
+          getApiEndpoint(`/user/${user.id}/profile-picture`),
           {
             method: "POST",
             headers: {
@@ -874,10 +885,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
         profilePictureUrl = data.url;
       }
 
-      console.log("Birthday:", editForm.birthday);
+      if (env.isDevelopment()) {
+        console.log("Birthday:", editForm.birthday);
+      }
       // Then, update user profile data
       const userUpdateResponse = await authService.apiCall(
-        `${API_BASE_URL}/user/${user.id}`,
+        getApiEndpoint(`/user/${user.id}`),
         {
           method: "PUT",
           headers: {
@@ -985,7 +998,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       }
 
       const response = await authService.apiCall(
-        `${API_BASE_URL}/user/${user.id}/security`,
+        getApiEndpoint(`/user/${user.id}/security`),
         {
           method: "PUT",
           headers: {

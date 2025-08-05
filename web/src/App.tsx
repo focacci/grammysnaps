@@ -13,6 +13,7 @@ import PhotoView from "./components/PhotoView";
 import Account from "./components/Account";
 import Auth from "./components/Auth";
 import authService from "./services/auth.service";
+import { env } from "./utils/environment";
 
 // Protected Route component
 const ProtectedRoute = ({
@@ -55,6 +56,9 @@ function AppContent() {
 
   // Check for system preference and saved preference on mount
   useEffect(() => {
+    // Log environment configuration in development
+    env.logConfig();
+
     const savedTheme = localStorage.getItem("theme");
     const systemPrefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
@@ -236,7 +240,7 @@ function AppContent() {
               ) : (
                 <div className="home-view">
                   <div className="home-content">
-                    <h1>Welcome to Grammy's Snaps</h1>
+                    <h1>Welcome to Grammysnaps</h1>
                     <p>Your family photo sharing app</p>
                     <button
                       onClick={() => setShowAuth(true)}
