@@ -28,6 +28,17 @@ const DB_CONFIG = {
 };
 
 const SCHEMA_SQL = `
+
+-- Drop all tables (in correct order to avoid foreign key constraints)
+DROP TABLE IF EXISTS image_families CASCADE;
+DROP TABLE IF EXISTS image_tags CASCADE;
+DROP TABLE IF EXISTS family_relations CASCADE;
+DROP TABLE IF EXISTS family_members CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS images CASCADE;
+DROP TABLE IF EXISTS families CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

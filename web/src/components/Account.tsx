@@ -172,7 +172,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
     try {
       setLoadingFamilies(true);
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/family/user/${user.id}`)
+        getApiEndpoint(`/family/user/${user.id}`)
       );
       if (response.ok) {
         const families = await response.json();

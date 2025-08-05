@@ -127,6 +127,29 @@ git pull origin "$BRANCH"
 COMMIT_HASH=$(git rev-parse --short HEAD)
 echo -e "${BLUE}📝 Deploying commit: $COMMIT_HASH${NC}"
 
+# Check for required dependencies
+echo -e "${YELLOW}🔍 Checking required dependencies...${NC}"
+if ! command -v jq &> /dev/null; then
+    echo -e "${RED}❌ Error: jq is required but not installed${NC}"
+    echo -e "${YELLOW}Please install jq:${NC}"
+    echo -e "${BLUE}   Ubuntu/Debian: sudo apt-get install jq${NC}"
+    echo -e "${BLUE}   macOS: brew install jq${NC}"
+    echo -e "${BLUE}   Amazon Linux: sudo yum install jq${NC}"
+    exit 1
+fi
+
+if ! command -v aws &> /dev/null; then
+    echo -e "${RED}❌ Error: AWS CLI is required but not installed${NC}"
+    exit 1
+fi
+
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}❌ Error: Docker is required but not installed${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ All required dependencies are available${NC}"
+
 # Check AWS credentials
 echo -e "${YELLOW}☁️ Verifying AWS credentials...${NC}"
 if ! aws sts get-caller-identity --region "$AWS_REGION" >/dev/null; then
@@ -183,25 +206,90 @@ docker push "$ECR_REGISTRY/$SERVICE_PREFIX-web:$COMMIT_HASH"
 docker push "$ECR_REGISTRY/$SERVICE_PREFIX-web:latest"
 cd ..
 
-# Update ECS services
-echo -e "${YELLOW}🔄 Updating API ECS service...${NC}"
-aws ecs update-service \
-    --cluster "$CLUSTER_NAME" \
-    --service "$SERVICE_PREFIX-api" \
-    --force-new-deployment \
-    --region "$AWS_REGION" \
-    --no-cli-pager
+# Function to update task definition and deploy service
+update_task_definition_and_deploy() {
+    local service_name=$1
+    local image_uri=$2
+    local container_name=$3
+    
+    echo -e "${YELLOW}� Updating task definition for $service_name...${NC}"
+    
+    # Get current task definition
+    CURRENT_TASK_DEF=$(aws ecs describe-services \
+        --cluster "$CLUSTER_NAME" \
+        --services "$service_name" \
+        --region "$AWS_REGION" \
+        --query 'services[0].taskDefinition' \
+        --output text)
+    
+    if [[ "$CURRENT_TASK_DEF" == "None" || -z "$CURRENT_TASK_DEF" ]]; then
+        echo -e "${RED}❌ Error: Could not find current task definition for $service_name${NC}"
+        return 1
+    fi
+    
+    echo -e "${BLUE}   Current task definition: $CURRENT_TASK_DEF${NC}"
+    
+    # Get the task definition details
+    TASK_DEF_JSON=$(aws ecs describe-task-definition \
+        --task-definition "$CURRENT_TASK_DEF" \
+        --region "$AWS_REGION" \
+        --query 'taskDefinition')
+    
+    # Update the image URI in the task definition
+    NEW_TASK_DEF=$(echo "$TASK_DEF_JSON" | jq --arg image_uri "$image_uri" --arg container_name "$container_name" '
+        .containerDefinitions |= map(
+            if .name == $container_name then
+                .image = $image_uri
+            else
+                .
+            end
+        ) |
+        del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)
+    ')
+    
+    # Register new task definition
+    echo -e "${YELLOW}📝 Registering new task definition...${NC}"
+    NEW_TASK_DEF_ARN=$(echo "$NEW_TASK_DEF" | aws ecs register-task-definition \
+        --region "$AWS_REGION" \
+        --cli-input-json file:///dev/stdin \
+        --query 'taskDefinition.taskDefinitionArn' \
+        --output text)
+    
+    if [[ -z "$NEW_TASK_DEF_ARN" ]]; then
+        echo -e "${RED}❌ Error: Failed to register new task definition${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}✅ New task definition registered: $NEW_TASK_DEF_ARN${NC}"
+    
+    # Update service to use new task definition
+    echo -e "${YELLOW}🔄 Updating $service_name service...${NC}"
+    aws ecs update-service \
+        --cluster "$CLUSTER_NAME" \
+        --service "$service_name" \
+        --task-definition "$NEW_TASK_DEF_ARN" \
+        --region "$AWS_REGION" \
+        --no-cli-pager > /dev/null
+    
+    echo -e "${GREEN}✅ Service $service_name updated successfully${NC}"
+}
 
-echo -e "${YELLOW}🔄 Updating Web ECS service...${NC}"
-aws ecs update-service \
-    --cluster "$CLUSTER_NAME" \
-    --service "$SERVICE_PREFIX-web" \
-    --force-new-deployment \
-    --region "$AWS_REGION" \
-    --no-cli-pager
+# Update API service
+echo -e "${YELLOW}🔄 Deploying API service...${NC}"
+update_task_definition_and_deploy \
+    "$SERVICE_PREFIX-api" \
+    "$ECR_REGISTRY/$SERVICE_PREFIX-api:$COMMIT_HASH" \
+    "api"
+
+# Update Web service  
+echo -e "${YELLOW}🔄 Deploying Web service...${NC}"
+update_task_definition_and_deploy \
+    "$SERVICE_PREFIX-web" \
+    "$ECR_REGISTRY/$SERVICE_PREFIX-web:$COMMIT_HASH" \
+    "web"
 
 echo ""
-echo -e "${GREEN}🎉 Deployment initiated successfully!${NC}"
+echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
 echo -e "${BLUE}📊 Environment: $ENVIRONMENT${NC}"
 echo -e "${BLUE}🌍 Region: $AWS_REGION${NC}"
 echo -e "${BLUE}📝 Commit: $COMMIT_HASH${NC}"
@@ -209,4 +297,8 @@ echo -e "${BLUE}🌐 URL: https://$DOMAIN${NC}"
 echo ""
 echo -e "${YELLOW}📈 Monitor deployment progress with:${NC}"
 echo -e "${BLUE}   ./scripts/deployment-status $ENVIRONMENT${NC}"
+echo ""
+echo -e "${YELLOW}🔄 To rollback if needed:${NC}"
+echo -e "${BLUE}   aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_PREFIX-api --task-definition <previous-task-def-arn> --region $AWS_REGION${NC}"
+echo -e "${BLUE}   aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_PREFIX-web --task-definition <previous-task-def-arn> --region $AWS_REGION${NC}"
 echo ""
