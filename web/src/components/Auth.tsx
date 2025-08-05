@@ -379,7 +379,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
 
         // Update user profile
         const response = await authService.apiCall(
-          getApiEndpoint(`/api/user/${createdUser.id}`),
+          getApiEndpoint(`/user/${createdUser.id}`),
           {
             method: "PUT",
             body: JSON.stringify({

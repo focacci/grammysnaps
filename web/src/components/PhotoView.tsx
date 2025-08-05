@@ -178,9 +178,7 @@ function PhotoView({ user }: PhotoViewProps) {
           }
 
           imagesResponse = await authService.apiCall(
-            getApiEndpoint(
-              `/api/image/user/${user.id}?${queryParams.toString()}`
-            )
+            getApiEndpoint(`/image/user/${user.id}?${queryParams.toString()}`)
           );
         } else {
           // If user has no families, set empty images
@@ -191,7 +189,7 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         const tagPromises = familiesData.map((family: FamilyGroup) =>
-          authService.apiCall(getApiEndpoint(`/api/tag/family/${family.id}`))
+          authService.apiCall(getApiEndpoint(`/tag/family/${family.id}`))
         );
 
         const [, ...tagResponses] = await Promise.all([
@@ -259,7 +257,7 @@ function PhotoView({ user }: PhotoViewProps) {
       }
 
       const imagesResponse = await authService.apiCall(
-        getApiEndpoint(`/api/image/user/${user.id}?${queryParams.toString()}`)
+        getApiEndpoint(`/image/user/${user.id}?${queryParams.toString()}`)
       );
 
       if (!imagesResponse.ok) {
@@ -306,7 +304,7 @@ function PhotoView({ user }: PhotoViewProps) {
         }
 
         const imagesResponse = await authService.apiCall(
-          getApiEndpoint(`/api/image/user/${user.id}?${queryParams.toString()}`)
+          getApiEndpoint(`/image/user/${user.id}?${queryParams.toString()}`)
         );
 
         if (!imagesResponse.ok) {
@@ -693,7 +691,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setSavingTag(true);
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/tag/${editingTag.id}`),
+        getApiEndpoint(`/tag/${editingTag.id}`),
         {
           method: "PUT",
           headers: {
@@ -733,7 +731,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setDeletingTag(true);
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/tag/${editingTag.id}`),
+        getApiEndpoint(`/tag/${editingTag.id}`),
         {
           method: "DELETE",
         }
@@ -828,7 +826,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setSavingImage(true);
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/image/${selectedImage.id}`),
+        getApiEndpoint(`/image/${selectedImage.id}`),
         {
           method: "PUT",
           headers: {
@@ -870,7 +868,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setDeletingImage(true);
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/api/image/${selectedImage.id}`),
+        getApiEndpoint(`/image/${selectedImage.id}`),
         {
           method: "DELETE",
         }
@@ -903,7 +901,7 @@ function PhotoView({ user }: PhotoViewProps) {
       }
 
       const response = await fetch(
-        getApiEndpoint(`/api/image/${selectedImage.id}/download`),
+        getApiEndpoint(`/image/${selectedImage.id}/download`),
         {
           headers: {
             Authorization: authHeader,
