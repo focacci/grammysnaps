@@ -197,16 +197,16 @@ async function runMigration() {
     );
     console.log("📋 Existing tables:", existingTables);
 
-    if (existingTables.length > 0) {
-      console.log(
-        "⚠️  Database already contains tables. Skipping migration to avoid conflicts."
-      );
-      console.log("🔍 To see the current schema, run:");
-      console.log(
-        '   docker exec grammysnaps-db-1 psql -U user -d grammysnaps -c "\\dt"'
-      );
-      return;
-    }
+    // if (existingTables.length > 0) {
+    //   console.log(
+    //     "⚠️  Database already contains tables. Skipping migration to avoid conflicts."
+    //   );
+    //   console.log("🔍 To see the current schema, run:");
+    //   console.log(
+    //     '   docker exec grammysnaps-db-1 psql -U user -d grammysnaps -c "\\dt"'
+    //   );
+    //   return;
+    // }
 
     console.log("🗄️ Running database migrations...");
     await client.query(SCHEMA_SQL);
