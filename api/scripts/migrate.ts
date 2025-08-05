@@ -24,10 +24,7 @@ const DB_CONFIG = {
   password: process.env.DB_PASSWORD,
   connectionTimeoutMillis: 30000, // 30 seconds
   idleTimeoutMillis: 30000,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl: { rejectUnauthorized: false }, // Always use SSL for RDS
 };
 
 const SCHEMA_SQL = `
