@@ -235,8 +235,20 @@ update_task_definition_and_deploy() {
         --region "$AWS_REGION" \
         --query 'taskDefinition')
     
-    # Update the image URI in the task definition
-    NEW_TASK_DEF=$(echo "$TASK_DEF_JSON" | jq --arg image_uri "$image_uri" --arg container_name "$container_name" '
+    # Create temporary file for task definition processing
+    TEMP_TASK_DEF=$(mktemp)
+    echo "$TASK_DEF_JSON" > "$TEMP_TASK_DEF"
+    
+    # Validate JSON
+    if ! jq empty "$TEMP_TASK_DEF" 2>/dev/null; then
+        echo -e "${RED}❌ Error: Invalid JSON received from task definition${NC}"
+        rm -f "$TEMP_TASK_DEF"
+        return 1
+    fi
+    
+    # Update the image URI in the task definition and create new temp file
+    NEW_TASK_DEF_FILE=$(mktemp)
+    jq --arg image_uri "$image_uri" --arg container_name "$container_name" '
         .containerDefinitions |= map(
             if .name == $container_name then
                 .image = $image_uri
@@ -245,17 +257,27 @@ update_task_definition_and_deploy() {
             end
         ) |
         del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)
-    ')
+    ' "$TEMP_TASK_DEF" > "$NEW_TASK_DEF_FILE"
+    
+    # Validate the new JSON
+    if ! jq empty "$NEW_TASK_DEF_FILE" 2>/dev/null; then
+        echo -e "${RED}❌ Error: Failed to create valid task definition JSON${NC}"
+        rm -f "$TEMP_TASK_DEF" "$NEW_TASK_DEF_FILE"
+        return 1
+    fi
     
     # Register new task definition
     echo -e "${YELLOW}📝 Registering new task definition...${NC}"
-    NEW_TASK_DEF_ARN=$(echo "$NEW_TASK_DEF" | aws ecs register-task-definition \
+    NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
         --region "$AWS_REGION" \
-        --cli-input-json file:///dev/stdin \
+        --cli-input-json file://"$NEW_TASK_DEF_FILE" \
         --query 'taskDefinition.taskDefinitionArn' \
         --output text)
     
-    if [[ -z "$NEW_TASK_DEF_ARN" ]]; then
+    # Clean up temp files
+    rm -f "$TEMP_TASK_DEF" "$NEW_TASK_DEF_FILE"
+    
+    if [[ -z "$NEW_TASK_DEF_ARN" || "$NEW_TASK_DEF_ARN" == "None" ]]; then
         echo -e "${RED}❌ Error: Failed to register new task definition${NC}"
         return 1
     fi
