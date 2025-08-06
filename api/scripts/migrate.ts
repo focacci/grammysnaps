@@ -259,4 +259,14 @@ if (missingEnvVars.length > 0) {
 
 console.log("✅ All required environment variables are set");
 
-runMigration();
+if (
+  process.env.NODE_ENV === "staging" ||
+  process.env.NODE_ENV === "production"
+) {
+  runMigration();
+} else if (
+  process.env.NODE_ENV === "development" ||
+  process.env.NODE_ENV === "local"
+) {
+  console.log("Not running migrations in development mode");
+}

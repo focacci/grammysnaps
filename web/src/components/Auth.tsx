@@ -9,10 +9,11 @@ interface AuthProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLogin: (user: any) => void;
   onCancel: () => void;
+  initialMode?: "login" | "signup";
 }
 
-const Auth = ({ onLogin, onCancel }: AuthProps) => {
-  const [isLogin, setIsLogin] = useState(true);
+const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
+  const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [showProfileCompletion, setShowProfileCompletion] = useState(false);
   const [createdUser, setCreatedUser] = useState<{
     id: string;
@@ -602,7 +603,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
           // Login/Signup form (first step)
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
-              <label htmlFor="email">Email *</label>
+              <label htmlFor="email">Email</label>
               <input
                 type="email"
                 id="email"
@@ -619,7 +620,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password *</label>
+              <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
@@ -638,7 +639,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
 
             {!isLogin && (
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password *</label>
+                <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -663,7 +664,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
 
             {!isLogin && env.isStaging() && (
               <div className="form-group">
-                <label htmlFor="inviteKey">Invite Key *</label>
+                <label htmlFor="inviteKey">Invite Key</label>
                 <input
                   type="text"
                   id="inviteKey"
@@ -675,7 +676,7 @@ const Auth = ({ onLogin, onCancel }: AuthProps) => {
                     setFieldErrors((prev) => ({ ...prev, inviteKey: "" }));
                   }}
                   required
-                  placeholder="Enter your invite key"
+                  placeholder="Enter the invite key Michael gave you"
                 />
                 {fieldErrors.inviteKey && (
                   <div className="field-error">{fieldErrors.inviteKey}</div>
