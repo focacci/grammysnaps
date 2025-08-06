@@ -9,10 +9,11 @@ interface AuthProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLogin: (user: any) => void;
   onCancel: () => void;
+  initialMode?: "login" | "signup";
 }
 
-const Auth = ({ onLogin, onCancel }: AuthProps) => {
-  const [isLogin, setIsLogin] = useState(true);
+const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
+  const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [showProfileCompletion, setShowProfileCompletion] = useState(false);
   const [createdUser, setCreatedUser] = useState<{
     id: string;

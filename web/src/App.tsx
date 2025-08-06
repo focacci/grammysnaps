@@ -51,6 +51,7 @@ function AppContent() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -150,6 +151,7 @@ function AppContent() {
   };
 
   const handleGetStarted = () => {
+    setAuthMode("signup");
     setShowAuth(true);
   };
 
@@ -221,7 +223,13 @@ function AppContent() {
               )}
             </div>
           ) : (
-            <button className="nav-button" onClick={handleGetStarted}>
+            <button
+              className="nav-button"
+              onClick={() => {
+                setAuthMode("login");
+                setShowAuth(true);
+              }}
+            >
               Sign In
             </button>
           )}
@@ -243,7 +251,7 @@ function AppContent() {
                     <h1>Welcome to Grammysnaps</h1>
                     <p>Your family photo sharing app</p>
                     <button
-                      onClick={() => setShowAuth(true)}
+                      onClick={handleGetStarted}
                       className="get-started-btn"
                     >
                       Get Started
@@ -272,7 +280,14 @@ function AppContent() {
         </Routes>
       </main>
       {showAuth && (
-        <Auth onLogin={handleLogin} onCancel={() => setShowAuth(false)} />
+        <Auth
+          onLogin={handleLogin}
+          onCancel={() => {
+            setShowAuth(false);
+            setAuthMode("login");
+          }}
+          initialMode={authMode}
+        />
       )}
     </div>
   );
