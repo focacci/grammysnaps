@@ -676,7 +676,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
                     setFieldErrors((prev) => ({ ...prev, inviteKey: "" }));
                   }}
                   required
-                  placeholder="Enter your invite key"
+                  placeholder="Enter the invite key Michael gave you"
                 />
                 {fieldErrors.inviteKey && (
                   <div className="field-error">{fieldErrors.inviteKey}</div>
