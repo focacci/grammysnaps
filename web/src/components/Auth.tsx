@@ -603,7 +603,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
           // Login/Signup form (first step)
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
-              <label htmlFor="email">Email *</label>
+              <label htmlFor="email">Email</label>
               <input
                 type="email"
                 id="email"
@@ -620,7 +620,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password *</label>
+              <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
@@ -639,7 +639,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
 
             {!isLogin && (
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password *</label>
+                <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -664,7 +664,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
 
             {!isLogin && env.isStaging() && (
               <div className="form-group">
-                <label htmlFor="inviteKey">Invite Key *</label>
+                <label htmlFor="inviteKey">Invite Key</label>
                 <input
                   type="text"
                   id="inviteKey"
