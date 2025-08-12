@@ -9,9 +9,12 @@ import { MultipartFile } from "@fastify/multipart";
 import { USER_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
 import sharp from "sharp";
+import { UUID } from "crypto";
+import { S3Environment } from "../types/s3.types";
+import { v4 as uuidv4 } from "uuid";
 
 interface UserParams {
-  id: string;
+  id: UUID;
 }
 
 interface UserQueryParams {
@@ -19,8 +22,8 @@ interface UserQueryParams {
 }
 
 interface FamilyParams {
-  userId: string;
-  familyId: string;
+  userId: UUID;
+  familyId: UUID;
 }
 
 export default async function userRoutes(fastify: FastifyInstance) {
@@ -349,7 +352,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
       try {
         // Log request headers for debugging
         fastify.log.info(`Content-Type: ${request.headers["content-type"]}`);
@@ -443,20 +446,22 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
         // Generate a unique key for S3 (original)
         const fileExtension = file.filename?.split(".").pop() || "jpg";
-        const originalS3Key = fastify.s3.createKey(
-          process.env.NODE_ENV || "local",
-          "profile-pictures",
-          id,
-          `profile.${fileExtension}`
-        );
+        const originalS3Key = fastify.s3.createKey({
+          env: (process.env.NODE_ENV || "local") as S3Environment,
+          userId: id,
+          type: "profile",
+          s3Id: uuidv4() as UUID,
+          filename: `profile.${fileExtension}`
+        });
 
         // Generate thumbnail key
-        const thumbnailS3Key = fastify.s3.createKey(
-          process.env.NODE_ENV || "local",
-          "profile-pictures",
-          id,
-          `thumb_profile.${fileExtension}`
-        );
+        const thumbnailS3Key = fastify.s3.createKey({
+          env: (process.env.NODE_ENV || "local") as S3Environment,
+          userId: id,
+          type: "profile",
+          s3Id: uuidv4() as UUID,
+          filename: `thumb_profile.${fileExtension}`
+        });
 
         // Create 400x400 thumbnail using Sharp
         const thumbnailBuffer = await sharp(buffer)
@@ -491,19 +496,15 @@ export default async function userRoutes(fastify: FastifyInstance) {
             type: "thumbnail",
           },
         });
-
-        const publicUrl = fastify.s3.getPublicUrl(originalS3Key);
-        const thumbnailUrl = fastify.s3.getPublicUrl(thumbnailS3Key);
-
         // Update user record with both URLs
         await fastify.user.update(id, {
-          profile_picture_url: publicUrl,
-          profile_picture_thumbnail_url: thumbnailUrl,
+          profile_picture_key: originalS3Key,
+          profile_picture_thumbnail_key: thumbnailS3Key,
         });
 
         return reply.send({
-          url: publicUrl,
-          thumbnail_url: thumbnailUrl,
+          url: fastify.s3.getSignedUrl(originalS3Key),
+          thumbnail_url: fastify.s3.getSignedUrl(thumbnailS3Key),
         });
       } catch (error) {
         fastify.log.error("Profile picture upload error:", error);

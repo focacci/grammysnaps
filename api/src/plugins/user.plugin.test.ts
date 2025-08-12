@@ -7,6 +7,8 @@ import {
   UserPublic,
   SecurityUpdateInput,
 } from "../types/user.types";
+import { TEST_UUIDS, generateTestS3Key } from "../test-utils/test-data";
+import { UUID } from "crypto";
 import argon2 from "argon2";
 
 // Mock argon2
@@ -95,7 +97,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -134,7 +136,7 @@ describe("User Plugin", () => {
         last_name: "Doe",
         birthday: "1990-01-01",
         families: ["550e8400-e29b-41d4-a716-446655440001"],
-        profile_picture_url: null,
+        profile_picture_key: null,
         created_at: mockUser.created_at,
         updated_at: mockUser.updated_at,
       });
@@ -160,7 +162,7 @@ describe("User Plugin", () => {
         last_name: null,
         birthday: null,
         families: [],
-        profile_picture_url: null,
+        profile_picture_key: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -185,9 +187,9 @@ describe("User Plugin", () => {
         last_name: "Doe",
         birthday: null,
         families: [
-          "550e8400-e29b-41d4-a716-446655440001",
-          "invalid-family",
-          "550e8400-e29b-41d4-a716-446655440002",
+          TEST_UUIDS.FAMILY_1,
+          "550e8400-e29b-41d4-a716-446655440099" as UUID, // invalid family ID
+          TEST_UUIDS.FAMILY_2,
         ],
       };
 
@@ -271,7 +273,7 @@ describe("User Plugin", () => {
           last_name: "One",
           birthday: "1990-01-01",
           families: ["550e8400-e29b-41d4-a716-446655440001"],
-          profile_picture_url: null,
+          profile_picture_key: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -284,7 +286,7 @@ describe("User Plugin", () => {
           last_name: "Two",
           birthday: null,
           families: [],
-          profile_picture_url: null,
+          profile_picture_key: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -327,7 +329,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -377,7 +379,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -422,7 +424,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -436,7 +438,7 @@ describe("User Plugin", () => {
       last_name: "Smith",
       birthday: "1985-05-15",
       families: ["550e8400-e29b-41d4-a716-446655440002"],
-      profile_picture_url: "https://example.com/pic.jpg",
+      profile_picture_key: generateTestS3Key(TEST_UUIDS.USER_1, "profile", TEST_UUIDS.S3_ID_1, "pic.jpg"),
       created_at: existingUser.created_at,
       updated_at: new Date().toISOString(),
     };
@@ -449,7 +451,7 @@ describe("User Plugin", () => {
         last_name: "Smith",
         birthday: "1985-05-15",
         families: ["550e8400-e29b-41d4-a716-446655440002"],
-        profile_picture_url: "https://example.com/pic.jpg",
+        profile_picture_key: generateTestS3Key(TEST_UUIDS.USER_1, "profile", TEST_UUIDS.S3_ID_1, "pic.jpg"),
       };
 
       // Mock existing user lookup (getById internal call)
@@ -507,7 +509,7 @@ describe("User Plugin", () => {
         last_name: "User",
         birthday: null,
         families: [],
-        profile_picture_url: null,
+        profile_picture_key: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -573,7 +575,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -622,7 +624,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -672,7 +674,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -800,7 +802,7 @@ describe("User Plugin", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: ["550e8400-e29b-41d4-a716-446655440001"],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -880,7 +882,7 @@ describe("User Plugin", () => {
         "550e8400-e29b-41d4-a716-446655440001",
         "550e8400-e29b-41d4-a716-446655440002",
       ],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

@@ -2,21 +2,13 @@ import { FastifyPluginAsync, FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import { UserPublic } from "../types/user.types";
+import { UUID } from "crypto";
+import { TokenPayload, RefreshTokenPayload } from "../types/auth.types";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 const JWT_EXPIRES_IN = "15m"; // Access token expires in 15 minutes
 const REFRESH_EXPIRES_IN = "7d"; // Refresh token expires in 7 days
-
-interface TokenPayload {
-  userId: string;
-  email: string;
-}
-
-interface RefreshTokenPayload {
-  userId: string;
-  tokenVersion: number;
-}
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -28,8 +20,8 @@ declare module "fastify" {
       verifyRefreshToken: (
         token: string
       ) => Promise<RefreshTokenPayload | null>;
-      revokeUserTokens: (userId: string) => Promise<void>;
-      validateSession: (userId: string) => Promise<UserPublic | null>;
+      revokeUserTokens: (userId: UUID) => Promise<void>;
+      validateSession: (userId: UUID) => Promise<UserPublic | null>;
     };
   }
 }
@@ -127,7 +119,7 @@ const authPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       fastify.log.info(`Revoked all tokens for user: ${userId}`);
     },
 
-    async validateSession(userId: string): Promise<UserPublic | null> {
+    async validateSession(userId: UUID): Promise<UserPublic | null> {
       try {
         const user = await fastify.user.getById(userId);
         return user;

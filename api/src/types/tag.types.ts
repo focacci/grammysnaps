@@ -1,7 +1,9 @@
+import { UUID } from "crypto";
+
 export type Tag = {
-  id: string;
+  id: UUID;
   name: string;
-  family_id: string;
+  family_id: UUID;
   created_at: string;
   updated_at: string;
 };
@@ -35,3 +37,16 @@ export type TimeTag = Tag & {
   type: "Time";
   time?: string; // Could be a specific time or a range
 };
+
+export interface TagInput {
+  type: "Person" | "Location" | "Event" | "Time";
+  name: string;
+  family_id: UUID;
+  created_by: UUID;
+}
+
+export interface TagUpdateInput {
+  type: "Person" | "Location" | "Event" | "Time";
+  name: string;
+  family_id: UUID;
+}

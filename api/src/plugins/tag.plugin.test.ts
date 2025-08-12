@@ -1,6 +1,8 @@
 import Fastify, { FastifyInstance } from "fastify";
-import tagPlugin, { TagInput, TagUpdateInput } from "./tag.plugin";
-import { Tag } from "../types/tag.types";
+import tagPlugin from "./tag.plugin";
+import { Tag, TagInput, TagUpdateInput } from "../types/tag.types";
+import { TEST_UUIDS } from "../test-utils/test-data";
+import { UUID } from "crypto";
 
 // Extend Tag type to include fields that come from database
 interface TagWithMetadata extends Tag {
@@ -54,15 +56,15 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Person",
         name: "John Doe",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
-        id: "tag-123",
+        id: TEST_UUIDS.TAG_1,
         type: "Person",
         name: "John Doe",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -73,7 +75,7 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Person", "John Doe", "family-123", "user-123"]
+        ["Person", "John Doe", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -82,15 +84,15 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Location",
         name: "New York City",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
-        id: "tag-124",
+        id: TEST_UUIDS.TAG_2,
         type: "Location",
         name: "New York City",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -101,7 +103,7 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Location", "New York City", "family-123", "user-123"]
+        ["Location", "New York City", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -110,15 +112,15 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Event",
         name: "Wedding",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
-        id: "tag-125",
+        id: TEST_UUIDS.TAG_1,
         type: "Event",
         name: "Wedding",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -129,7 +131,7 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Event", "Wedding", "family-123", "user-123"]
+        ["Event", "Wedding", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -138,15 +140,15 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Time",
         name: "Summer 1985",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
-        id: "tag-126",
+        id: TEST_UUIDS.TAG_2,
         type: "Time",
         name: "Summer 1985",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -157,7 +159,7 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Time", "Summer 1985", "family-123", "user-123"]
+        ["Time", "Summer 1985", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -166,8 +168,8 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Person",
         name: "John Doe",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
 
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
@@ -182,20 +184,20 @@ describe("Tag Plugin", () => {
     it("should return all tags", async () => {
       const mockTags: TagWithMetadata[] = [
         {
-          id: "tag-1",
+          id: TEST_UUIDS.TAG_1,
           type: "Person",
           name: "John Doe",
-          family_id: "family-1",
-          created_by: "user-1",
+          family_id: TEST_UUIDS.FAMILY_1,
+          created_by: TEST_UUIDS.USER_1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
         {
-          id: "tag-2",
+          id: TEST_UUIDS.TAG_2,
           type: "Location",
           name: "Paris",
-          family_id: "family-2",
-          created_by: "user-2",
+          family_id: TEST_UUIDS.FAMILY_2,
+          created_by: TEST_UUIDS.USER_2,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -229,23 +231,23 @@ describe("Tag Plugin", () => {
 
   describe("getByFamily", () => {
     it("should return tags for a specific family", async () => {
-      const familyId = "family-123";
+      const familyId = TEST_UUIDS.FAMILY_1;
       const mockTags: TagWithMetadata[] = [
         {
-          id: "tag-1",
+          id: TEST_UUIDS.TAG_1,
           type: "Person",
           name: "John Doe",
           family_id: familyId,
-          created_by: "user-1",
+          created_by: TEST_UUIDS.USER_1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
         {
-          id: "tag-2",
+          id: TEST_UUIDS.TAG_2,
           type: "Event",
           name: "Birthday",
           family_id: familyId,
-          created_by: "user-1",
+          created_by: TEST_UUIDS.USER_1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -265,7 +267,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should return empty array when no tags exist for family", async () => {
-      const familyId = "nonexistent-family";
+      const familyId = "550e8400-e29b-41d4-a716-446655440099" as UUID;
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
       const result = await fastify.tag.getByFamily(familyId);
@@ -278,7 +280,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should throw error when database fails", async () => {
-      const familyId = "family-123";
+      const familyId = TEST_UUIDS.FAMILY_1;
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
       await expect(fastify.tag.getByFamily(familyId)).rejects.toThrow(
@@ -289,13 +291,13 @@ describe("Tag Plugin", () => {
 
   describe("getById", () => {
     it("should return tag by ID", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
       const mockTag: TagWithMetadata = {
         id: tagId,
         type: "Person",
         name: "John Doe",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -312,7 +314,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should return null when tag not found", async () => {
-      const tagId = "nonexistent-tag";
+      const tagId = "550e8400-e29b-41d4-a716-446655440098" as UUID;
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
       const result = await fastify.tag.getById(tagId);
@@ -325,7 +327,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should throw error when database fails", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
       await expect(fastify.tag.getById(tagId)).rejects.toThrow(
@@ -336,18 +338,18 @@ describe("Tag Plugin", () => {
 
   describe("update", () => {
     it("should update a tag successfully", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
       const updateInput: TagUpdateInput = {
         type: "Person",
         name: "Jane Doe",
-        family_id: "family-456",
+        family_id: TEST_UUIDS.FAMILY_2,
       };
       const mockUpdatedTag: TagWithMetadata = {
         id: tagId,
         type: "Person",
         name: "Jane Doe",
-        family_id: "family-456",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_2,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -358,24 +360,24 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Person", "Jane Doe", "family-456", tagId]
+        ["Person", "Jane Doe", TEST_UUIDS.FAMILY_2, tagId]
       );
       expect(result).toEqual(mockUpdatedTag);
     });
 
     it("should update tag type from Person to Location", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
       const updateInput: TagUpdateInput = {
         type: "Location",
         name: "Updated Location",
-        family_id: "family-123",
+        family_id: TEST_UUIDS.FAMILY_1,
       };
       const mockUpdatedTag: TagWithMetadata = {
         id: tagId,
         type: "Location",
         name: "Updated Location",
-        family_id: "family-123",
-        created_by: "user-123",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -386,17 +388,17 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Location", "Updated Location", "family-123", tagId]
+        ["Location", "Updated Location", TEST_UUIDS.FAMILY_1, tagId]
       );
       expect(result).toEqual(mockUpdatedTag);
     });
 
     it("should return null when tag not found", async () => {
-      const tagId = "nonexistent-tag";
+      const tagId = "550e8400-e29b-41d4-a716-446655440098" as UUID;
       const updateInput: TagUpdateInput = {
         type: "Person",
         name: "Jane Doe",
-        family_id: "family-456",
+        family_id: TEST_UUIDS.FAMILY_2,
       };
 
       mockQuery.mockResolvedValueOnce({ rows: [] });
@@ -405,17 +407,17 @@ describe("Tag Plugin", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Person", "Jane Doe", "family-456", tagId]
+        ["Person", "Jane Doe", TEST_UUIDS.FAMILY_2, tagId]
       );
       expect(result).toBeNull();
     });
 
     it("should throw error when database fails", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
       const updateInput: TagUpdateInput = {
         type: "Person",
         name: "Jane Doe",
-        family_id: "family-456",
+        family_id: TEST_UUIDS.FAMILY_2,
       };
 
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
@@ -428,7 +430,7 @@ describe("Tag Plugin", () => {
 
   describe("delete", () => {
     it("should delete a tag successfully", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
 
       // Mock successful database operations
       mockQuery.mockResolvedValueOnce({ rows: [] }); // Update images
@@ -450,7 +452,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should handle deletion when tag is not in any images", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
 
       // Mock successful database operations
       mockQuery.mockResolvedValueOnce({ rows: [] }); // Update images (no rows affected)
@@ -472,7 +474,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should throw error when database fails on image update", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
 
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
@@ -488,7 +490,7 @@ describe("Tag Plugin", () => {
     });
 
     it("should throw error when database fails on tag deletion", async () => {
-      const tagId = "tag-123";
+      const tagId = TEST_UUIDS.TAG_1;
 
       mockQuery.mockResolvedValueOnce({ rows: [] }); // Update images succeeds
       mockQuery.mockRejectedValueOnce(new Error("Database error")); // Delete tag fails

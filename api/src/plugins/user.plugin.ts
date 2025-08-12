@@ -9,23 +9,24 @@ import {
   SecurityUpdateInput,
 } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
+import { UUID } from "crypto";
 
 declare module "fastify" {
   interface FastifyInstance {
     user: {
       create: (input: UserInput) => Promise<UserPublic>;
       get: () => Promise<UserPublic[]>;
-      getById: (id: string) => Promise<UserPublic | null>;
+      getById: (id: UUID) => Promise<UserPublic | null>;
       getByEmail: (email: string) => Promise<User | null>;
-      update: (id: string, input: UserUpdate) => Promise<UserPublic | null>;
+      update: (id: UUID, input: UserUpdate) => Promise<UserPublic | null>;
       updateSecurity: (
-        id: string,
+        id: UUID,
         input: SecurityUpdateInput
       ) => Promise<UserPublic | null>;
-      delete: (id: string) => Promise<void>;
+      delete: (id: UUID) => Promise<void>;
       validatePassword: (user: User, password: string) => Promise<boolean>;
-      addToFamily: (userId: string, familyId: string) => Promise<void>;
-      removeFromFamily: (userId: string, familyId: string) => Promise<void>;
+      addToFamily: (userId: UUID, familyId: UUID) => Promise<void>;
+      removeFromFamily: (userId: UUID, familyId: UUID) => Promise<void>;
     };
   }
 }
@@ -50,8 +51,8 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     return publicUser;
   };
 
-  const filterValidFamilies = async (families: string[]): Promise<string[]> => {
-    const validFamilies: string[] = [];
+  const filterValidFamilies = async (families: UUID[]): Promise<UUID[]> => {
+    const validFamilies: UUID[] = [];
     for (const familyId of families) {
       if (await fastify.family.exists(familyId)) {
         validFamilies.push(familyId);
@@ -179,7 +180,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async update(id: string, input: UserUpdate): Promise<UserPublic | null> {
+    async update(id: UUID, input: UserUpdate): Promise<UserPublic | null> {
       const {
         email,
         first_name,
@@ -187,8 +188,8 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         last_name,
         birthday,
         families,
-        profile_picture_url,
-        profile_picture_thumbnail_url,
+        profile_picture_key,
+        profile_picture_thumbnail_key,
       } = input;
       fastify.log.info(`Updating user: ${input}`);
 
@@ -221,12 +222,12 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const sanitizedFamilies = families
           ? ValidationUtils.sanitizeFamilyIds(families)
           : null;
-        const sanitizedProfilePictureUrl = profile_picture_url
-          ? ValidationUtils.sanitizeURL(profile_picture_url)
+        const sanitizedProfilePictureUrl = profile_picture_key
+          ? ValidationUtils.sanitizeURL(profile_picture_key)
           : null;
         const sanitizedProfilePictureThumbnailUrl =
-          profile_picture_thumbnail_url
-            ? ValidationUtils.sanitizeURL(profile_picture_thumbnail_url)
+          profile_picture_thumbnail_key
+            ? ValidationUtils.sanitizeURL(profile_picture_thumbnail_key)
             : null;
 
         // Validate family IDs
@@ -306,7 +307,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async delete(id: string): Promise<void> {
+    async delete(id: UUID): Promise<void> {
       try {
         const user = await fastify.user.getById(id);
         if (!user) {
@@ -334,7 +335,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async updateSecurity(
-      id: string,
+      id: UUID,
       input: SecurityUpdateInput
     ): Promise<UserPublic | null> {
       try {
@@ -356,7 +357,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           }
 
           const isCurrentPasswordValid = await fastify.user.validatePassword(
-            existingUser,
+            existingUser as User,
             input.current_password
           );
           if (!isCurrentPasswordValid) {
@@ -424,7 +425,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async addToFamily(userId: string, familyId: string): Promise<void> {
+    async addToFamily(userId: UUID, familyId: UUID): Promise<void> {
       try {
         const user = await fastify.user.getById(userId);
         if (!user) {
@@ -453,7 +454,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async removeFromFamily(userId: string, familyId: string): Promise<void> {
+    async removeFromFamily(userId: UUID, familyId: UUID): Promise<void> {
       try {
         const user = await fastify.user.getById(userId);
         if (!user) {

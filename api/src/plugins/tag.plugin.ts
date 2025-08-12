@@ -1,29 +1,17 @@
 import { FastifyPluginAsync, FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { Tag } from "../types/tag.types";
-
-export interface TagInput {
-  type: "Person" | "Location" | "Event" | "Time";
-  name: string;
-  family_id: string;
-  created_by: string; // user ID
-}
-
-export interface TagUpdateInput {
-  type: "Person" | "Location" | "Event" | "Time";
-  name: string;
-  family_id: string;
-}
+import { Tag, TagInput, TagUpdateInput } from "../types/tag.types";
+import { UUID } from "crypto";
 
 declare module "fastify" {
   interface FastifyInstance {
     tag: {
       create: (input: TagInput) => Promise<Tag>;
       get: () => Promise<Tag[]>;
-      getByFamily: (familyId: string) => Promise<Tag[]>;
-      getById: (id: string) => Promise<Tag | null>;
-      update: (id: string, input: TagUpdateInput) => Promise<Tag | null>;
-      delete: (id: string) => Promise<void>;
+      getByFamily: (familyId: UUID) => Promise<Tag[]>;
+      getById: (id: UUID) => Promise<Tag | null>;
+      update: (id: UUID, input: TagUpdateInput) => Promise<Tag | null>;
+      delete: (id: UUID) => Promise<void>;
     };
   }
 }
@@ -58,7 +46,7 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getByFamily(familyId: string): Promise<Tag[]> {
+    async getByFamily(familyId: UUID): Promise<Tag[]> {
       try {
         const { rows } = await fastify.pg.query<Tag>(
           "SELECT * FROM tags WHERE family_id = $1",
@@ -71,7 +59,7 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getById(id: string): Promise<Tag | null> {
+    async getById(id: UUID): Promise<Tag | null> {
       try {
         const {
           rows: [tag],
@@ -85,7 +73,7 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async update(id: string, input: TagUpdateInput): Promise<Tag | null> {
+    async update(id: UUID, input: TagUpdateInput): Promise<Tag | null> {
       try {
         const {
           rows: [tag],
@@ -100,7 +88,7 @@ const tagPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async delete(id: string): Promise<void> {
+    async delete(id: UUID): Promise<void> {
       try {
         // Remove the tag from the tags array in all images that have it
         await fastify.pg.query(

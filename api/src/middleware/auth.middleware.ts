@@ -1,10 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { AUTH_ERRORS } from "../types/errors";
+import { UUID } from "crypto";
 
 declare module "fastify" {
   interface FastifyRequest {
     user?: {
-      userId: string;
+      userId: UUID;
       email: string;
     };
   }
