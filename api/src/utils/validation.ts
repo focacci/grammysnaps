@@ -180,7 +180,15 @@ export class ValidationUtils {
    * Sanitize and validate UUID
    */
   static sanitizeUUID(uuid: UUID, fieldName: string): UUID {
+    if (!uuid || typeof uuid !== "string") {
+      throw new Error(`${fieldName} is required and must be a string`);
+    }
+    
     const trimmed = uuid.trim();
+    if (!trimmed) {
+      throw new Error(`${fieldName} is required and must be a string`);
+    }
+    
     if (!validator.isUUID(trimmed)) {
       throw new Error(`Invalid ${fieldName} format`);
     }

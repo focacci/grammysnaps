@@ -1,4 +1,5 @@
 import { ValidationUtils } from "./validation";
+import { UUID } from "crypto";
 
 describe("ValidationUtils", () => {
   describe("sanitizeEmail", () => {
@@ -388,19 +389,19 @@ describe("ValidationUtils", () => {
     it("should filter out empty strings", () => {
       const result = ValidationUtils.sanitizeFamilyIds([
         validUUID,
-        "",
-        "   ",
+        "" as UUID,
+        "   " as UUID,
         validUUID2,
       ]);
       expect(result).toEqual([validUUID, validUUID2]);
     });
 
     it("should throw error for invalid UUID format", () => {
-      expect(() => ValidationUtils.sanitizeFamilyIds(["invalid-uuid"])).toThrow(
+      expect(() => ValidationUtils.sanitizeFamilyIds(["invalid-uuid" as UUID])).toThrow(
         "Family ID must be a valid UUID"
       );
       expect(() =>
-        ValidationUtils.sanitizeFamilyIds([validUUID, "not-a-uuid"])
+        ValidationUtils.sanitizeFamilyIds([validUUID, "not-a-uuid" as UUID])
       ).toThrow("Family ID must be a valid UUID");
     });
 
@@ -425,7 +426,7 @@ describe("ValidationUtils", () => {
 
     it("should handle mixed valid/invalid UUIDs", () => {
       expect(() =>
-        ValidationUtils.sanitizeFamilyIds([validUUID, "invalid", validUUID2])
+        ValidationUtils.sanitizeFamilyIds([validUUID, "invalid" as UUID, validUUID2])
       ).toThrow("Family ID must be a valid UUID");
     });
   });
@@ -462,17 +463,17 @@ describe("ValidationUtils", () => {
     });
 
     it("should throw error for empty string", () => {
-      expect(() => ValidationUtils.sanitizeUUID("", "User ID")).toThrow(
+      expect(() => ValidationUtils.sanitizeUUID("" as UUID, "User ID")).toThrow(
         "User ID is required and must be a string"
       );
     });
 
     it("should throw error for invalid UUID format", () => {
       expect(() =>
-        ValidationUtils.sanitizeUUID("invalid-uuid", "User ID")
+        ValidationUtils.sanitizeUUID("invalid-uuid" as UUID, "User ID")
       ).toThrow("Invalid User ID format");
       expect(() =>
-        ValidationUtils.sanitizeUUID("123-456-789", "Family ID")
+        ValidationUtils.sanitizeUUID("123-456-789" as UUID, "Family ID")
       ).toThrow("Invalid Family ID format");
     });
 
@@ -486,7 +487,7 @@ describe("ValidationUtils", () => {
 
     it("should use custom field name in error messages", () => {
       expect(() =>
-        ValidationUtils.sanitizeUUID("invalid", "Custom Field")
+        ValidationUtils.sanitizeUUID("invalid" as UUID, "Custom Field")
       ).toThrow("Invalid Custom Field format");
     });
   });
