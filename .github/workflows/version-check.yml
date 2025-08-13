@@ -19,24 +19,22 @@ jobs:
         with:
           files: api/**
 
-      - name: Skip if no API changes
-        if: steps.changed-files.outputs.any_changed != 'true'
-        run: |
-          echo "No changes in API directory, skipping version check"
-          exit 0
-
       - name: Checkout current branch
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Use Node.js 20.x
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
       - name: Install semver
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: npm install semver
 
       - name: Get current API version
+        if: steps.changed-files.outputs.any_changed == 'true'
         id: current-version
         run: |
           CURRENT_VERSION=$(node -p "require('./api/package.json').version")
@@ -44,12 +42,14 @@ jobs:
           echo "Current API version: $CURRENT_VERSION"
 
       - name: Checkout main branch
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-branch
 
       - name: Get main branch API version
+        if: steps.changed-files.outputs.any_changed == 'true'
         id: main-version
         run: |
           MAIN_VERSION=$(node -p "require('./main-branch/api/package.json').version")
@@ -57,6 +57,7 @@ jobs:
           echo "Main branch API version: $MAIN_VERSION"
 
       - name: Compare versions
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           node -e "
           const semver = require('semver');
@@ -85,6 +86,11 @@ jobs:
           console.log('✅ API version check passed');
           "
 
+      - name: Skip message
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "No changes in API directory, skipping version check"
+
   check-web-version:
     name: Check Web Version
     runs-on: ubuntu-latest
@@ -96,24 +102,22 @@ jobs:
         with:
           files: web/**
 
-      - name: Skip if no web changes
-        if: steps.changed-files.outputs.any_changed != 'true'
-        run: |
-          echo "No changes in web directory, skipping version check"
-          exit 0
-
       - name: Checkout current branch
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Use Node.js 20.x
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
       - name: Install semver
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: npm install semver
 
       - name: Get current web version
+        if: steps.changed-files.outputs.any_changed == 'true'
         id: current-version
         run: |
           CURRENT_VERSION=$(node -p "require('./web/package.json').version")
@@ -121,12 +125,14 @@ jobs:
           echo "Current web version: $CURRENT_VERSION"
 
       - name: Checkout main branch
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-branch
 
       - name: Get main branch web version
+        if: steps.changed-files.outputs.any_changed == 'true'
         id: main-version
         run: |
           MAIN_VERSION=$(node -p "require('./main-branch/web/package.json').version")
@@ -134,6 +140,7 @@ jobs:
           echo "Main branch web version: $MAIN_VERSION"
 
       - name: Compare versions
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           node -e "
           const semver = require('semver');
@@ -162,6 +169,11 @@ jobs:
           console.log('✅ Web version check passed');
           "
 
+      - name: Skip message
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "No changes in web directory, skipping version check"
+
   check-grammysnaps-version:
     name: Check Grammysnaps Version
     runs-on: ubuntu-latest
@@ -177,24 +189,22 @@ jobs:
             pgdata/**
             aws-infrastructure/**
 
-      - name: Skip if no relevant changes
-        if: steps.changed-files.outputs.any_changed != 'true'
-        run: |
-          echo "No changes in web, api, pgdata, or aws-infrastructure directories, skipping version check"
-          exit 0
-
       - name: Checkout current branch
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Use Node.js 20.x
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
       - name: Install semver
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: npm install semver
 
       - name: Get current Grammysnaps version
+        if: steps.changed-files.outputs.any_changed == 'true'
         id: current-version
         run: |
           CURRENT_VERSION=$(node -p "const pkg = require('./package.json'); pkg.version || '0.0.0'")
@@ -202,12 +212,14 @@ jobs:
           echo "Current Grammysnaps version: $CURRENT_VERSION"
 
       - name: Checkout main branch
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-branch
 
       - name: Get main branch Grammysnaps version
+        if: steps.changed-files.outputs.any_changed == 'true'
         id: main-version
         run: |
           MAIN_VERSION=$(node -p "(function() { try { const pkg = require('./main-branch/package.json'); return pkg.version || '0.0.0'; } catch(e) { return '0.0.0'; } })()")
@@ -215,6 +227,7 @@ jobs:
           echo "Main branch Grammysnaps version: $MAIN_VERSION"
 
       - name: Compare versions
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           node -e "
           const semver = require('semver');
@@ -243,3 +256,8 @@ jobs:
 
           console.log('✅ Grammysnaps version check passed');
           "
+
+      - name: Skip message
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "No changes in web, api, pgdata, or aws-infrastructure directories, skipping version check"
