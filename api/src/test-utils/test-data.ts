@@ -29,6 +29,13 @@ export const TEST_S3_KEYS = {
   THUMBNAIL_2: "local/users/550e8400-e29b-41d4-a716-446655440002/thumbnail/550e8400-e29b-41d4-a716-446655440042/thumb_test2.jpg" as S3Key,
 };
 
+export const TEST_S3_URLS = {
+  ORIGINAL_1: `https://www.grammysnaps.com/${TEST_S3_KEYS.ORIGINAL_1}`,
+  THUMBNAIL_1: `https://www.grammysnaps.com/${TEST_S3_KEYS.THUMBNAIL_1}`,
+  ORIGINAL_2: `https://www.grammysnaps.com/${TEST_S3_KEYS.ORIGINAL_2}`,
+  THUMBNAIL_2: `https://www.grammysnaps.com/${TEST_S3_KEYS.THUMBNAIL_2}`,
+};
+
 /**
  * Generate a random UUID for tests
  */

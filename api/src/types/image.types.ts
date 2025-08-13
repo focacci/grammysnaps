@@ -22,3 +22,15 @@ export interface Image {
   original_key?: S3Key;
   thumbnail_key?: S3Key;
 }
+
+export interface ImagePublic {
+  id: UUID;
+  title?: string;
+  filename: string;
+  created_at: string;
+  updated_at: string;
+  tags?: UUID[];
+  family_ids?: UUID[];
+  original_url: string | null;
+  thumbnail_url: string | null;
+}

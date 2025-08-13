@@ -1,5 +1,5 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { ImageInput } from "../types/image.types";
+import { ImageInput, ImagePublic, Image } from "../types/image.types";
 import { MultipartFile } from "@fastify/multipart";
 import { v4 as uuidv4 } from "uuid";
 import { IMAGE_ERRORS } from "../types/errors";
@@ -48,12 +48,25 @@ const updateImageBodySchema = {
 };
 
 const imageRoutes: FastifyPluginAsync = async (fastify) => {
+  async function toPublicImage(image: Image): Promise<ImagePublic> {
+    const original_url = image.original_key ? await fastify.s3.getSignedUrl(image.original_key) : null;
+    const thumbnail_url = image.thumbnail_key ? await fastify.s3.getSignedUrl(image.thumbnail_key) : null;
+    delete image.original_key;
+    delete image.thumbnail_key;
+    return {
+      ...image,
+      original_url,
+      thumbnail_url
+    };
+  };
+
   // Add auth middleware to all image routes
   fastify.addHook("preHandler", requireAuth);
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const images = await fastify.image.get();
-    return reply.status(200).send({ images });
+    const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => toPublicImage(image)));
+    return reply.status(200).send({ images: publicImages });
   });
 
   fastify.get(
@@ -69,7 +82,9 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       if (!image) {
         return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
       }
-      return reply.status(200).send({ image });
+      const publicImage = await toPublicImage(image);
+
+      return reply.status(200).send({ image: publicImage });
     }
   );
 
@@ -326,7 +341,9 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         thumbnail_key,
       });
 
-      return reply.status(201).send({ image });
+      const publicImage = await toPublicImage(image);
+
+      return reply.status(201).send({ image: publicImage });
     } catch (error) {
       fastify.log.error("Error uploading image:", error);
       return reply.status(500).send({
@@ -384,7 +401,8 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       const { familyId } = request.params as { familyId: UUID };
       try {
         const images = await fastify.image.getByFamily(familyId);
-        return reply.status(200).send({ images });
+        const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
+        return reply.status(200).send({ images: publicImages });
       } catch (error) {
         fastify.log.error("Error getting images by family:", error);
         return reply.status(500).send({
@@ -454,7 +472,8 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { tagId } = request.params as { tagId: UUID };
       const images = await fastify.image.getAllWithTag(tagId);
-      return reply.status(200).send({ images });
+      const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
+      return reply.status(200).send({ images: publicImages });
     }
   );
 
@@ -506,7 +525,8 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           offset,
           order
         );
-        return reply.status(200).send({ images });
+        const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
+        return reply.status(200).send({ images: publicImages });
       } catch (error) {
         fastify.log.error("Error getting images for user:", error);
         return reply.status(500).send({
