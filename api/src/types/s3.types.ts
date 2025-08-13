@@ -35,7 +35,7 @@ export type S3Environment = 'local' | 'staging' | 'production';
 export type S3MediaType = 'original' | 'thumbnail' | 'profile';
 
 // S3 key template type
-export type S3Key = `${S3Environment}/users/${UUID}/${S3MediaType}/${UUID}/${string}`;
+export type S3Key = `${S3Environment}/users/${UUID}/images/${UUID}/${S3MediaType}/${string}`;
 
 /**
  * S3 key builder parameters

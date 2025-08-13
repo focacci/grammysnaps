@@ -170,7 +170,7 @@ describe("S3 Plugin", () => {
         s3Id: TEST_UUIDS.S3_ID_1,
         filename: "photo.jpg"
       });
-      expect(result).toBe(`local/users/${TEST_UUIDS.USER_1}/original/${TEST_UUIDS.S3_ID_1}/photo.jpg`);
+      expect(result).toBe(`local/users/${TEST_UUIDS.USER_1}/images/${TEST_UUIDS.S3_ID_1}/original/photo.jpg`);
     });
 
     it("should handle different types and filenames", () => {
@@ -181,7 +181,7 @@ describe("S3 Plugin", () => {
         s3Id: TEST_UUIDS.S3_ID_2,
         filename: "thumb.png"
       });
-      expect(result).toBe(`staging/users/${TEST_UUIDS.USER_2}/thumbnail/${TEST_UUIDS.S3_ID_2}/thumb.png`);
+      expect(result).toBe(`staging/users/${TEST_UUIDS.USER_2}/images/${TEST_UUIDS.S3_ID_2}/thumbnail/thumb.png`);
     });
   });
 

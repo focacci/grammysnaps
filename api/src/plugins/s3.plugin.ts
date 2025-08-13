@@ -61,7 +61,7 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
      */
     createKey: (params: S3KeyParams) => {
       const { env, userId, type, s3Id, filename } = params;
-      return `${env}/users/${userId}/${type}/${s3Id}/${filename}` as S3Key;
+      return `${env}/users/${userId}/images/${s3Id}/${type}/${filename}` as S3Key;
     },
 
     /**
