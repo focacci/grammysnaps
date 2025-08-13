@@ -8,6 +8,7 @@ import {
   SecurityUpdateInput,
 } from "../types/user.types";
 import { USER_ERRORS } from "../types/errors";
+import { TEST_UUIDS } from "../test-utils/test-data";
 
 // Mock auth middleware to always pass
 jest.mock("../middleware/auth.middleware", () => ({
@@ -45,6 +46,7 @@ describe("User Routes", () => {
 
   // Mock S3 decorator methods
   const mockS3CreateKey = jest.fn();
+  const mockS3ParseKey = jest.fn();
   const mockS3Upload = jest.fn();
   const mockS3Download = jest.fn();
   const mockS3Delete = jest.fn();
@@ -82,6 +84,7 @@ describe("User Routes", () => {
 
     fastify.decorate("s3", {
       createKey: mockS3CreateKey,
+      parseKey: mockS3ParseKey,
       upload: mockS3Upload,
       download: mockS3Download,
       delete: mockS3Delete,
@@ -112,18 +115,18 @@ describe("User Routes", () => {
       middle_name: "Middle",
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["123e4567-e89b-12d3-a456-426614174000"],
+      families: [TEST_UUIDS.FAMILY_1],
     };
 
     const mockUserResponse: UserPublic = {
-      id: "123e4567-e89b-12d3-a456-426614174000",
+      id: TEST_UUIDS.USER_1,
       email: "test@example.com",
       first_name: "John",
       middle_name: "Middle",
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["123e4567-e89b-12d3-a456-426614174000"],
-      profile_picture_url: null,
+      families: [TEST_UUIDS.FAMILY_1],
+      profile_picture_key: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -267,26 +270,26 @@ describe("User Routes", () => {
   describe("GET /", () => {
     const mockUsers: UserPublic[] = [
       {
-        id: "123e4567-e89b-12d3-a456-426614174000",
+        id: TEST_UUIDS.USER_1,
         email: "user1@example.com",
         first_name: "User",
         middle_name: null,
         last_name: "One",
         birthday: "1990-01-01",
         families: [],
-        profile_picture_url: null,
+        profile_picture_key: null,
         created_at: "2024-01-01T00:00:00Z",
         updated_at: "2024-01-01T00:00:00Z",
       },
       {
-        id: "223e4567-e89b-12d3-a456-426614174000",
+        id: TEST_UUIDS.USER_2,
         email: "user2@example.com",
         first_name: "User",
         middle_name: null,
         last_name: "Two",
         birthday: "1985-06-15",
-        families: ["123e4567-e89b-12d3-a456-426614174000"],
-        profile_picture_url: null,
+        families: [TEST_UUIDS.FAMILY_1],
+        profile_picture_key: null,
         created_at: "2024-01-01T00:00:00Z",
         updated_at: "2024-01-01T00:00:00Z",
       },
@@ -341,7 +344,7 @@ describe("User Routes", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: [],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -351,13 +354,13 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.payload)).toEqual(mockUser);
       expect(mockUserGetById).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000"
+        TEST_UUIDS.USER_1
       );
     });
 
@@ -366,7 +369,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -392,7 +395,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -404,7 +407,7 @@ describe("User Routes", () => {
 
   describe("GET /email/:email", () => {
     const mockUser: User = {
-      id: "123e4567-e89b-12d3-a456-426614174000",
+      id: TEST_UUIDS.USER_1,
       email: "test@example.com",
       password_hash: "hashed_password",
       first_name: "John",
@@ -412,7 +415,7 @@ describe("User Routes", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: [],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -477,18 +480,18 @@ describe("User Routes", () => {
       first_name: "Updated",
       last_name: "User",
       birthday: "1985-12-25",
-      families: ["123e4567-e89b-12d3-a456-426614174000"],
+      families: [TEST_UUIDS.FAMILY_1],
     };
 
     const mockUpdatedUser: UserPublic = {
-      id: "123e4567-e89b-12d3-a456-426614174000",
+      id: TEST_UUIDS.USER_1,
       email: "updated@example.com",
       first_name: "Updated",
       middle_name: null,
       last_name: "User",
       birthday: "1985-12-25",
-      families: ["123e4567-e89b-12d3-a456-426614174000"],
-      profile_picture_url: null,
+      families: [TEST_UUIDS.FAMILY_1],
+      profile_picture_key: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -498,14 +501,14 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
         payload: validUserUpdate,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.payload)).toEqual(mockUpdatedUser);
       expect(mockUserUpdate).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000",
+        TEST_UUIDS.USER_1,
         validUserUpdate
       );
     });
@@ -515,7 +518,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
         payload: validUserUpdate,
       });
 
@@ -530,7 +533,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
         payload: validUserUpdate,
       });
 
@@ -545,7 +548,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
         payload: validUserUpdate,
       });
 
@@ -563,14 +566,14 @@ describe("User Routes", () => {
     };
 
     const mockUpdatedUser: UserPublic = {
-      id: "123e4567-e89b-12d3-a456-426614174000",
+      id: TEST_UUIDS.USER_1,
       email: "test@example.com",
       first_name: "John",
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
       families: [],
-      profile_picture_url: null,
+      profile_picture_key: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -580,14 +583,14 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000/security",
+        url: `/${TEST_UUIDS.USER_1}/security`,
         payload: validSecurityUpdate,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.payload)).toEqual(mockUpdatedUser);
       expect(mockUserUpdateSecurity).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000",
+        TEST_UUIDS.USER_1,
         validSecurityUpdate
       );
     });
@@ -597,7 +600,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000/security",
+        url: `/${TEST_UUIDS.USER_1}/security`,
         payload: validSecurityUpdate,
       });
 
@@ -614,7 +617,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000/security",
+        url: `/${TEST_UUIDS.USER_1}/security`,
         payload: validSecurityUpdate,
       });
 
@@ -631,7 +634,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000/security",
+        url: `/${TEST_UUIDS.USER_1}/security`,
         payload: validSecurityUpdate,
       });
 
@@ -648,7 +651,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000/security",
+        url: `/${TEST_UUIDS.USER_1}/security`,
         payload: validSecurityUpdate,
       });
 
@@ -665,7 +668,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/123e4567-e89b-12d3-a456-426614174000/security",
+        url: `/${TEST_UUIDS.USER_1}/security`,
         payload: validSecurityUpdate,
       });
 
@@ -683,16 +686,16 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(204);
       expect(response.payload).toBe("");
       expect(mockAuthRevokeUserTokens).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000"
+        TEST_UUIDS.USER_1
       );
       expect(mockUserDelete).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000"
+        TEST_UUIDS.USER_1
       );
     });
 
@@ -702,7 +705,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -717,7 +720,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -734,7 +737,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -750,7 +753,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(201);
@@ -758,8 +761,8 @@ describe("User Routes", () => {
         message: "User added to family successfully",
       });
       expect(mockUserAddToFamily).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000",
-        "456e7890-e89b-12d3-a456-426614174000"
+        TEST_UUIDS.USER_1,
+        TEST_UUIDS.FAMILY_1
       );
     });
 
@@ -768,7 +771,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -782,7 +785,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -798,7 +801,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -814,7 +817,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -822,8 +825,8 @@ describe("User Routes", () => {
         message: "User removed from family successfully",
       });
       expect(mockUserRemoveFromFamily).toHaveBeenCalledWith(
-        "123e4567-e89b-12d3-a456-426614174000",
-        "456e7890-e89b-12d3-a456-426614174000"
+        TEST_UUIDS.USER_1,
+        TEST_UUIDS.FAMILY_1
       );
     });
 
@@ -832,7 +835,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -846,7 +849,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -862,7 +865,7 @@ describe("User Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/123e4567-e89b-12d3-a456-426614174000/family/456e7890-e89b-12d3-a456-426614174000",
+        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -876,7 +879,7 @@ describe("User Routes", () => {
     it("should reject non-multipart requests", async () => {
       const response = await fastify.inject({
         method: "POST",
-        url: "/123e4567-e89b-12d3-a456-426614174000/profile-picture",
+        url: `/${TEST_UUIDS.USER_1}/profile-picture`,
         headers: {
           "content-type": "application/json",
         },
@@ -893,7 +896,7 @@ describe("User Routes", () => {
       // The actual multipart handling is complex and would require additional setup
       const response = await fastify.inject({
         method: "POST",
-        url: "/123e4567-e89b-12d3-a456-426614174000/profile-picture",
+        url: `/${TEST_UUIDS.USER_1}/profile-picture`,
         headers: {
           "content-type": "multipart/form-data; boundary=----boundary",
         },

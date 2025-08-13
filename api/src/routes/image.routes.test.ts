@@ -1,10 +1,8 @@
 import Fastify, { FastifyInstance } from "fastify";
 import imageRoutes from "./image.routes";
 import { Image, ImageInput } from "../types/image.types";
-import { UUID } from "crypto";
 import { IMAGE_ERRORS } from "../types/errors";
-import { v4 as uuidv4 } from "uuid";
-import { S3Key } from "../types/s3.types";
+import { TEST_UUIDS, TEST_S3_KEYS } from "../test-utils/test-data";
 
 // Mock auth middleware to always pass
 jest.mock("../middleware/auth.middleware", () => ({
@@ -46,15 +44,13 @@ describe("Image Routes", () => {
   let fastify: FastifyInstance;
 
   const mockImage: Image = {
-    id: uuidv4() as UUID,
+    id: TEST_UUIDS.IMAGE_1,
     title: "Test Image",
     filename: "test.jpg",
-    tags: ["tag1" as UUID, "tag2" as UUID],
-    family_ids: ["family-1" as UUID, "family-2" as UUID],
-    original_key:
-      "test/users/user1/image/s3_1/original.jpg" as S3Key,
-    thumbnail_key:
-      "test/users/user1/image/s3_1/thumb_test.jpg" as S3Key,
+    tags: [TEST_UUIDS.TAG_1, TEST_UUIDS.TAG_2],
+    family_ids: [TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2],
+    original_key: TEST_S3_KEYS.ORIGINAL_1,
+    thumbnail_key: TEST_S3_KEYS.THUMBNAIL_1,
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
@@ -153,7 +149,7 @@ describe("Image Routes", () => {
   });
 
   describe("GET /:imageId", () => {
-    const validImageId = "550e8400-e29b-41d4-a716-446655440000";
+    const validImageId = TEST_UUIDS.IMAGE_1;
 
     it("should return image by ID", async () => {
       mockImageGetById.mockResolvedValue(mockImage);
@@ -204,7 +200,7 @@ describe("Image Routes", () => {
   });
 
   describe("GET /:imageId/download", () => {
-    const validImageId = "550e8400-e29b-41d4-a716-446655440000";
+    const validImageId = TEST_UUIDS.IMAGE_1;
 
     it("should download image file", async () => {
       mockImageGetById.mockResolvedValue(mockImage);
@@ -225,7 +221,7 @@ describe("Image Routes", () => {
       );
       expect(response.rawPayload).toEqual(mockBuffer);
       expect(mockS3Download).toHaveBeenCalledWith(
-        "test/users/user1/image/s3_1/original.jpg"
+        TEST_S3_KEYS.ORIGINAL_1
       );
     });
 
@@ -285,11 +281,11 @@ describe("Image Routes", () => {
 
   describe("POST /", () => {
     const s3Key = "family-photos/generated-uuid/test.jpg";
-    const publicUrl = "https://grammysnaps.s3.us-east-2.amazonaws.com/" + s3Key;
+    const signedUrl = "https://grammysnaps.s3.us-east-2.amazonaws.com/" + s3Key;
 
     beforeEach(() => {
       mockS3CreateKey.mockReturnValue(s3Key);
-      mockS3GetPublicUrl.mockReturnValue(publicUrl);
+      mockS3GetSignedUrl.mockReturnValue(signedUrl);
       mockS3Upload.mockResolvedValue(undefined);
       mockImageCreate.mockResolvedValue(mockImage);
     });
@@ -327,11 +323,11 @@ describe("Image Routes", () => {
   });
 
   describe("PUT /:imageId", () => {
-    const validImageId = "550e8400-e29b-41d4-a716-446655440000";
+    const validImageId = TEST_UUIDS.IMAGE_1;
     const updateData: ImageInput = {
       title: "Updated Title",
-      tags: ["550e8400-e29b-41d4-a716-446655440010"], // Valid UUID for tag
-      family_ids: ["550e8400-e29b-41d4-a716-446655440001"],
+      tags: [TEST_UUIDS.TAG_1], // Valid UUID for tag
+      family_ids: [TEST_UUIDS.FAMILY_1],
     };
 
     it("should update image successfully", async () => {
@@ -394,8 +390,8 @@ describe("Image Routes", () => {
 
     it("should handle valid update with optional title", async () => {
       const updateDataNoTitle = {
-        tags: ["550e8400-e29b-41d4-a716-446655440010"],
-        family_ids: ["550e8400-e29b-41d4-a716-446655440001"],
+        tags: [TEST_UUIDS.TAG_1],
+        family_ids: [TEST_UUIDS.FAMILY_1],
       };
       const updatedImage = { ...mockImage, ...updateDataNoTitle };
       mockImageGetById.mockResolvedValue(mockImage);
@@ -414,7 +410,7 @@ describe("Image Routes", () => {
       const updateDataEmptyTags = {
         title: "Test",
         tags: [],
-        family_ids: ["550e8400-e29b-41d4-a716-446655440001"],
+        family_ids: [TEST_UUIDS.FAMILY_1],
       };
       const updatedImage = { ...mockImage, ...updateDataEmptyTags };
       mockImageGetById.mockResolvedValue(mockImage);
@@ -432,7 +428,7 @@ describe("Image Routes", () => {
     it("should reject empty family_ids array due to validation", async () => {
       const updateDataEmptyFamilies = {
         title: "Test",
-        tags: ["550e8400-e29b-41d4-a716-446655440010"],
+        tags: [TEST_UUIDS.TAG_1],
         family_ids: [],
       };
 
@@ -447,7 +443,7 @@ describe("Image Routes", () => {
   });
 
   describe("GET /family/:familyId", () => {
-    const validFamilyId = "550e8400-e29b-41d4-a716-446655440001";
+    const validFamilyId = TEST_UUIDS.FAMILY_1;
 
     it("should return images for family", async () => {
       const mockImages = [mockImage];
@@ -501,7 +497,7 @@ describe("Image Routes", () => {
   });
 
   describe("DELETE /:imageId", () => {
-    const validImageId = "550e8400-e29b-41d4-a716-446655440000";
+    const validImageId = TEST_UUIDS.IMAGE_1;
 
     it("should delete image with S3 file", async () => {
       mockImageGetById.mockResolvedValue(mockImage);
@@ -515,10 +511,8 @@ describe("Image Routes", () => {
 
       expect(response.statusCode).toBe(204);
       expect(mockS3Delete).toHaveBeenCalledTimes(2); // Both original and thumbnail
-      expect(mockS3Delete).toHaveBeenCalledWith("test/users/user1/image/s3_1/original.jpg");
-      expect(mockS3Delete).toHaveBeenCalledWith(
-        "test/users/user1/image/s3_1/thumb_test.jpg"
-      );
+      expect(mockS3Delete).toHaveBeenCalledWith(TEST_S3_KEYS.ORIGINAL_1);
+      expect(mockS3Delete).toHaveBeenCalledWith(TEST_S3_KEYS.THUMBNAIL_1);
       expect(mockImageDelete).toHaveBeenCalledWith(validImageId);
     });
 
@@ -553,9 +547,7 @@ describe("Image Routes", () => {
       });
 
       expect(response.statusCode).toBe(204);
-      expect(mockS3Delete).toHaveBeenCalledWith(
-        "test/users/user1/image/s3_1/thumb_test.jpg"
-      );
+      expect(mockS3Delete).toHaveBeenCalledWith(TEST_S3_KEYS.THUMBNAIL_1);
       expect(mockImageDelete).toHaveBeenCalledWith(validImageId);
     });
 
@@ -615,7 +607,7 @@ describe("Image Routes", () => {
   });
 
   describe("GET /tag/:tagId", () => {
-    const tagId = "tag-123";
+    const tagId = TEST_UUIDS.TAG_1;
 
     it("should return images with specific tag", async () => {
       const mockImages = [mockImage];
@@ -656,7 +648,7 @@ describe("Image Routes", () => {
   });
 
   describe("GET /user/:userId", () => {
-    const validUserId = "550e8400-e29b-41d4-a716-446655440000";
+    const validUserId = TEST_UUIDS.USER_1;
 
     it("should return paginated images for user with default parameters", async () => {
       const mockImages = [mockImage];
@@ -681,8 +673,8 @@ describe("Image Routes", () => {
     it("should return paginated images with custom parameters", async () => {
       const mockImages = [mockImage];
       mockImageGetForUser.mockResolvedValue(mockImages);
-      const tag1 = "550e8400-e29b-41d4-a716-446655440010";
-      const tag2 = "550e8400-e29b-41d4-a716-446655440011";
+      const tag1 = TEST_UUIDS.TAG_1;
+      const tag2 = TEST_UUIDS.TAG_2;
 
       const response = await fastify.inject({
         method: "GET",
@@ -804,8 +796,8 @@ describe("Image Routes", () => {
     it("should handle multiple tag parameters correctly", async () => {
       const mockImages = [mockImage];
       mockImageGetForUser.mockResolvedValue(mockImages);
-      const tag1 = "550e8400-e29b-41d4-a716-446655440010";
-      const tag2 = "550e8400-e29b-41d4-a716-446655440011";
+      const tag1 = TEST_UUIDS.TAG_1;
+      const tag2 = TEST_UUIDS.TAG_2;
 
       const response = await fastify.inject({
         method: "GET",

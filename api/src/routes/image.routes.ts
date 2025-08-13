@@ -9,7 +9,7 @@ import { S3Environment } from "../types/s3.types";
 import { UUID } from "crypto";
 
 interface GetImageParams {
-  imageId: string;
+  imageId: UUID;
 }
 const getImageParamsSchema = {
   type: "object",
@@ -20,7 +20,7 @@ const getImageParamsSchema = {
 };
 
 interface UpdateImageParams {
-  imageId: string;
+  imageId: UUID;
 }
 const updateImageParamsSchema = {
   type: "object",
@@ -381,7 +381,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { familyId } = request.params as { familyId: string };
+      const { familyId } = request.params as { familyId: UUID };
       try {
         const images = await fastify.image.getByFamily(familyId);
         return reply.status(200).send({ images });
@@ -452,7 +452,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     "/tag/:tagId",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { tagId } = request.params as { tagId: string };
+      const { tagId } = request.params as { tagId: UUID };
       const images = await fastify.image.getAllWithTag(tagId);
       return reply.status(200).send({ images });
     }
@@ -485,7 +485,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { userId } = request.params as { userId: string };
+      const { userId } = request.params as { userId: UUID };
       const {
         limit = 50,
         offset = 0,
@@ -495,7 +495,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         limit?: number;
         offset?: number;
         order?: "asc" | "desc";
-        tags?: string[];
+        tags?: UUID[];
       };
 
       try {

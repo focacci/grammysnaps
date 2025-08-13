@@ -8,13 +8,14 @@ import {
   RelatedFamily,
 } from "../types/family.types";
 import { FAMILY_ERRORS } from "../types/errors";
+import { TEST_UUIDS } from "../test-utils/test-data";
 
 // Mock auth middleware to always pass
 jest.mock("../middleware/auth.middleware", () => ({
   requireAuth: jest.fn(async (request) => {
     // Mock successful authentication by setting user on request
     request.user = {
-      userId: "user-123",
+      userId: TEST_UUIDS.USER_1,
       email: "test@example.com",
     };
     // Don't call reply.send() or return anything - just let the request continue
@@ -39,38 +40,44 @@ describe("Family Routes", () => {
   let fastify: FastifyInstance;
 
   const mockFamily: Family = {
-    id: "family-123",
+    id: TEST_UUIDS.FAMILY_1,
     name: "The Smiths",
-    members: ["user-1", "user-2"],
-    owner_id: "user-1",
-    related_families: ["family-456"],
+    members: [TEST_UUIDS.USER_1, TEST_UUIDS.USER_2],
+    owner_id: TEST_UUIDS.USER_1,
+    related_families: [TEST_UUIDS.FAMILY_2],
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
 
   const mockFamilyPublic: FamilyPublic = {
-    id: "family-123",
+    id: TEST_UUIDS.FAMILY_1,
     name: "The Smiths",
     member_count: 2,
-    owner_id: "user-1",
+    owner_id: TEST_UUIDS.USER_1,
     user_role: "owner",
-    related_families: ["family-456"],
+    related_families: [TEST_UUIDS.FAMILY_2],
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
 
   const mockFamilyMember: FamilyMember = {
-    id: "user-1",
-    first_name: "John",
-    last_name: "Smith",
+    id: TEST_UUIDS.USER_1,
     email: "john@example.com",
+    first_name: "John",
+    middle_name: null,
+    last_name: "Smith",
     birthday: "1990-01-01",
+    families: [TEST_UUIDS.FAMILY_1],
+    profile_picture_key: null,
+    profile_picture_thumbnail_key: null,
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-01-01T00:00:00Z",
     role: "owner",
     joined_at: "2023-01-01T00:00:00Z",
   };
 
   const mockRelatedFamily: RelatedFamily = {
-    id: "family-456",
+    id: TEST_UUIDS.FAMILY_2,
     name: "The Johnsons",
     member_count: 3,
     created_at: "2023-01-01T00:00:00Z",
@@ -148,13 +155,13 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/user/user-123",
+        url: `/user/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockFamilies);
-      expect(mockFamilyGetUserFamilies).toHaveBeenCalledWith("user-123");
+      expect(mockFamilyGetUserFamilies).toHaveBeenCalledWith(TEST_UUIDS.USER_1);
     });
 
     it("should return 500 for database error", async () => {
@@ -162,7 +169,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/user/user-123",
+        url: `/user/${TEST_UUIDS.USER_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -179,13 +186,13 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockFamily);
-      expect(mockFamilyGetById).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyGetById).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
     });
 
     it("should return 404 for non-existent family", async () => {
@@ -193,7 +200,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -206,7 +213,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -222,13 +229,13 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123/members",
+        url: `/${TEST_UUIDS.FAMILY_1}/members`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockMembers);
-      expect(mockFamilyGetMembers).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyGetMembers).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
     });
 
     it("should return 500 for database error", async () => {
@@ -236,7 +243,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123/members",
+        url: `/${TEST_UUIDS.FAMILY_1}/members`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -249,7 +256,7 @@ describe("Family Routes", () => {
     const validFamilyData = {
       name: "The Johnsons",
       description: "A lovely family",
-      owner_id: "user-123",
+      owner_id: TEST_UUIDS.USER_1,
     };
 
     it("should successfully create a new family", async () => {
@@ -266,7 +273,7 @@ describe("Family Routes", () => {
       expect(responseBody).toEqual(mockFamilyPublic);
       expect(mockFamilyCreate).toHaveBeenCalledWith(
         { name: "The Johnsons", description: "A lovely family" },
-        "user-123"
+        TEST_UUIDS.USER_1
       );
     });
 
@@ -289,7 +296,7 @@ describe("Family Routes", () => {
         method: "POST",
         url: "/",
         payload: {
-          owner_id: "user-123",
+          owner_id: TEST_UUIDS.USER_1,
         },
       });
 
@@ -304,7 +311,7 @@ describe("Family Routes", () => {
         url: "/",
         payload: {
           name: "   ",
-          owner_id: "user-123",
+          owner_id: TEST_UUIDS.USER_1,
         },
       });
 
@@ -356,7 +363,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
         payload: validUpdateData,
       });
 
@@ -364,7 +371,7 @@ describe("Family Routes", () => {
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(updatedFamily);
       expect(mockFamilyUpdate).toHaveBeenCalledWith(
-        "family-123",
+        TEST_UUIDS.FAMILY_1,
         validUpdateData
       );
     });
@@ -374,7 +381,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
         payload: validUpdateData,
       });
 
@@ -388,7 +395,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
         payload: validUpdateData,
       });
 
@@ -402,7 +409,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
         payload: validUpdateData,
       });
 
@@ -417,12 +424,12 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "PUT",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
         payload: {},
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyUpdate).toHaveBeenCalledWith("family-123", {});
+      expect(mockFamilyUpdate).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1, {});
     });
   });
 
@@ -432,12 +439,12 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(204);
       expect(response.body).toBe("");
-      expect(mockFamilyDelete).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyDelete).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
     });
 
     it("should return 500 for database error", async () => {
@@ -447,7 +454,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -460,7 +467,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123",
+        url: `/${TEST_UUIDS.FAMILY_1}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -471,7 +478,7 @@ describe("Family Routes", () => {
 
   describe("POST /:id/members", () => {
     const validMemberData = {
-      user_id: "user-456",
+      user_id: TEST_UUIDS.USER_2,
     };
 
     it("should successfully add member to family", async () => {
@@ -479,7 +486,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/members",
+        url: `/${TEST_UUIDS.FAMILY_1}/members`,
         payload: validMemberData,
       });
 
@@ -487,15 +494,15 @@ describe("Family Routes", () => {
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Member added successfully");
       expect(mockFamilyAddMember).toHaveBeenCalledWith(
-        "family-123",
-        "user-456"
+        TEST_UUIDS.FAMILY_1,
+        TEST_UUIDS.USER_2
       );
     });
 
     it("should return 400 for missing user_id", async () => {
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/members",
+        url: `/${TEST_UUIDS.FAMILY_1}/members`,
         payload: {},
       });
 
@@ -509,7 +516,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/members",
+        url: `/${TEST_UUIDS.FAMILY_1}/members`,
         payload: validMemberData,
       });
 
@@ -523,7 +530,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/members",
+        url: `/${TEST_UUIDS.FAMILY_1}/members`,
         payload: validMemberData,
       });
 
@@ -539,15 +546,15 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123/members/user-456",
+        url: `/${TEST_UUIDS.FAMILY_1}/members/${TEST_UUIDS.USER_2}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Member removed successfully");
       expect(mockFamilyRemoveMember).toHaveBeenCalledWith(
-        "family-123",
-        "user-456"
+        TEST_UUIDS.FAMILY_1,
+        TEST_UUIDS.USER_2
       );
     });
 
@@ -558,7 +565,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123/members/user-456",
+        url: `/${TEST_UUIDS.FAMILY_1}/members/${TEST_UUIDS.USER_2}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -571,7 +578,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123/members/user-456",
+        url: `/${TEST_UUIDS.FAMILY_1}/members/${TEST_UUIDS.USER_2}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -587,13 +594,13 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123/related",
+        url: `/${TEST_UUIDS.FAMILY_1}/related`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockRelatedFamilies);
-      expect(mockFamilyGetRelatedFamilies).toHaveBeenCalledWith("family-123");
+      expect(mockFamilyGetRelatedFamilies).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
     });
 
     it("should return 500 for database error", async () => {
@@ -603,7 +610,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123/related",
+        url: `/${TEST_UUIDS.FAMILY_1}/related`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -614,7 +621,7 @@ describe("Family Routes", () => {
 
   describe("POST /:id/related", () => {
     const validRelatedFamilyData = {
-      family_id: "family-456",
+      family_id: TEST_UUIDS.FAMILY_2,
     };
 
     it("should successfully add related family", async () => {
@@ -622,7 +629,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/related",
+        url: `/${TEST_UUIDS.FAMILY_1}/related`,
         payload: validRelatedFamilyData,
       });
 
@@ -630,15 +637,15 @@ describe("Family Routes", () => {
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Related family added successfully");
       expect(mockFamilyAddRelatedFamily).toHaveBeenCalledWith(
-        "family-123",
-        "family-456"
+        TEST_UUIDS.FAMILY_1,
+        TEST_UUIDS.FAMILY_2
       );
     });
 
     it("should return 400 for missing family_id", async () => {
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/related",
+        url: `/${TEST_UUIDS.FAMILY_1}/related`,
         payload: {},
       });
 
@@ -654,7 +661,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/related",
+        url: `/${TEST_UUIDS.FAMILY_1}/related`,
         payload: validRelatedFamilyData,
       });
 
@@ -668,7 +675,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "POST",
-        url: "/family-123/related",
+        url: `/${TEST_UUIDS.FAMILY_1}/related`,
         payload: validRelatedFamilyData,
       });
 
@@ -684,15 +691,15 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123/related/family-456",
+        url: `/${TEST_UUIDS.FAMILY_1}/related/${TEST_UUIDS.FAMILY_2}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Related family removed successfully");
       expect(mockFamilyRemoveRelatedFamily).toHaveBeenCalledWith(
-        "family-123",
-        "family-456"
+        TEST_UUIDS.FAMILY_1,
+        TEST_UUIDS.FAMILY_2
       );
     });
 
@@ -703,7 +710,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123/related/family-456",
+        url: `/${TEST_UUIDS.FAMILY_1}/related/${TEST_UUIDS.FAMILY_2}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -716,7 +723,7 @@ describe("Family Routes", () => {
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: "/family-123/related/family-456",
+        url: `/${TEST_UUIDS.FAMILY_1}/related/${TEST_UUIDS.FAMILY_2}`,
       });
 
       expect(response.statusCode).toBe(500);

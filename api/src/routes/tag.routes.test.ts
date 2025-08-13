@@ -1,15 +1,16 @@
 import Fastify, { FastifyInstance } from "fastify";
 import tagRoutes from "./tag.routes";
 import { Tag } from "../types/tag.types";
-import { TagInput, TagUpdateInput } from "../plugins/tag.plugin";
+import { TagInput, TagUpdateInput } from "../types/tag.types";
 import { TAG_ERRORS } from "../types/errors";
+import { TEST_UUIDS } from "../test-utils/test-data";
 
 // Mock auth middleware to always pass
 jest.mock("../middleware/auth.middleware", () => ({
   requireAuth: jest.fn(async (request) => {
     // Mock successful authentication by setting user on request
     request.user = {
-      userId: "user-123",
+      userId: TEST_UUIDS.USER_1,
       email: "test@example.com",
     };
     // Don't call reply.send() or return anything - just let the request continue
@@ -27,9 +28,9 @@ describe("Tag Routes", () => {
   let fastify: FastifyInstance;
 
   const mockTag: Tag = {
-    id: "tag-123",
+    id: TEST_UUIDS.TAG_1,
     name: "Test Tag",
-    family_id: "family-456",
+    family_id: TEST_UUIDS.FAMILY_1,
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
@@ -102,7 +103,7 @@ describe("Tag Routes", () => {
   });
 
   describe("GET /family/:familyId", () => {
-    const validFamilyId = "550e8400-e29b-41d4-a716-446655440000";
+    const validFamilyId = TEST_UUIDS.FAMILY_1;
 
     it("should return tags for family", async () => {
       const mockTags = [mockTag];
@@ -152,7 +153,7 @@ describe("Tag Routes", () => {
   });
 
   describe("GET /:tagId", () => {
-    const validTagId = "550e8400-e29b-41d4-a716-446655440000";
+    const validTagId = TEST_UUIDS.TAG_1;
 
     it("should return tag by ID", async () => {
       mockTagGetById.mockResolvedValue(mockTag);
@@ -206,8 +207,8 @@ describe("Tag Routes", () => {
     const validTagData: TagInput = {
       type: "Person",
       name: "John Doe",
-      family_id: "550e8400-e29b-41d4-a716-446655440001",
-      created_by: "550e8400-e29b-41d4-a716-446655440002",
+      family_id: TEST_UUIDS.FAMILY_1,
+      created_by: TEST_UUIDS.USER_1,
     };
 
     it("should create tag successfully", async () => {
@@ -336,8 +337,8 @@ describe("Tag Routes", () => {
       const locationTagData: TagInput = {
         type: "Location",
         name: "Paris",
-        family_id: "550e8400-e29b-41d4-a716-446655440001",
-        created_by: "550e8400-e29b-41d4-a716-446655440002",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const createdTag = { ...mockTag, ...locationTagData };
       mockTagCreate.mockResolvedValue(createdTag);
@@ -356,8 +357,8 @@ describe("Tag Routes", () => {
       const eventTagData: TagInput = {
         type: "Event",
         name: "Wedding",
-        family_id: "550e8400-e29b-41d4-a716-446655440001",
-        created_by: "550e8400-e29b-41d4-a716-446655440002",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const createdTag = { ...mockTag, ...eventTagData };
       mockTagCreate.mockResolvedValue(createdTag);
@@ -376,8 +377,8 @@ describe("Tag Routes", () => {
       const timeTagData: TagInput = {
         type: "Time",
         name: "Morning",
-        family_id: "550e8400-e29b-41d4-a716-446655440001",
-        created_by: "550e8400-e29b-41d4-a716-446655440002",
+        family_id: TEST_UUIDS.FAMILY_1,
+        created_by: TEST_UUIDS.USER_1,
       };
       const createdTag = { ...mockTag, ...timeTagData };
       mockTagCreate.mockResolvedValue(createdTag);
@@ -394,11 +395,11 @@ describe("Tag Routes", () => {
   });
 
   describe("PUT /:tagId", () => {
-    const validTagId = "550e8400-e29b-41d4-a716-446655440000";
+    const validTagId = TEST_UUIDS.TAG_1;
     const updateData: TagUpdateInput = {
       type: "Location",
       name: "Updated Tag Name",
-      family_id: "550e8400-e29b-41d4-a716-446655440001",
+      family_id: TEST_UUIDS.FAMILY_1,
     };
 
     it("should update tag successfully", async () => {
@@ -559,7 +560,7 @@ describe("Tag Routes", () => {
   });
 
   describe("DELETE /:tagId", () => {
-    const validTagId = "550e8400-e29b-41d4-a716-446655440000";
+    const validTagId = TEST_UUIDS.TAG_1;
 
     it("should delete tag successfully", async () => {
       mockTagDelete.mockResolvedValue(undefined);

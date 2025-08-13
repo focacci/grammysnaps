@@ -1,5 +1,5 @@
 import { UUID } from "crypto";
-import { User } from "./user.types";
+import { UserPublic } from "./user.types";
 
 export interface Family {
   id: UUID;
@@ -34,7 +34,7 @@ export interface FamilyPublic {
   updated_at: string;
 }
 
-export interface FamilyMember extends User {
+export interface FamilyMember extends UserPublic {
   role: "owner" | "member";
   joined_at: string;
 }
