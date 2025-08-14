@@ -222,13 +222,9 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const sanitizedFamilies = families
           ? ValidationUtils.sanitizeFamilyIds(families)
           : null;
-        const sanitizedProfilePictureUrl = profile_picture_key
-          ? ValidationUtils.sanitizeURL(profile_picture_key)
-          : null;
-        const sanitizedProfilePictureThumbnailUrl =
-          profile_picture_thumbnail_key
-            ? ValidationUtils.sanitizeURL(profile_picture_thumbnail_key)
-            : null;
+        const sanitizedProfilePictureKey = profile_picture_key ?? null;
+        const sanitizedProfilePictureThumbnailKey =
+          profile_picture_thumbnail_key ?? null;
 
         // Validate family IDs
         const sanitizedAndValidFamilies = sanitizedFamilies?.length
@@ -270,15 +266,15 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           paramCount++;
         }
 
-        if (sanitizedProfilePictureUrl) {
-          updateFields.push(`profile_picture_url = $${paramCount}`);
-          values.push(sanitizedProfilePictureUrl);
+        if (sanitizedProfilePictureKey) {
+          updateFields.push(`profile_picture_key = $${paramCount}`);
+          values.push(sanitizedProfilePictureKey);
           paramCount++;
         }
 
-        if (sanitizedProfilePictureThumbnailUrl) {
-          updateFields.push(`profile_picture_thumbnail_url = $${paramCount}`);
-          values.push(sanitizedProfilePictureThumbnailUrl);
+        if (sanitizedProfilePictureThumbnailKey) {
+          updateFields.push(`profile_picture_thumbnail_key = $${paramCount}`);
+          values.push(sanitizedProfilePictureThumbnailKey);
           paramCount++;
         }
 
