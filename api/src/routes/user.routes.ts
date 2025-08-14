@@ -3,15 +3,19 @@ import {
   UserInput,
   UserUpdate,
   SecurityUpdateInput,
+  UserPublic,
 } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
 import { MultipartFile } from "@fastify/multipart";
 import { USER_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
 import sharp from "sharp";
+import { UUID } from "crypto";
+import { S3Environment } from "../types/s3.types";
+import { v4 as uuidv4 } from "uuid";
 
 interface UserParams {
-  id: string;
+  id: UUID;
 }
 
 interface UserQueryParams {
@@ -19,8 +23,27 @@ interface UserQueryParams {
 }
 
 interface FamilyParams {
-  userId: string;
-  familyId: string;
+  userId: UUID;
+  familyId: UUID;
+}
+
+// Helper function to add profile picture URLs to user objects
+export async function addProfilePictureUrls(fastify: FastifyInstance, user: UserPublic): Promise<UserPublic & { profile_picture_url?: string | null; profile_picture_thumbnail_url?: string | null }> {
+  const userWithUrls = { ...user, profile_picture_url: null as string | null, profile_picture_thumbnail_url: null as string | null };
+  
+  try {
+    if (user.profile_picture_key) {
+      userWithUrls.profile_picture_url = await fastify.s3.getSignedUrl(user.profile_picture_key);
+    }
+    if (user.profile_picture_thumbnail_key) {
+      userWithUrls.profile_picture_thumbnail_url = await fastify.s3.getSignedUrl(user.profile_picture_thumbnail_key);
+    }
+  } catch (error) {
+    fastify.log.warn(`Failed to generate signed URLs for user ${user.id}:`, error);
+    // Continue without URLs rather than failing the entire request
+  }
+  
+  return userWithUrls;
 }
 
 export default async function userRoutes(fastify: FastifyInstance) {
@@ -50,7 +73,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
         }
 
         const user = await fastify.user.create(request.body);
-        return reply.status(201).send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.status(201).send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (
@@ -78,7 +104,12 @@ export default async function userRoutes(fastify: FastifyInstance) {
     ) => {
       try {
         const users = await fastify.user.get();
-        return reply.send(users);
+        
+        // Add profile picture URLs to all users
+        const usersWithUrls = await Promise.all(
+          users.map(user => addProfilePictureUrls(fastify, user))
+        );
+        return reply.send(usersWithUrls);
       } catch (error) {
         fastify.log.error(error);
         return reply.status(500).send({
@@ -107,7 +138,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("Invalid")) {
@@ -138,7 +172,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.EMAIL_NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("Invalid")) {
@@ -167,7 +204,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.UPDATE_NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (
@@ -206,7 +246,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.SECURITY_UPDATE_NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error) {
@@ -349,7 +392,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
       try {
         // Log request headers for debugging
         fastify.log.info(`Content-Type: ${request.headers["content-type"]}`);
@@ -442,21 +485,24 @@ export default async function userRoutes(fastify: FastifyInstance) {
         );
 
         // Generate a unique key for S3 (original)
+        const s3Id = uuidv4() as UUID;
         const fileExtension = file.filename?.split(".").pop() || "jpg";
-        const originalS3Key = fastify.s3.createKey(
-          process.env.NODE_ENV || "local",
-          "profile-pictures",
-          id,
-          `profile.${fileExtension}`
-        );
+        const originalS3Key = fastify.s3.createKey({
+          env: (process.env.NODE_ENV || "local") as S3Environment,
+          userId: id,
+          type: "profile",
+          s3Id: s3Id,
+          filename: `profile.${fileExtension}`
+        });
 
         // Generate thumbnail key
-        const thumbnailS3Key = fastify.s3.createKey(
-          process.env.NODE_ENV || "local",
-          "profile-pictures",
-          id,
-          `thumb_profile.${fileExtension}`
-        );
+        const thumbnailS3Key = fastify.s3.createKey({
+          env: (process.env.NODE_ENV || "local") as S3Environment,
+          userId: id,
+          type: "profile",
+          s3Id: s3Id,
+          filename: `thumb_profile.${fileExtension}`
+        });
 
         // Create 400x400 thumbnail using Sharp
         const thumbnailBuffer = await sharp(buffer)
@@ -491,18 +537,18 @@ export default async function userRoutes(fastify: FastifyInstance) {
             type: "thumbnail",
           },
         });
-
-        const publicUrl = fastify.s3.getPublicUrl(originalS3Key);
-        const thumbnailUrl = fastify.s3.getPublicUrl(thumbnailS3Key);
-
         // Update user record with both URLs
         await fastify.user.update(id, {
-          profile_picture_url: publicUrl,
-          profile_picture_thumbnail_url: thumbnailUrl,
+          profile_picture_key: originalS3Key,
+          profile_picture_thumbnail_key: thumbnailS3Key,
         });
 
+        // Generate signed URLs
+        const originalUrl = await fastify.s3.getSignedUrl(originalS3Key);
+        const thumbnailUrl = await fastify.s3.getSignedUrl(thumbnailS3Key);
+
         return reply.send({
-          url: publicUrl,
+          url: originalUrl,
           thumbnail_url: thumbnailUrl,
         });
       } catch (error) {

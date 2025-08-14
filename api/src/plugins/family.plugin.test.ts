@@ -6,6 +6,8 @@ import {
   FamilyUpdate,
   RelatedFamily,
 } from "../types/family.types";
+import { S3Key } from "../types/s3.types";
+import { TEST_UUIDS, generateTestS3Key } from "../test-utils/test-data";
 
 // Mock the postgres query function
 const mockQuery = jest.fn();
@@ -83,9 +85,9 @@ describe("Family Plugin", () => {
         name: "Test Family",
         related_families: [],
       };
-      const ownerId = "owner-123";
+      const ownerId = TEST_UUIDS.USER_1;
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
         members: [ownerId],
         owner_id: ownerId,
@@ -110,11 +112,11 @@ describe("Family Plugin", () => {
       expect(mockQuery).toHaveBeenNthCalledWith(
         2,
         "INSERT INTO family_members (family_id, user_id) VALUES ($1, $2)",
-        ["family-123", ownerId]
+        [TEST_UUIDS.FAMILY_1, ownerId]
       );
-      expect(mockAddToFamily).toHaveBeenCalledWith(ownerId, "family-123");
+      expect(mockAddToFamily).toHaveBeenCalledWith(ownerId, TEST_UUIDS.FAMILY_1);
       expect(result).toEqual({
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
         member_count: 1,
         owner_id: ownerId,
@@ -130,7 +132,7 @@ describe("Family Plugin", () => {
         name: "Test Family",
         related_families: [],
       };
-      const ownerId = "owner-123";
+      const ownerId = TEST_UUIDS.USER_1;
 
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
@@ -144,19 +146,19 @@ describe("Family Plugin", () => {
     it("should return all families", async () => {
       const mockFamilies: Family[] = [
         {
-          id: "family-1",
+          id: TEST_UUIDS.FAMILY_1,
           name: "Family 1",
-          members: ["user-1"],
-          owner_id: "user-1",
+          members: [TEST_UUIDS.USER_1],
+          owner_id: TEST_UUIDS.USER_1,
           related_families: [],
           created_at: new Date().toISOString().split("T")[0],
           updated_at: new Date().toISOString().split("T")[0],
         },
         {
-          id: "family-2",
+          id: TEST_UUIDS.FAMILY_2,
           name: "Family 2",
-          members: ["user-2"],
-          owner_id: "user-2",
+          members: [TEST_UUIDS.USER_2],
+          owner_id: TEST_UUIDS.USER_2,
           related_families: [],
           created_at: new Date().toISOString().split("T")[0],
           updated_at: new Date().toISOString().split("T")[0],
@@ -187,10 +189,10 @@ describe("Family Plugin", () => {
   describe("getById", () => {
     it("should return family by ID", async () => {
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -198,11 +200,11 @@ describe("Family Plugin", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: [mockFamily] });
 
-      const result = await fastify.family.getById("family-123");
+      const result = await fastify.family.getById(TEST_UUIDS.FAMILY_1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "SELECT * FROM families WHERE id = $1",
-        ["family-123"]
+        [TEST_UUIDS.FAMILY_1]
       );
       expect(result).toEqual(mockFamily);
     });
@@ -210,7 +212,7 @@ describe("Family Plugin", () => {
     it("should return null when family not found", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      const result = await fastify.family.getById("non-existent");
+      const result = await fastify.family.getById(TEST_UUIDS.FAMILY_2);
 
       expect(result).toBeNull();
     });
@@ -218,7 +220,7 @@ describe("Family Plugin", () => {
     it("should throw error when database fails", async () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(fastify.family.getById("family-123")).rejects.toThrow(
+      await expect(fastify.family.getById(TEST_UUIDS.FAMILY_1)).rejects.toThrow(
         "Failed to fetch family by ID"
       );
     });
@@ -228,11 +230,11 @@ describe("Family Plugin", () => {
     it("should return true when family exists", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [{ "1": 1 }] });
 
-      const result = await fastify.family.exists("family-123");
+      const result = await fastify.family.exists(TEST_UUIDS.FAMILY_1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "SELECT 1 FROM families WHERE id = $1 LIMIT 1",
-        ["family-123"]
+        [TEST_UUIDS.FAMILY_1]
       );
       expect(result).toBe(true);
     });
@@ -240,7 +242,7 @@ describe("Family Plugin", () => {
     it("should return false when family does not exist", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      const result = await fastify.family.exists("non-existent");
+      const result = await fastify.family.exists(TEST_UUIDS.FAMILY_2);
 
       expect(result).toBe(false);
     });
@@ -248,7 +250,7 @@ describe("Family Plugin", () => {
     it("should throw error when database fails", async () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(fastify.family.exists("family-123")).rejects.toThrow(
+      await expect(fastify.family.exists(TEST_UUIDS.FAMILY_1)).rejects.toThrow(
         "Failed to check if family exists"
       );
     });
@@ -258,10 +260,10 @@ describe("Family Plugin", () => {
     it("should return user families", async () => {
       const mockFamilies: Family[] = [
         {
-          id: "family-1",
+          id: TEST_UUIDS.FAMILY_1,
           name: "Family 1",
-          members: ["user-1"],
-          owner_id: "user-1",
+          members: [TEST_UUIDS.USER_1],
+          owner_id: TEST_UUIDS.USER_1,
           related_families: [],
           created_at: new Date().toISOString().split("T")[0],
           updated_at: new Date().toISOString().split("T")[0],
@@ -270,14 +272,14 @@ describe("Family Plugin", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: mockFamilies });
 
-      const result = await fastify.family.getUserFamilies("user-1");
+      const result = await fastify.family.getUserFamilies(TEST_UUIDS.USER_1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         `SELECT f.* FROM families f 
            JOIN family_members fm ON f.id = fm.family_id 
            WHERE fm.user_id = $1 
            ORDER BY f.created_at DESC`,
-        ["user-1"]
+        [TEST_UUIDS.USER_1]
       );
       expect(result).toHaveLength(1);
       expect(result[0].user_role).toBe("owner");
@@ -286,7 +288,7 @@ describe("Family Plugin", () => {
     it("should throw error when database fails", async () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(fastify.family.getUserFamilies("user-1")).rejects.toThrow(
+      await expect(fastify.family.getUserFamilies(TEST_UUIDS.USER_1)).rejects.toThrow(
         "Failed to fetch user families"
       );
     });
@@ -296,57 +298,70 @@ describe("Family Plugin", () => {
     it("should return family members", async () => {
       const mockMembers = [
         {
-          id: "user-1",
-          first_name: "John",
-          last_name: "Doe",
+          id: TEST_UUIDS.USER_1,
           email: "john@example.com",
+          password_hash: "hashed_password_1",
+          first_name: "John",
+          middle_name: null,
+          last_name: "Doe",
           birthday: new Date("1990-01-01"),
-          profile_picture_thumbnail_url:
-            "https://example.com/thumb_profile.jpg",
-          owner_id: "user-1",
+          families: [TEST_UUIDS.FAMILY_1],
+          profile_picture_key: null,
+          profile_picture_thumbnail_key:
+            generateTestS3Key(TEST_UUIDS.USER_1, "thumbnail", TEST_UUIDS.S3_ID_1, "profile.jpg"),
+          created_at: new Date("2023-01-01"),
+          updated_at: new Date("2023-01-01"),
+          owner_id: TEST_UUIDS.USER_1,
           joined_at: new Date(),
         },
         {
-          id: "user-2",
-          first_name: "Jane",
-          last_name: "Smith",
+          id: TEST_UUIDS.USER_2,
           email: "jane@example.com",
+          password_hash: "hashed_password_2",
+          first_name: "Jane",
+          middle_name: null,
+          last_name: "Smith",
           birthday: null,
-          profile_picture_thumbnail_url: null,
-          owner_id: "user-1",
+          families: [TEST_UUIDS.FAMILY_1],
+          profile_picture_key: null,
+          profile_picture_thumbnail_key: null,
+          created_at: new Date("2023-01-02"),
+          updated_at: new Date("2023-01-02"),
+          owner_id: TEST_UUIDS.USER_1,
           joined_at: new Date(),
         },
       ];
 
       mockQuery.mockResolvedValueOnce({ rows: mockMembers });
 
-      const result = await fastify.family.getMembers("family-123");
+      const result = await fastify.family.getMembers(TEST_UUIDS.FAMILY_1);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, u.profile_picture_thumbnail_url, f.owner_id,
-                  f.created_at as joined_at
+        `SELECT u.id, u.email, u.password_hash, u.first_name, u.middle_name, u.last_name, 
+                  u.birthday, u.families, u.profile_picture_key, u.profile_picture_thumbnail_key, 
+                  u.created_at, u.updated_at, f.owner_id, f.created_at as joined_at
            FROM users u
            JOIN family_members fm ON u.id = fm.user_id
            JOIN families f ON fm.family_id = f.id
            WHERE fm.family_id = $1
            ORDER BY u.first_name, u.last_name`,
-        ["family-123"]
+        [TEST_UUIDS.FAMILY_1]
       );
       expect(result).toHaveLength(2);
       expect(result[0].role).toBe("owner");
       expect(result[1].role).toBe("member");
       expect(result[0].birthday).toBe("1990-01-01");
-      expect(result[1].birthday).toBeUndefined();
-      expect(result[0].profile_picture_thumbnail_url).toBe(
-        "https://example.com/thumb_profile.jpg"
+      expect(result[1].birthday).toBeNull();
+      expect(result[0].profile_picture_thumbnail_key).toBe(
+        generateTestS3Key(TEST_UUIDS.USER_1, "thumbnail", TEST_UUIDS.S3_ID_1, "profile.jpg")
       );
-      expect(result[1].profile_picture_thumbnail_url).toBeNull();
+      expect(result[1].profile_picture_thumbnail_key).toBeNull();
     });
 
     it("should throw error when database fails", async () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(fastify.family.getMembers("family-123")).rejects.toThrow(
+      await expect(fastify.family.getMembers(TEST_UUIDS.FAMILY_1)).rejects.toThrow(
         "Failed to fetch family members"
       );
     });
@@ -358,10 +373,10 @@ describe("Family Plugin", () => {
         name: "Updated Family",
       };
       const mockExistingFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Original Family",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -377,13 +392,13 @@ describe("Family Plugin", () => {
       // Mock update call
       mockQuery.mockResolvedValueOnce({ rows: [mockUpdatedFamily] });
 
-      const result = await fastify.family.update("family-123", familyUpdate);
+      const result = await fastify.family.update(TEST_UUIDS.FAMILY_1, familyUpdate);
 
       expect(mockQuery).toHaveBeenCalledTimes(2);
       expect(mockQuery).toHaveBeenNthCalledWith(
         2,
         "UPDATE families SET name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
-        ["Updated Family", "family-123"]
+        ["Updated Family", TEST_UUIDS.FAMILY_1]
       );
       expect(result).toEqual(mockUpdatedFamily);
     });
@@ -391,7 +406,7 @@ describe("Family Plugin", () => {
     it("should return null when family not found", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      const result = await fastify.family.update("non-existent", {
+      const result = await fastify.family.update(TEST_UUIDS.FAMILY_2, {
         name: "New Name",
       });
 
@@ -402,7 +417,7 @@ describe("Family Plugin", () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
       await expect(
-        fastify.family.update("family-123", { name: "New Name" })
+        fastify.family.update(TEST_UUIDS.FAMILY_1, { name: "New Name" })
       ).rejects.toThrow("Failed to fetch family by ID");
     });
   });
@@ -410,19 +425,19 @@ describe("Family Plugin", () => {
   describe("delete", () => {
     it("should delete family successfully", async () => {
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
-        members: ["user-1", "user-2"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1, TEST_UUIDS.USER_2],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
       };
       const mockOrphanedImages = [
         {
-          id: "image-1",
-          original_url: "https://bucket.s3.amazonaws.com/image1.jpg",
-          thumbnail_url: "https://bucket.s3.amazonaws.com/thumb_image1.jpg",
+          id: TEST_UUIDS.IMAGE_1,
+          original_key: TEST_UUIDS.USER_1 + "/original/" + TEST_UUIDS.S3_ID_1 + "/image1.jpg" as S3Key,
+          thumbnail_key: TEST_UUIDS.USER_1 + "/thumbnail/" + TEST_UUIDS.S3_ID_1 + "/thumb_image1.jpg" as S3Key,
         },
       ];
 
@@ -439,29 +454,30 @@ describe("Family Plugin", () => {
       // Mock family deletion
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      await fastify.family.delete("family-123");
+      await fastify.family.delete(TEST_UUIDS.FAMILY_1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "SELECT * FROM families WHERE id = $1",
-        ["family-123"]
+        [TEST_UUIDS.FAMILY_1]
       );
-      expect(mockGetOrphanedByFamily).toHaveBeenCalledWith("family-123");
-      expect(mockS3Delete).toHaveBeenCalledWith("image1.jpg");
+      expect(mockGetOrphanedByFamily).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
+      expect(mockS3Delete).toHaveBeenCalledWith(TEST_UUIDS.USER_1 + "/original/" + TEST_UUIDS.S3_ID_1 + "/image1.jpg");
+      expect(mockS3Delete).toHaveBeenCalledWith(TEST_UUIDS.USER_1 + "/thumbnail/" + TEST_UUIDS.S3_ID_1 + "/thumb_image1.jpg");
       expect(mockQuery).toHaveBeenCalledWith(
         "DELETE FROM images WHERE id = $1",
-        ["image-1"]
+        [TEST_UUIDS.IMAGE_1]
       );
       expect(mockRemoveFromFamily).toHaveBeenCalledTimes(2);
       expect(mockQuery).toHaveBeenCalledWith(
         "DELETE FROM families WHERE id = $1",
-        ["family-123"]
+        [TEST_UUIDS.FAMILY_1]
       );
     });
 
     it("should throw error when family not found", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      await expect(fastify.family.delete("non-existent")).rejects.toThrow(
+      await expect(fastify.family.delete(TEST_UUIDS.FAMILY_2)).rejects.toThrow(
         "Family not found"
       );
     });
@@ -469,7 +485,7 @@ describe("Family Plugin", () => {
     it("should throw error when database fails", async () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(fastify.family.delete("family-123")).rejects.toThrow(
+      await expect(fastify.family.delete(TEST_UUIDS.FAMILY_1)).rejects.toThrow(
         "Failed to fetch family by ID"
       );
     });
@@ -478,10 +494,10 @@ describe("Family Plugin", () => {
   describe("addMember", () => {
     it("should add member successfully", async () => {
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -496,25 +512,25 @@ describe("Family Plugin", () => {
       // Mock user addToFamily
       mockAddToFamily.mockResolvedValueOnce(undefined);
 
-      await fastify.family.addMember("family-123", "user-2");
+      await fastify.family.addMember(TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_2);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "INSERT INTO family_members (family_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-        ["family-123", "user-2"]
+        [TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_2]
       );
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE families SET members = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-        [["user-1", "user-2"], "family-123"]
+        [[TEST_UUIDS.USER_1, TEST_UUIDS.USER_2], TEST_UUIDS.FAMILY_1]
       );
-      expect(mockAddToFamily).toHaveBeenCalledWith("user-2", "family-123");
+      expect(mockAddToFamily).toHaveBeenCalledWith(TEST_UUIDS.USER_2, TEST_UUIDS.FAMILY_1);
     });
 
     it("should not add member if already a member", async () => {
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
-        members: ["user-1", "user-2"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1, TEST_UUIDS.USER_2],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -522,7 +538,7 @@ describe("Family Plugin", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: [mockFamily] });
 
-      await fastify.family.addMember("family-123", "user-2");
+      await fastify.family.addMember(TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_2);
 
       expect(mockQuery).toHaveBeenCalledTimes(1); // Only getById call
     });
@@ -531,7 +547,7 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
       await expect(
-        fastify.family.addMember("non-existent", "user-2")
+        fastify.family.addMember(TEST_UUIDS.FAMILY_2, TEST_UUIDS.USER_2)
       ).rejects.toThrow("Family not found");
     });
   });
@@ -539,10 +555,10 @@ describe("Family Plugin", () => {
   describe("removeMember", () => {
     it("should remove member successfully", async () => {
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
-        members: ["user-1", "user-2"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1, TEST_UUIDS.USER_2],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -557,25 +573,25 @@ describe("Family Plugin", () => {
       // Mock user removeFromFamily
       mockRemoveFromFamily.mockResolvedValueOnce(undefined);
 
-      await fastify.family.removeMember("family-123", "user-2");
+      await fastify.family.removeMember(TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_2);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "DELETE FROM family_members WHERE family_id = $1 AND user_id = $2",
-        ["family-123", "user-2"]
+        [TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_2]
       );
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE families SET members = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-        [["user-1"], "family-123"]
+        [[TEST_UUIDS.USER_1], TEST_UUIDS.FAMILY_1]
       );
-      expect(mockRemoveFromFamily).toHaveBeenCalledWith("user-2", "family-123");
+      expect(mockRemoveFromFamily).toHaveBeenCalledWith(TEST_UUIDS.USER_2, TEST_UUIDS.FAMILY_1);
     });
 
     it("should not remove owner", async () => {
       const mockFamily: Family = {
-        id: "family-123",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Test Family",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -584,7 +600,7 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [mockFamily] });
 
       await expect(
-        fastify.family.removeMember("family-123", "user-1")
+        fastify.family.removeMember(TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1)
       ).rejects.toThrow("Cannot remove family owner");
     });
 
@@ -592,7 +608,7 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
       await expect(
-        fastify.family.removeMember("non-existent", "user-2")
+        fastify.family.removeMember(TEST_UUIDS.FAMILY_2, TEST_UUIDS.USER_2)
       ).rejects.toThrow("Family not found");
     });
   });
@@ -601,7 +617,7 @@ describe("Family Plugin", () => {
     it("should return related families", async () => {
       const mockRelatedFamilies: RelatedFamily[] = [
         {
-          id: "family-2",
+          id: TEST_UUIDS.FAMILY_2,
           name: "Related Family",
           member_count: 3,
           created_at: new Date().toISOString().split("T")[0],
@@ -610,7 +626,7 @@ describe("Family Plugin", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: mockRelatedFamilies });
 
-      const result = await fastify.family.getRelatedFamilies("family-1");
+      const result = await fastify.family.getRelatedFamilies(TEST_UUIDS.FAMILY_1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         `SELECT f.id, f.name, array_length(f.members, 1) as member_count, f.created_at
@@ -618,7 +634,7 @@ describe("Family Plugin", () => {
            JOIN family_relations fr ON (f.id = fr.family_id_1 OR f.id = fr.family_id_2)
            WHERE (fr.family_id_1 = $1 OR fr.family_id_2 = $1) AND f.id != $1
            ORDER BY f.name`,
-        ["family-1"]
+        [TEST_UUIDS.FAMILY_1]
       );
       expect(result).toEqual(mockRelatedFamilies);
     });
@@ -627,7 +643,7 @@ describe("Family Plugin", () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
       await expect(
-        fastify.family.getRelatedFamilies("family-1")
+        fastify.family.getRelatedFamilies(TEST_UUIDS.FAMILY_1)
       ).rejects.toThrow("Failed to fetch related families");
     });
   });
@@ -635,19 +651,19 @@ describe("Family Plugin", () => {
   describe("addRelatedFamily", () => {
     it("should add related family successfully", async () => {
       const mockFamily1: Family = {
-        id: "family-1",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Family 1",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
       };
       const mockFamily2: Family = {
-        id: "family-2",
+        id: TEST_UUIDS.FAMILY_2,
         name: "Family 2",
-        members: ["user-2"],
-        owner_id: "user-2",
+        members: [TEST_UUIDS.USER_2],
+        owner_id: TEST_UUIDS.USER_2,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -664,28 +680,28 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      await fastify.family.addRelatedFamily("family-1", "family-2");
+      await fastify.family.addRelatedFamily(TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "INSERT INTO family_relations (family_id_1, family_id_2) VALUES ($1, $2)",
-        ["family-1", "family-2"]
+        [TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2]
       );
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-        [["family-2"], "family-1"]
+        [[TEST_UUIDS.FAMILY_2], TEST_UUIDS.FAMILY_1]
       );
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-        [["family-1"], "family-2"]
+        [[TEST_UUIDS.FAMILY_1], TEST_UUIDS.FAMILY_2]
       );
     });
 
     it("should throw error when trying to relate family to itself", async () => {
       const mockFamily: Family = {
-        id: "family-1",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Family 1",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -695,25 +711,25 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [mockFamily] });
 
       await expect(
-        fastify.family.addRelatedFamily("family-1", "family-1")
+        fastify.family.addRelatedFamily(TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_1)
       ).rejects.toThrow("Cannot relate family to itself");
     });
 
     it("should throw error when families are already related", async () => {
       const mockFamily1: Family = {
-        id: "family-1",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Family 1",
-        members: ["user-1"],
-        owner_id: "user-1",
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
       };
       const mockFamily2: Family = {
-        id: "family-2",
+        id: TEST_UUIDS.FAMILY_2,
         name: "Family 2",
-        members: ["user-2"],
-        owner_id: "user-2",
+        members: [TEST_UUIDS.USER_2],
+        owner_id: TEST_UUIDS.USER_2,
         related_families: [],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
@@ -724,7 +740,7 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [{ "1": 1 }] });
 
       await expect(
-        fastify.family.addRelatedFamily("family-1", "family-2")
+        fastify.family.addRelatedFamily(TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2)
       ).rejects.toThrow("Families are already related");
     });
   });
@@ -732,20 +748,20 @@ describe("Family Plugin", () => {
   describe("removeRelatedFamily", () => {
     it("should remove related family successfully", async () => {
       const mockFamily1: Family = {
-        id: "family-1",
+        id: TEST_UUIDS.FAMILY_1,
         name: "Family 1",
-        members: ["user-1"],
-        owner_id: "user-1",
-        related_families: ["family-2"],
+        members: [TEST_UUIDS.USER_1],
+        owner_id: TEST_UUIDS.USER_1,
+        related_families: [TEST_UUIDS.FAMILY_2],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
       };
       const mockFamily2: Family = {
-        id: "family-2",
+        id: TEST_UUIDS.FAMILY_2,
         name: "Family 2",
-        members: ["user-2"],
-        owner_id: "user-2",
-        related_families: ["family-1"],
+        members: [TEST_UUIDS.USER_2],
+        owner_id: TEST_UUIDS.USER_2,
+        related_families: [TEST_UUIDS.FAMILY_1],
         created_at: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString().split("T")[0],
       };
@@ -759,21 +775,21 @@ describe("Family Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      await fastify.family.removeRelatedFamily("family-1", "family-2");
+      await fastify.family.removeRelatedFamily(TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2);
 
       expect(mockQuery).toHaveBeenCalledWith(
         `DELETE FROM family_relations 
            WHERE (family_id_1 = $1 AND family_id_2 = $2) 
               OR (family_id_1 = $2 AND family_id_2 = $1)`,
-        ["family-1", "family-2"]
+        [TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2]
       );
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-        [[], "family-1"]
+        [[], TEST_UUIDS.FAMILY_1]
       );
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE families SET related_families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-        [[], "family-2"]
+        [[], TEST_UUIDS.FAMILY_2]
       );
     });
 
@@ -781,7 +797,7 @@ describe("Family Plugin", () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
       await expect(
-        fastify.family.removeRelatedFamily("family-1", "family-2")
+        fastify.family.removeRelatedFamily(TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2)
       ).rejects.toThrow("Database error");
     });
   });

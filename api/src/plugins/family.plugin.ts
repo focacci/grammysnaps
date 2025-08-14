@@ -8,29 +8,30 @@ import {
   FamilyMember,
   RelatedFamily,
 } from "../types/family.types";
+import { UUID } from "crypto";
 
 declare module "fastify" {
   interface FastifyInstance {
     family: {
-      create: (input: FamilyInput, ownerId: string) => Promise<FamilyPublic>;
+      create: (input: FamilyInput, ownerId: UUID) => Promise<FamilyPublic>;
       get: () => Promise<FamilyPublic[]>;
-      getById: (id: string) => Promise<Family | null>;
-      exists: (id: string) => Promise<boolean>;
-      getUserFamilies: (userId: string) => Promise<FamilyPublic[]>;
-      getMembers: (familyId: string) => Promise<FamilyMember[]>;
-      getRelatedFamilies: (familyId: string) => Promise<RelatedFamily[]>;
+      getById: (id: UUID) => Promise<Family | null>;
+      exists: (id: UUID) => Promise<boolean>;
+      getUserFamilies: (userId: UUID) => Promise<FamilyPublic[]>;
+      getMembers: (familyId: UUID) => Promise<FamilyMember[]>;
+      getRelatedFamilies: (familyId: UUID) => Promise<RelatedFamily[]>;
       addRelatedFamily: (
-        familyId: string,
-        relatedFamilyId: string
+        familyId: UUID,
+        relatedFamilyId: UUID
       ) => Promise<void>;
       removeRelatedFamily: (
-        familyId: string,
-        relatedFamilyId: string
+        familyId: UUID,
+        relatedFamilyId: UUID
       ) => Promise<void>;
-      update: (id: string, input: FamilyUpdate) => Promise<Family | null>;
-      delete: (id: string) => Promise<void>;
-      addMember: (familyId: string, userId: string) => Promise<void>;
-      removeMember: (familyId: string, userId: string) => Promise<void>;
+      update: (id: UUID, input: FamilyUpdate) => Promise<Family | null>;
+      delete: (id: UUID) => Promise<void>;
+      addMember: (familyId: UUID, userId: UUID) => Promise<void>;
+      removeMember: (familyId: UUID, userId: UUID) => Promise<void>;
     };
   }
 }
@@ -60,7 +61,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   };
 
   fastify.decorate("family", {
-    async create(input: FamilyInput, ownerId: string): Promise<FamilyPublic> {
+    async create(input: FamilyInput, ownerId: UUID): Promise<FamilyPublic> {
       const { name, related_families } = input;
 
       try {
@@ -107,7 +108,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getById(id: string): Promise<Family | null> {
+    async getById(id: UUID): Promise<Family | null> {
       try {
         const { rows } = await fastify.pg.query<Family>(
           "SELECT * FROM families WHERE id = $1",
@@ -120,7 +121,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async exists(id: string): Promise<boolean> {
+    async exists(id: UUID): Promise<boolean> {
       try {
         const { rows } = await fastify.pg.query(
           "SELECT 1 FROM families WHERE id = $1 LIMIT 1",
@@ -133,7 +134,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getUserFamilies(userId: string): Promise<FamilyPublic[]> {
+    async getUserFamilies(userId: UUID): Promise<FamilyPublic[]> {
       try {
         const { rows } = await fastify.pg.query<Family>(
           `SELECT f.* FROM families f 
@@ -151,11 +152,29 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getMembers(familyId: string): Promise<FamilyMember[]> {
+    async getMembers(familyId: UUID): Promise<FamilyMember[]> {
       try {
-        const { rows } = await fastify.pg.query<any>(
-          `SELECT u.id, u.first_name, u.last_name, u.email, u.birthday, u.profile_picture_thumbnail_url, f.owner_id,
-                  f.created_at as joined_at
+        interface MemberRow {
+          id: UUID;
+          email: string;
+          password_hash: string;
+          first_name: string | null;
+          middle_name: string | null;
+          last_name: string | null;
+          birthday: Date | null;
+          families: UUID[];
+          profile_picture_key: string | null;
+          profile_picture_thumbnail_key: string | null;
+          created_at: Date;
+          updated_at: Date;
+          owner_id: UUID;
+          joined_at: Date;
+        }
+
+        const { rows } = await fastify.pg.query<MemberRow>(
+          `SELECT u.id, u.email, u.password_hash, u.first_name, u.middle_name, u.last_name, 
+                  u.birthday, u.families, u.profile_picture_key, u.profile_picture_thumbnail_key, 
+                  u.created_at, u.updated_at, f.owner_id, f.created_at as joined_at
            FROM users u
            JOIN family_members fm ON u.id = fm.user_id
            JOIN families f ON fm.family_id = f.id
@@ -164,17 +183,23 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           [familyId]
         );
 
-        return rows.map((row: any) => ({
+        return rows.map((row: MemberRow) => ({
           id: row.id,
-          first_name: row.first_name,
-          last_name: row.last_name,
           email: row.email,
+          password_hash: row.password_hash,
+          first_name: row.first_name,
+          middle_name: row.middle_name,
+          last_name: row.last_name,
           birthday: row.birthday
             ? new Date(row.birthday).toISOString().split("T")[0]
-            : undefined,
-          profile_picture_thumbnail_url: row.profile_picture_thumbnail_url,
+            : null,
+          families: row.families,
+          profile_picture_key: row.profile_picture_key,
+          profile_picture_thumbnail_key: row.profile_picture_thumbnail_key,
+          created_at: new Date(row.created_at).toISOString(),
+          updated_at: new Date(row.updated_at).toISOString(),
           role: row.id === row.owner_id ? "owner" : "member",
-          joined_at: row.joined_at,
+          joined_at: new Date(row.joined_at).toISOString(),
         }));
       } catch (err) {
         fastify.log.error(err);
@@ -182,7 +207,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async update(id: string, input: FamilyUpdate): Promise<Family | null> {
+    async update(id: UUID, input: FamilyUpdate): Promise<Family | null> {
       const { name } = input;
 
       try {
@@ -194,7 +219,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
         // Build dynamic update query
         const updateFields: string[] = [];
-        const values: any[] = [];
+        const values: (string | UUID)[] = [];
         let paramCount = 1;
 
         if (name !== undefined) {
@@ -228,7 +253,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async delete(id: string): Promise<void> {
+    async delete(id: UUID): Promise<void> {
       try {
         const family = await fastify.family.getById(id);
         if (!family) {
@@ -241,20 +266,14 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         // Delete orphaned images from S3 and database
         for (const image of orphanedImages) {
           try {
-            // Delete from S3 if original_url exists
-            if (image.original_url) {
-              // Extract S3 key from the public URL
-              const url = new URL(image.original_url);
-              const s3Key = url.pathname.substring(1); // Remove leading slash
-              await fastify.s3.delete(s3Key);
+            // Delete from S3 if original_key exists
+            if (image.original_key) {
+              await fastify.s3.delete(image.original_key);
             }
 
-            // Delete thumbnail from S3 if thumbnail_url exists
-            if (image.thumbnail_url) {
-              // Extract S3 key from the public URL
-              const thumbnailUrl = new URL(image.thumbnail_url);
-              const thumbnailS3Key = thumbnailUrl.pathname.substring(1); // Remove leading slash
-              await fastify.s3.delete(thumbnailS3Key);
+            // Delete thumbnail from S3 if thumbnail_key exists
+            if (image.thumbnail_key) {
+              await fastify.s3.delete(image.thumbnail_key);
             }
 
             // Delete from database (will cascade delete image_tags and image_families)
@@ -289,7 +308,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async addMember(familyId: string, userId: string): Promise<void> {
+    async addMember(familyId: UUID, userId: UUID): Promise<void> {
       try {
         const family = await fastify.family.getById(familyId);
         if (!family) {
@@ -327,7 +346,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async removeMember(familyId: string, userId: string): Promise<void> {
+    async removeMember(familyId: UUID, userId: UUID): Promise<void> {
       try {
         const family = await fastify.family.getById(familyId);
         if (!family) {
@@ -365,7 +384,7 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getRelatedFamilies(familyId: string): Promise<RelatedFamily[]> {
+    async getRelatedFamilies(familyId: UUID): Promise<RelatedFamily[]> {
       try {
         const { rows } = await fastify.pg.query<RelatedFamily>(
           `SELECT f.id, f.name, array_length(f.members, 1) as member_count, f.created_at
@@ -384,8 +403,8 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async addRelatedFamily(
-      familyId: string,
-      relatedFamilyId: string
+      familyId: UUID,
+      relatedFamilyId: UUID
     ): Promise<void> {
       try {
         // Check if both families exist
@@ -467,8 +486,8 @@ const familyPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         );
 
         // Update both families' related_families arrays
-        const family1 = await fastify.family.getById(familyId);
-        const family2 = await fastify.family.getById(relatedFamilyId);
+        const family1 = await fastify.family.getById(familyId as UUID);
+        const family2 = await fastify.family.getById(relatedFamilyId as UUID);
 
         if (family1 && family1.related_families) {
           const updatedRelations1 = family1.related_families.filter(

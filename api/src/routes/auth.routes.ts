@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 // import fastifyRateLimit from "@fastify/rate-limit";
 import { LoginInput } from "../types/user.types";
+import { addProfilePictureUrls } from "./user.routes";
 import { ValidationUtils } from "../utils/validation";
 import { AUTH_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
@@ -189,7 +190,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
           });
         }
 
-        return reply.send({ user });
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send({ user: userWithUrls });
       } catch (error) {
         fastify.log.error(error);
         return reply.status(500).send({

@@ -1,6 +1,7 @@
 import validator from "validator";
 import DOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
+import { UUID } from "crypto";
 
 // Create a DOM window for server-side DOMPurify
 const window = new JSDOM("").window;
@@ -150,12 +151,12 @@ export class ValidationUtils {
   /**
    * Sanitize array of family IDs
    */
-  static sanitizeFamilyIds(families: string[]): string[] {
+  static sanitizeFamilyIds(families: UUID[]): UUID[] {
     if (!Array.isArray(families)) {
       return [];
     }
 
-    const sanitized: string[] = [];
+    const sanitized: UUID[] = [];
 
     for (const familyId of families) {
       if (typeof familyId === "string") {
@@ -166,7 +167,7 @@ export class ValidationUtils {
             throw new Error("Family ID must be a valid UUID");
           }
 
-          sanitized.push(trimmed);
+          sanitized.push(trimmed as UUID);
         }
       }
     }
@@ -178,18 +179,21 @@ export class ValidationUtils {
   /**
    * Sanitize and validate UUID
    */
-  static sanitizeUUID(uuid: string, fieldName: string): string {
+  static sanitizeUUID(uuid: UUID, fieldName: string): UUID {
     if (!uuid || typeof uuid !== "string") {
       throw new Error(`${fieldName} is required and must be a string`);
     }
-
+    
     const trimmed = uuid.trim();
-
+    if (!trimmed) {
+      throw new Error(`${fieldName} is required and must be a string`);
+    }
+    
     if (!validator.isUUID(trimmed)) {
       throw new Error(`Invalid ${fieldName} format`);
     }
 
-    return trimmed;
+    return trimmed as UUID;
   }
 
   /**

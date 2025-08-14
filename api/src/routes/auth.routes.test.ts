@@ -3,6 +3,7 @@ import authRoutes from "./auth.routes";
 import { UserPublic, LoginInput } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
 import { AUTH_ERRORS } from "../types/errors";
+import { TEST_UUIDS } from "../test-utils/test-data";
 
 // Mock validation utilities
 jest.mock("../utils/validation", () => ({
@@ -45,12 +46,18 @@ const mockRevokeUserTokens = jest.fn();
 describe("Auth Routes", () => {
   let fastify: FastifyInstance;
 
-  const mockUser: UserPublic = {
-    id: "user-123",
+  const mockUser: UserPublic & { profile_picture_url?: string | null; profile_picture_thumbnail_url?: string | null } = {
+    id: TEST_UUIDS.USER_1,
     email: "test@example.com",
     first_name: "John",
+    middle_name: null,
     last_name: "Doe",
-    families: ["family-1"],
+    birthday: null,
+    families: [TEST_UUIDS.FAMILY_1],
+    profile_picture_key: null,
+    profile_picture_thumbnail_key: null,
+    profile_picture_url: null,
+    profile_picture_thumbnail_url: null,
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };

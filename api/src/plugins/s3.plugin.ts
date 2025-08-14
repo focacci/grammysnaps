@@ -9,48 +9,24 @@ import {
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Key, S3KeyParams, S3Environment, S3MediaType, S3Config, UploadOptions, ImageInfo } from "../types/s3.types";
+import { UUID } from "crypto";
 
-export interface S3Config {
-  region: string;
-  bucket: string;
-  accessKeyId?: string;
-  secretAccessKey?: string;
-  endpoint?: string;
-}
 
-export interface UploadOptions {
-  key: string;
-  buffer: Buffer;
-  contentType?: string;
-  metadata?: Record<string, string>;
-}
-
-export interface ImageInfo {
-  key: string;
-  url: string;
-  size: number;
-  lastModified: Date;
-  contentType: string;
-  metadata?: Record<string, string>;
-}
 
 declare module "fastify" {
   interface FastifyInstance {
     s3: {
-      createKey: (
-        env: string,
-        type: string,
-        s3Id: string,
-        filename: string
-      ) => string;
-      upload: (options: UploadOptions) => Promise<string>;
-      download: (key: string) => Promise<Buffer>;
-      delete: (key: string) => Promise<void>;
-      getInfo: (key: string) => Promise<ImageInfo>;
-      getPublicUrl: (key: string) => string;
-      getSignedUrl: (key: string, expiresIn?: number) => Promise<string>;
+      createKey: (params: S3KeyParams) => S3Key;
+      parseKey(key: S3Key): S3KeyParams;
+      upload: (options: UploadOptions) => Promise<S3Key>;
+      download: (key: S3Key) => Promise<Buffer>;
+      delete: (key: S3Key) => Promise<void>;
+      getInfo: (key: S3Key) => Promise<ImageInfo>;
+      getPublicUrl: (key: S3Key) => string;
+      getSignedUrl: (key: S3Key, expiresIn?: number) => Promise<string>;
       listImages: (prefix?: string) => Promise<ImageInfo[]>;
-      exists: (key: string) => Promise<boolean>;
+      exists: (key: S3Key) => Promise<boolean>;
     };
   }
 }
@@ -81,16 +57,32 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
 
   fastify.decorate("s3", {
     /**
-     * Create a unique S3 key for an image based on imageId
+     * Create a unique S3 key for an image based on parameters
      */
-    createKey: (env: string, type: string, s3Id: string, filename: string) => {
-      return `${env}/${type}/${s3Id}/${filename}`;
+    createKey: (params: S3KeyParams) => {
+      const { env, userId, type, s3Id, filename } = params;
+      return `${env}/users/${userId}/images/${s3Id}/${type}/${filename}` as S3Key;
+    },
+
+    /**
+     * Parse an S3 key into its components
+     */
+    parseKey(key: S3Key): S3KeyParams {
+      const [env, userId, type, s3Id, filename] = key.split("/") as [
+        S3Environment,
+        UUID,
+        S3MediaType,
+        UUID,
+        string
+      ];
+
+      return { env, userId, type, s3Id, filename };
     },
 
     /**
      * Upload an image file to S3
      */
-    async upload(options: UploadOptions): Promise<string> {
+    async upload(options: UploadOptions): Promise<S3Key> {
       const { key, buffer, contentType = "image/jpeg", metadata } = options;
 
       try {
@@ -115,7 +107,7 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
     /**
      * Download an image file from S3
      */
-    async download(key: string): Promise<Buffer> {
+    async download(key: S3Key): Promise<Buffer> {
       try {
         const command = new GetObjectCommand({
           Bucket: bucket,
@@ -129,11 +121,11 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
         }
 
         // Convert stream to buffer
-        const chunks: Uint8Array[] = [];
-        const stream = response.Body as any;
+        const chunks: Buffer[] = [];
+        const stream = response.Body as NodeJS.ReadableStream;
 
         for await (const chunk of stream) {
-          chunks.push(chunk);
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
         }
 
         return Buffer.concat(chunks);
@@ -146,7 +138,7 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
     /**
      * Delete an image file from S3
      */
-    async delete(key: string): Promise<void> {
+    async delete(key: S3Key): Promise<void> {
       try {
         const command = new DeleteObjectCommand({
           Bucket: bucket,
@@ -163,7 +155,7 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
     /**
      * Get image information and metadata
      */
-    async getInfo(key: string): Promise<ImageInfo> {
+    async getInfo(key: S3Key): Promise<ImageInfo> {
       try {
         const command = new HeadObjectCommand({
           Bucket: bucket,
@@ -193,14 +185,14 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
     /**
      * Generate a public URL for an S3 object
      */
-    getPublicUrl(key: string): string {
+    getPublicUrl(key: S3Key): string {
       return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
     },
 
     /**
      * Generate a signed URL for temporary access to an image
      */
-    async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
+    async getSignedUrl(key: S3Key, expiresIn: number = 3600): Promise<string> {
       try {
         const command = new GetObjectCommand({
           Bucket: bucket,
@@ -239,8 +231,13 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
         for (const object of response.Contents) {
           if (object.Key) {
             try {
-              const info = await fastify.s3.getInfo(object.Key);
-              imageInfos.push(info);
+              // Validate and cast the key to S3Key type - check if it follows our key format
+              if (object.Key.includes('/users/') && object.Key.match(/^[^/]+\/users\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/)) {
+                const info = await fastify.s3.getInfo(object.Key as S3Key);
+                imageInfos.push(info);
+              } else {
+                fastify.log.warn(`Skipping non-standard key: ${object.Key}`);
+              }
             } catch (err) {
               // Skip objects that can't be accessed
               fastify.log.warn(`Failed to get info for ${object.Key}: ${err}`);
@@ -258,7 +255,7 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
     /**
      * Check if an image exists in S3
      */
-    async exists(key: string): Promise<boolean> {
+    async exists(key: S3Key): Promise<boolean> {
       try {
         const command = new HeadObjectCommand({
           Bucket: bucket,
@@ -267,8 +264,8 @@ const s3Plugin: FastifyPluginAsync<S3Config> = async (
 
         await s3Client.send(command);
         return true;
-      } catch (err: any) {
-        if (err.name === "NotFound" || err.$metadata?.httpStatusCode === 404) {
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'name' in err && (err.name === "NotFound" || ('$metadata' in err && err.$metadata && typeof err.$metadata === 'object' && 'httpStatusCode' in err.$metadata && err.$metadata.httpStatusCode === 404))) {
           return false;
         }
 

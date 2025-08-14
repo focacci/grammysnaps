@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from "fastify";
 import { FamilyInput, FamilyUpdate } from "../types/family.types";
 import { FAMILY_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
+import { UUID } from "crypto";
 
 const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Add auth middleware to all family routes
@@ -21,7 +22,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Get families for a specific user
   fastify.get("/user/:userId", async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const { userId } = request.params as { userId: UUID };
       const families = await fastify.family.getUserFamilies(userId);
       return families;
     } catch (error) {
@@ -35,7 +36,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Get family by ID
   fastify.get("/:id", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
       const family = await fastify.family.getById(id);
 
       if (!family) {
@@ -56,7 +57,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Get family members
   fastify.get("/:id/members", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
       const members = await fastify.family.getMembers(id);
       return members;
     } catch (error) {
@@ -70,7 +71,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Create a new family
   fastify.post("/", async (request, reply) => {
     try {
-      const familyData = request.body as FamilyInput & { owner_id: string };
+      const familyData = request.body as FamilyInput & { owner_id: UUID };
       const { owner_id, ...familyInput } = familyData;
 
       if (!owner_id) {
@@ -97,7 +98,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Update family
   fastify.put("/:id", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
       const updateData = request.body as FamilyUpdate;
 
       const family = await fastify.family.update(id, updateData);
@@ -121,7 +122,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Delete family
   fastify.delete("/:id", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
 
       await fastify.family.delete(id);
       reply.code(204).send();
@@ -137,8 +138,8 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Add member to family
   fastify.post("/:id/members", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
-      const { user_id } = request.body as { user_id: string };
+      const { id } = request.params as { id: UUID };
+      const { user_id } = request.body as { user_id: UUID };
 
       if (!user_id) {
         return reply.code(400).send({ error: FAMILY_ERRORS.USER_ID_REQUIRED });
@@ -160,7 +161,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Remove member from family
   fastify.delete("/:id/members/:userId", async (request, reply) => {
     try {
-      const { id, userId } = request.params as { id: string; userId: string };
+      const { id, userId } = request.params as { id: UUID; userId: UUID };
 
       await fastify.family.removeMember(id, userId);
       reply.code(200).send({ message: "Member removed successfully" });
@@ -178,7 +179,7 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Get related families
   fastify.get("/:id/related", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
+      const { id } = request.params as { id: UUID };
       const relatedFamilies = await fastify.family.getRelatedFamilies(id);
       return relatedFamilies;
     } catch (error) {
@@ -192,8 +193,8 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   // Add related family
   fastify.post("/:id/related", async (request, reply) => {
     try {
-      const { id } = request.params as { id: string };
-      const { family_id } = request.body as { family_id: string };
+      const { id } = request.params as { id: UUID };
+      const { family_id } = request.body as { family_id: UUID };
 
       if (!family_id) {
         return reply
@@ -218,8 +219,8 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.delete("/:id/related/:relatedId", async (request, reply) => {
     try {
       const { id, relatedId } = request.params as {
-        id: string;
-        relatedId: string;
+        id: UUID;
+        relatedId: UUID;
       };
 
       await fastify.family.removeRelatedFamily(id, relatedId);

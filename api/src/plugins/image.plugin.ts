@@ -34,7 +34,7 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("image", {
     async create(input: ImageInput): Promise<Image> {
-      const { title, filename, tags, family_ids, original_url, thumbnail_url } =
+      const { title, filename, tags, family_ids, original_key, thumbnail_key } =
         input;
 
       if (!family_ids || family_ids.length === 0) {
@@ -47,14 +47,14 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [image],
         } = await fastify.pg.query<Image>(
-          "INSERT INTO images (title, filename, tags, family_ids, original_url, thumbnail_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          "INSERT INTO images (title, filename, tags, family_ids, original_key, thumbnail_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
           [
             title ?? null,
             filename,
             tags ?? [],
             family_ids,
-            original_url ?? null,
-            thumbnail_url ?? null,
+            original_key ?? null,
+            thumbnail_key ?? null,
           ]
         );
 
@@ -99,7 +99,7 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async update(id: string, input: ImageInput): Promise<Image | null> {
-      const { title, tags, family_ids, original_url, thumbnail_url } = input;
+      const { title, tags, family_ids, original_key, thumbnail_key } = input;
 
       // Validate family_ids if provided
       if (family_ids !== undefined && family_ids.length === 0) {
@@ -110,13 +110,13 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [image],
         } = await fastify.pg.query<Image>(
-          "UPDATE images SET title = $1, tags = $2, family_ids = $3, original_url = $4, thumbnail_url = $5, updated_at = NOW() WHERE id = $6 RETURNING *",
+          "UPDATE images SET title = $1, tags = $2, family_ids = $3, original_key = $4, thumbnail_key = $5, updated_at = NOW() WHERE id = $6 RETURNING *",
           [
             title ?? null,
             tags ?? [],
             family_ids ?? [],
-            original_url ?? null,
-            thumbnail_url ?? null,
+            original_key ?? null,
+            thumbnail_key ?? null,
             id,
           ]
         );

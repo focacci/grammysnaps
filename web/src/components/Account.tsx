@@ -854,6 +854,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
     try {
       let profilePictureUrl = user.profile_picture_url;
+      let thumbnailUrl = user.profile_picture_thumbnail_url;
 
       // First, upload profile picture if one was selected
       if (selectedProfileFile) {
@@ -883,6 +884,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
         const data = await response.json();
         profilePictureUrl = data.url;
+        
+        // Also store the thumbnail URL for immediate use
+        thumbnailUrl = data.thumbnail_url;
       }
 
       if (env.isDevelopment()) {
@@ -911,10 +915,11 @@ function Account({ user, onUserUpdate }: AccountProps) {
         throw new Error(userData.error || "Failed to update profile");
       }
 
-      // Merge the profile picture URL with the updated user data
+      // Merge the profile picture URLs with the updated user data
       const finalUserData = { ...userData };
-      if (selectedProfileFile && profilePictureUrl) {
+      if (selectedProfileFile && profilePictureUrl && thumbnailUrl) {
         finalUserData.profile_picture_url = profilePictureUrl;
+        finalUserData.profile_picture_thumbnail_url = thumbnailUrl;
       }
 
       // Update user data in auth service

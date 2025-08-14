@@ -1,13 +1,15 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { ImageInput } from "../types/image.types";
+import { ImageInput, ImagePublic, Image } from "../types/image.types";
 import { MultipartFile } from "@fastify/multipart";
 import { v4 as uuidv4 } from "uuid";
 import { IMAGE_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
 import sharp from "sharp";
+import { S3Environment } from "../types/s3.types";
+import { UUID } from "crypto";
 
 interface GetImageParams {
-  imageId: string;
+  imageId: UUID;
 }
 const getImageParamsSchema = {
   type: "object",
@@ -18,7 +20,7 @@ const getImageParamsSchema = {
 };
 
 interface UpdateImageParams {
-  imageId: string;
+  imageId: UUID;
 }
 const updateImageParamsSchema = {
   type: "object",
@@ -46,12 +48,25 @@ const updateImageBodySchema = {
 };
 
 const imageRoutes: FastifyPluginAsync = async (fastify) => {
+  async function toPublicImage(image: Image): Promise<ImagePublic> {
+    const original_url = image.original_key ? await fastify.s3.getSignedUrl(image.original_key) : null;
+    const thumbnail_url = image.thumbnail_key ? await fastify.s3.getSignedUrl(image.thumbnail_key) : null;
+    delete image.original_key;
+    delete image.thumbnail_key;
+    return {
+      ...image,
+      original_url,
+      thumbnail_url
+    };
+  };
+
   // Add auth middleware to all image routes
   fastify.addHook("preHandler", requireAuth);
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const images = await fastify.image.get();
-    return reply.status(200).send({ images });
+    const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => toPublicImage(image)));
+    return reply.status(200).send({ images: publicImages });
   });
 
   fastify.get(
@@ -67,7 +82,9 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       if (!image) {
         return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
       }
-      return reply.status(200).send({ image });
+      const publicImage = await toPublicImage(image);
+
+      return reply.status(200).send({ image: publicImage });
     }
   );
 
@@ -88,18 +105,14 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
         }
 
-        if (!image.original_url) {
+        if (!image.original_key) {
           return reply
             .status(404)
             .send({ message: IMAGE_ERRORS.FILE_NOT_FOUND });
         }
 
-        // Extract S3 key from the public URL
-        const url = new URL(image.original_url);
-        const s3Key = url.pathname.substring(1); // Remove leading slash
-
         // Download the file from S3
-        const buffer = await fastify.s3.download(s3Key);
+        const buffer = await fastify.s3.download(image.original_key);
 
         // Set appropriate headers for download
         reply.header(
@@ -206,14 +219,14 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
                 familyIdsValue &&
                 typeof familyIdsValue === "string" &&
                 familyIdsValue !== ""
-                  ? JSON.parse(familyIdsValue)
-                  : [];
+                  ? (JSON.parse(familyIdsValue) as UUID[])
+                  : ([] as UUID[]);
               fastify.log.info(
                 `Parsed family_ids: ${JSON.stringify(family_ids)}`
               );
             } catch (err) {
               fastify.log.warn("Failed to parse family_ids:", err);
-              family_ids = [];
+              family_ids = ([] as UUID[]);
             }
           }
         }
@@ -277,24 +290,27 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       fastify.log.info(`Created thumbnail: ${thumbnailBuffer.length} bytes`);
 
       // Generate S3 keys for both original and thumbnail
-      const s3Id = uuidv4();
-      const originalS3Key = fastify.s3.createKey(
-        process.env.NODE_ENV || "local",
-        "family-photos",
-        s3Id,
-        fileData.filename
-      );
+      const s3Id = uuidv4() as UUID;
 
-      const thumbnailS3Key = fastify.s3.createKey(
-        process.env.NODE_ENV || "local",
-        "family-photos",
+      const original_key = fastify.s3.createKey({
+        env: process.env.NODE_ENV as S3Environment || "local",
+        userId: request.user!.userId,
+        type: "original",
         s3Id,
-        `thumb_${fileData.filename}`
-      );
+        filename: fileData.filename
+      });
+
+      const thumbnail_key = fastify.s3.createKey({
+        env: process.env.NODE_ENV as S3Environment || "local",
+        userId: request.user!.userId,
+        type: "thumbnail",
+        s3Id,
+        filename: `thumb_${fileData.filename}`
+      });
 
       // Upload original image to S3
       await fastify.s3.upload({
-        key: originalS3Key,
+        key: original_key,
         buffer: buffer,
         contentType: fileData.mimetype,
         metadata: {
@@ -305,7 +321,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
 
       // Upload thumbnail to S3
       await fastify.s3.upload({
-        key: thumbnailS3Key,
+        key: thumbnail_key,
         buffer: thumbnailBuffer,
         contentType: "image/jpeg", // Thumbnails are always JPEG
         metadata: {
@@ -315,21 +331,19 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
 
-      // Get public URLs for both images
-      const publicUrl = fastify.s3.getPublicUrl(originalS3Key);
-      const thumbnailUrl = fastify.s3.getPublicUrl(thumbnailS3Key);
-
       // Create image record in database with S3 URLs
       const image = await fastify.image.create({
         filename: fileData.filename,
         title,
-        tags,
-        family_ids,
-        original_url: publicUrl, // Store the public S3 url
-        thumbnail_url: thumbnailUrl, // Store the thumbnail S3 url
+        tags: tags as UUID[],
+        family_ids: family_ids as UUID[],
+        original_key,
+        thumbnail_key,
       });
 
-      return reply.status(201).send({ image });
+      const publicImage = await toPublicImage(image);
+
+      return reply.status(201).send({ image: publicImage });
     } catch (error) {
       fastify.log.error("Error uploading image:", error);
       return reply.status(500).send({
@@ -357,13 +371,13 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
       }
 
-      // Update with preserved, thumbnail_url and filename
+      // Update with preserved, thumbnail_key and filename
       const image = await fastify.image.update(imageId, {
         title,
         tags,
         family_ids,
-        original_url: existingImage.original_url, // Preserve existing original_url
-        thumbnail_url: existingImage.thumbnail_url, // Preserve existing thumbnail_url
+        original_key: existingImage.original_key,
+        thumbnail_key: existingImage.thumbnail_key,
       });
       return reply.status(200).send({ image });
     }
@@ -384,10 +398,11 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { familyId } = request.params as { familyId: string };
+      const { familyId } = request.params as { familyId: UUID };
       try {
         const images = await fastify.image.getByFamily(familyId);
-        return reply.status(200).send({ images });
+        const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
+        return reply.status(200).send({ images: publicImages });
       } catch (error) {
         fastify.log.error("Error getting images by family:", error);
         return reply.status(500).send({
@@ -414,35 +429,22 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(404).send({ message: IMAGE_ERRORS.NOT_FOUND });
         }
 
-        // Delete from S3 if original_url exists
-        if (image.original_url) {
+        // Delete from S3 if original_key exists
+        if (image.original_key) {
           try {
-            // Extract S3 key from the public URL
-            // URL format: https://grammysnaps.s3.us-east-2.amazonaws.com/grammysnaps/familyId/imageId/filename
-            const originalS3Key = new URL(
-              image.original_url
-            ).pathname.substring(1); // Remove leading slash
-
-            fastify.log.info(`Deleting S3 object with key: ${originalS3Key}`);
-            await fastify.s3.delete(originalS3Key);
+            fastify.log.info(`Deleting S3 object with key: ${image.original_key}`);
+            await fastify.s3.delete(image.original_key);
           } catch (s3Error) {
             fastify.log.warn(`Failed to delete S3 object: ${s3Error}`);
             // Continue with database deletion even if S3 deletion fails
           }
         }
 
-        // Delete thumbnail from S3 if thumbnail_url exists
-        if (image.thumbnail_url) {
+        // Delete thumbnail from S3 if thumbnail_key exists
+        if (image.thumbnail_key) {
           try {
-            // Extract S3 key from the public URL
-            const thumbnailS3Key = new URL(
-              image.thumbnail_url
-            ).pathname.substring(1); // Remove leading slash
-
-            fastify.log.info(
-              `Deleting S3 thumbnail object with key: ${thumbnailS3Key}`
-            );
-            await fastify.s3.delete(thumbnailS3Key);
+            fastify.log.info(`Deleting S3 thumbnail object with key: ${image.thumbnail_key}`);
+            await fastify.s3.delete(image.thumbnail_key);
           } catch (s3Error) {
             fastify.log.warn(
               `Failed to delete S3 thumbnail object: ${s3Error}`
@@ -468,9 +470,10 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     "/tag/:tagId",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { tagId } = request.params as { tagId: string };
+      const { tagId } = request.params as { tagId: UUID };
       const images = await fastify.image.getAllWithTag(tagId);
-      return reply.status(200).send({ images });
+      const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
+      return reply.status(200).send({ images: publicImages });
     }
   );
 
@@ -501,7 +504,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { userId } = request.params as { userId: string };
+      const { userId } = request.params as { userId: UUID };
       const {
         limit = 50,
         offset = 0,
@@ -511,7 +514,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         limit?: number;
         offset?: number;
         order?: "asc" | "desc";
-        tags?: string[];
+        tags?: UUID[];
       };
 
       try {
@@ -522,7 +525,8 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
           offset,
           order
         );
-        return reply.status(200).send({ images });
+        const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
+        return reply.status(200).send({ images: publicImages });
       } catch (error) {
         fastify.log.error("Error getting images for user:", error);
         return reply.status(500).send({

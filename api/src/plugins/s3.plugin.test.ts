@@ -8,7 +8,9 @@ import {
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import s3Plugin, { S3Config, UploadOptions, ImageInfo } from "./s3.plugin";
+import s3Plugin from "./s3.plugin";
+import { S3Config, UploadOptions, ImageInfo } from "../types/s3.types";
+import { TEST_UUIDS, generateTestS3Key } from "../test-utils/test-data";
 
 // Mock AWS SDK
 jest.mock("@aws-sdk/client-s3");
@@ -21,6 +23,11 @@ describe("S3 Plugin", () => {
   let mockFastify: jest.Mocked<FastifyInstance>;
   let mockS3Send: jest.MockedFunction<any>;
   let s3Decorator: any;
+
+  // Test S3 keys for consistent use throughout tests  
+  const TEST_KEY_1 = generateTestS3Key(TEST_UUIDS.USER_1, "original", TEST_UUIDS.S3_ID_1, "photo.jpg");
+  const TEST_KEY_3 = generateTestS3Key(TEST_UUIDS.USER_1, "original", TEST_UUIDS.S3_ID_1, "photo1.jpg");
+  const TEST_KEY_4 = generateTestS3Key(TEST_UUIDS.USER_2, "thumbnail", TEST_UUIDS.S3_ID_2, "photo2.png");
 
   const mockConfig: S3Config = {
     region: "us-east-1",
@@ -67,6 +74,7 @@ describe("S3 Plugin", () => {
 
       expect(mockFastify.decorate).toHaveBeenCalledWith("s3", {
         createKey: expect.any(Function),
+        parseKey: expect.any(Function),
         upload: expect.any(Function),
         download: expect.any(Function),
         delete: expect.any(Function),
@@ -155,23 +163,25 @@ describe("S3 Plugin", () => {
     });
 
     it("should create correct S3 key format", () => {
-      const result = s3Decorator.createKey(
-        "testing",
-        "images",
-        "123",
-        "photo.jpg"
-      );
-      expect(result).toBe("testing/images/123/photo.jpg");
+      const result = s3Decorator.createKey({
+        env: "local" as const,
+        userId: TEST_UUIDS.USER_1,
+        type: "original" as const,
+        s3Id: TEST_UUIDS.S3_ID_1,
+        filename: "photo.jpg"
+      });
+      expect(result).toBe(`local/users/${TEST_UUIDS.USER_1}/images/${TEST_UUIDS.S3_ID_1}/original/photo.jpg`);
     });
 
     it("should handle different types and filenames", () => {
-      const result = s3Decorator.createKey(
-        "testing",
-        "thumbnails",
-        "abc-def",
-        "thumb.png"
-      );
-      expect(result).toBe("testing/thumbnails/abc-def/thumb.png");
+      const result = s3Decorator.createKey({
+        env: "staging" as const,
+        userId: TEST_UUIDS.USER_2,
+        type: "thumbnail" as const,
+        s3Id: TEST_UUIDS.S3_ID_2,
+        filename: "thumb.png"
+      });
+      expect(result).toBe(`staging/users/${TEST_UUIDS.USER_2}/images/${TEST_UUIDS.S3_ID_2}/thumbnail/thumb.png`);
     });
   });
 
@@ -182,8 +192,9 @@ describe("S3 Plugin", () => {
     });
 
     it("should upload file successfully with default content type", async () => {
+      const testKey = generateTestS3Key(TEST_UUIDS.USER_1, "original", TEST_UUIDS.S3_ID_1, "photo.jpg");
       const uploadOptions: UploadOptions = {
-        key: "images/123/photo.jpg",
+        key: testKey,
         buffer: Buffer.from("test-image-data"),
       };
 
@@ -196,8 +207,9 @@ describe("S3 Plugin", () => {
     });
 
     it("should upload file with custom content type and metadata", async () => {
+      const testKey = generateTestS3Key(TEST_UUIDS.USER_1, "thumbnail", TEST_UUIDS.S3_ID_2, "photo.png");
       const uploadOptions: UploadOptions = {
-        key: "images/123/photo.png",
+        key: testKey,
         buffer: Buffer.from("test-image-data"),
         contentType: "image/png",
         metadata: {
@@ -215,8 +227,9 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle upload errors", async () => {
+      const testKey = generateTestS3Key(TEST_UUIDS.USER_1, "original", TEST_UUIDS.S3_ID_1, "photo.jpg");
       const uploadOptions: UploadOptions = {
-        key: "images/123/photo.jpg",
+        key: testKey,
         buffer: Buffer.from("test-image-data"),
       };
 
@@ -238,7 +251,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should download file successfully", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockBuffer = Buffer.from("test-image-data");
 
       // Mock readable stream
@@ -259,7 +272,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle missing response body", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
 
       mockS3Send.mockResolvedValueOnce({
         Body: null,
@@ -271,7 +284,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle download errors", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockError = new Error("S3 download failed");
       mockS3Send.mockRejectedValueOnce(mockError);
 
@@ -290,7 +303,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should delete file successfully", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
 
       mockS3Send.mockResolvedValueOnce({});
 
@@ -300,7 +313,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle delete errors", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockError = new Error("S3 delete failed");
       mockS3Send.mockRejectedValueOnce(mockError);
 
@@ -319,7 +332,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should get file info successfully", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockSignedUrl = "https://signed-url.example.com";
       const mockLastModified = new Date("2023-01-01T00:00:00Z");
       const mockMetadata = { userId: "123" };
@@ -354,7 +367,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle missing optional fields", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockSignedUrl = "https://signed-url.example.com";
 
       mockS3Send.mockResolvedValueOnce({});
@@ -376,7 +389,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle getInfo errors", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockError = new Error("S3 head object failed");
       mockS3Send.mockRejectedValueOnce(mockError);
 
@@ -395,7 +408,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should generate correct public URL", () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const result = s3Decorator.getPublicUrl(key);
 
       expect(result).toBe(
@@ -411,7 +424,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should generate signed URL with default expiration", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockSignedUrl = "https://signed-url.example.com";
 
       (
@@ -429,7 +442,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should generate signed URL with custom expiration", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const expiresIn = 7200;
       const mockSignedUrl = "https://signed-url.example.com";
 
@@ -448,7 +461,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should handle signed URL generation errors", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockError = new Error("Signed URL generation failed");
 
       (
@@ -477,12 +490,12 @@ describe("S3 Plugin", () => {
 
     it("should list images without prefix", async () => {
       const mockObjects = [
-        { Key: "images/123/photo1.jpg" },
-        { Key: "images/456/photo2.png" },
+        { Key: TEST_KEY_3 },
+        { Key: TEST_KEY_4 },
       ];
 
       const mockImageInfo1: ImageInfo = {
-        key: "images/123/photo1.jpg",
+        key: TEST_KEY_3,
         url: "https://signed-url1.example.com",
         size: 1024,
         lastModified: new Date(),
@@ -490,7 +503,7 @@ describe("S3 Plugin", () => {
       };
 
       const mockImageInfo2: ImageInfo = {
-        key: "images/456/photo2.png",
+        key: TEST_KEY_4,
         url: "https://signed-url2.example.com",
         size: 2048,
         lastModified: new Date(),
@@ -512,11 +525,11 @@ describe("S3 Plugin", () => {
     });
 
     it("should list images with prefix", async () => {
-      const prefix = "images/123/";
-      const mockObjects = [{ Key: "images/123/photo1.jpg" }];
+      const prefix = `local/users/${TEST_UUIDS.USER_1}/`;
+      const mockObjects = [{ Key: TEST_KEY_3 }];
 
       const mockImageInfo: ImageInfo = {
-        key: "images/123/photo1.jpg",
+        key: TEST_KEY_3,
         url: "https://signed-url.example.com",
         size: 1024,
         lastModified: new Date(),
@@ -549,13 +562,13 @@ describe("S3 Plugin", () => {
 
     it("should skip objects without keys", async () => {
       const mockObjects = [
-        { Key: "images/123/photo1.jpg" },
+        { Key: TEST_KEY_3 },
         { Key: undefined },
-        { Key: "images/456/photo2.png" },
+        { Key: TEST_KEY_4 },
       ];
 
       const mockImageInfo: ImageInfo = {
-        key: "images/456/photo2.png",
+        key: TEST_KEY_4,
         url: "https://signed-url.example.com",
         size: 1024,
         lastModified: new Date(),
@@ -573,7 +586,7 @@ describe("S3 Plugin", () => {
       const result = await s3Decorator.listImages();
 
       expect(mockFastify.log.warn).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to get info for images/123/photo1.jpg:")
+        expect.stringContaining("Failed to get info for")
       );
       expect(result).toEqual([mockImageInfo]);
     });
@@ -597,7 +610,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should return true when object exists", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
 
       mockS3Send.mockResolvedValueOnce({});
 
@@ -632,7 +645,7 @@ describe("S3 Plugin", () => {
     });
 
     it("should throw error for other AWS errors", async () => {
-      const key = "images/123/photo.jpg";
+      const key = TEST_KEY_1;
       const mockError = new Error("S3 service error");
       (mockError as any).$metadata = { httpStatusCode: 500 };
 

@@ -1,7 +1,8 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { TagInput, TagUpdateInput } from "../plugins/tag.plugin";
+import { TagInput, TagUpdateInput } from "../types/tag.types";
 import { TAG_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
+import { UUID } from "crypto";
 
 const createTagRequestBodySchema = {
   type: "object",
@@ -27,7 +28,7 @@ const updateTagRequestBodySchema = {
 };
 
 interface GetTagParams {
-  tagId: string;
+  tagId: UUID;
 }
 const getTagParamsSchema = {
   params: {
@@ -40,7 +41,7 @@ const getTagParamsSchema = {
 };
 
 interface UpdateTagParams {
-  tagId: string;
+  tagId: UUID;
 }
 const updateTagParamsSchema = {
   type: "object",
@@ -74,7 +75,7 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { familyId } = request.params as { familyId: string };
+      const { familyId } = request.params as { familyId: UUID };
       const tags = await fastify.tag.getByFamily(familyId);
       return reply.status(200).send({ tags });
     }

@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import * as jwt from "jsonwebtoken";
 import authPlugin from "./auth.plugin";
 import { UserPublic } from "../types/user.types";
+import { TEST_UUIDS } from "../test-utils/test-data";
 
 // Mock dependencies
 jest.mock("jsonwebtoken");
@@ -14,11 +15,11 @@ describe("Auth Plugin", () => {
   };
 
   const mockUser: UserPublic = {
-    id: "user-123",
+    id: TEST_UUIDS.USER_1,
     email: "test@example.com",
     first_name: "John",
     last_name: "Doe",
-    families: ["family-1"],
+    families: [TEST_UUIDS.FAMILY_1],
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
@@ -157,7 +158,7 @@ describe("Auth Plugin", () => {
 
     it("should return token payload when token is valid and user exists", async () => {
       const mockPayload = {
-        userId: "user-123",
+        userId: TEST_UUIDS.USER_1,
         email: "test@example.com",
       };
 
@@ -170,13 +171,13 @@ describe("Auth Plugin", () => {
         "valid-token",
         "your-super-secret-jwt-key-change-this-in-production"
       );
-      expect(mockUserPlugin.getById).toHaveBeenCalledWith("user-123");
+      expect(mockUserPlugin.getById).toHaveBeenCalledWith(TEST_UUIDS.USER_1);
       expect(result).toEqual(mockPayload);
     });
 
     it("should return null when user does not exist", async () => {
       const mockPayload = {
-        userId: "user-123",
+        userId: TEST_UUIDS.USER_1,
         email: "test@example.com",
       };
 
@@ -204,7 +205,7 @@ describe("Auth Plugin", () => {
 
     it("should return null when user service throws error", async () => {
       const mockPayload = {
-        userId: "user-123",
+        userId: TEST_UUIDS.USER_1,
         email: "test@example.com",
       };
 
@@ -227,7 +228,7 @@ describe("Auth Plugin", () => {
 
     it("should return token payload when token is valid and version matches", async () => {
       const mockPayload = {
-        userId: "user-123",
+        userId: TEST_UUIDS.USER_1,
         tokenVersion: 1,
       };
 
@@ -247,13 +248,13 @@ describe("Auth Plugin", () => {
         "valid-refresh-token",
         "your-super-secret-refresh-key-change-this-in-production"
       );
-      expect(mockUserPlugin.getById).toHaveBeenCalledWith("user-123");
+      expect(mockUserPlugin.getById).toHaveBeenCalledWith(TEST_UUIDS.USER_1);
       expect(result).toEqual(mockPayload);
     });
 
     it("should return null when token version does not match", async () => {
       const mockPayload = {
-        userId: "user-123",
+        userId: TEST_UUIDS.USER_1,
         tokenVersion: 5, // Higher version than stored
       };
 
@@ -271,7 +272,7 @@ describe("Auth Plugin", () => {
 
     it("should return null when user does not exist", async () => {
       const mockPayload = {
-        userId: "user-123",
+        userId: TEST_UUIDS.USER_1,
         tokenVersion: 1,
       };
 
@@ -315,7 +316,7 @@ describe("Auth Plugin", () => {
     });
 
     it("should increment token version and log the action", async () => {
-      const userId = "user-123";
+      const userId = TEST_UUIDS.USER_1;
 
       // Generate initial tokens
       mockJwtSign.mockReturnValue("token" as any);
@@ -369,7 +370,7 @@ describe("Auth Plugin", () => {
     });
 
     it("should return user when user exists", async () => {
-      const userId = "user-123";
+      const userId = TEST_UUIDS.USER_1;
       mockUserPlugin.getById.mockResolvedValue(mockUser);
 
       const result = await authDecorator.validateSession(userId);
@@ -388,7 +389,7 @@ describe("Auth Plugin", () => {
     });
 
     it("should return null when user service throws error", async () => {
-      const userId = "user-123";
+      const userId = TEST_UUIDS.USER_1;
       mockUserPlugin.getById.mockRejectedValue(new Error("Database error"));
 
       const result = await authDecorator.validateSession(userId);
