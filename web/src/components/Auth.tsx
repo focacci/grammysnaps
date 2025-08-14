@@ -383,6 +383,9 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
           getApiEndpoint(`/user/${createdUser.id}`),
           {
             method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({
               first_name: firstName.trim() || null,
               middle_name: middleName.trim() || null,

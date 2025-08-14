@@ -21,9 +21,8 @@ export const apiRequest = async (
 ): Promise<Response> => {
   const url = env.getApiEndpoint(endpoint);
 
-  // Add default headers
+  // Add default headers (no automatic Content-Type)
   const defaultHeaders: HeadersInit = {
-    "Content-Type": "application/json",
     ...options.headers,
   };
 
