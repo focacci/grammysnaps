@@ -51,6 +51,8 @@ export interface UserPublic {
   families: UUID[];
   profile_picture_key?: S3Key | null;
   profile_picture_thumbnail_key?: S3Key | null;
+  profile_picture_url?: string | null;
+  profile_picture_thumbnail_url?: string | null;
   created_at: string;
   updated_at: string;
 }

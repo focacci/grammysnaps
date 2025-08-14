@@ -126,7 +126,8 @@ describe("User Routes", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: [TEST_UUIDS.FAMILY_1],
-      profile_picture_key: null,
+      profile_picture_url: null,
+      profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -277,7 +278,8 @@ describe("User Routes", () => {
         last_name: "One",
         birthday: "1990-01-01",
         families: [],
-        profile_picture_key: null,
+        profile_picture_url: null,
+        profile_picture_thumbnail_url: null,
         created_at: "2024-01-01T00:00:00Z",
         updated_at: "2024-01-01T00:00:00Z",
       },
@@ -289,7 +291,8 @@ describe("User Routes", () => {
         last_name: "Two",
         birthday: "1985-06-15",
         families: [TEST_UUIDS.FAMILY_1],
-        profile_picture_key: null,
+        profile_picture_url: null,
+        profile_picture_thumbnail_url: null,
         created_at: "2024-01-01T00:00:00Z",
         updated_at: "2024-01-01T00:00:00Z",
       },
@@ -344,7 +347,8 @@ describe("User Routes", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: [],
-      profile_picture_key: null,
+      profile_picture_url: null,
+      profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -406,7 +410,7 @@ describe("User Routes", () => {
   });
 
   describe("GET /email/:email", () => {
-    const mockUser: User = {
+    const mockUser: User & { profile_picture_url?: string | null; profile_picture_thumbnail_url?: string | null } = {
       id: TEST_UUIDS.USER_1,
       email: "test@example.com",
       password_hash: "hashed_password",
@@ -416,6 +420,9 @@ describe("User Routes", () => {
       birthday: "1990-01-01",
       families: [],
       profile_picture_key: null,
+      profile_picture_thumbnail_key: null,
+      profile_picture_url: null,
+      profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -491,7 +498,8 @@ describe("User Routes", () => {
       last_name: "User",
       birthday: "1985-12-25",
       families: [TEST_UUIDS.FAMILY_1],
-      profile_picture_key: null,
+      profile_picture_url: null,
+      profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
@@ -573,7 +581,8 @@ describe("User Routes", () => {
       last_name: "Doe",
       birthday: "1990-01-01",
       families: [],
-      profile_picture_key: null,
+      profile_picture_url: null,
+      profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     };
