@@ -160,7 +160,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           "SELECT * FROM users WHERE id = $1",
           [id]
         );
-        return rows.length > 0 ? toPublicUser(rows[0]) : null;
+        return rows.length > 0 ? await toPublicUser(rows[0]) : null;
       } catch (err) {
         fastify.log.error(err);
         throw new Error("Failed to fetch user by ID");

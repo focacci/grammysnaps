@@ -3,6 +3,7 @@ import {
   UserInput,
   UserUpdate,
   SecurityUpdateInput,
+  UserPublic,
 } from "../types/user.types";
 import { ValidationUtils } from "../utils/validation";
 import { MultipartFile } from "@fastify/multipart";
@@ -24,6 +25,25 @@ interface UserQueryParams {
 interface FamilyParams {
   userId: UUID;
   familyId: UUID;
+}
+
+// Helper function to add profile picture URLs to user objects
+export async function addProfilePictureUrls(fastify: FastifyInstance, user: UserPublic): Promise<UserPublic & { profile_picture_url?: string | null; profile_picture_thumbnail_url?: string | null }> {
+  const userWithUrls = { ...user, profile_picture_url: null as string | null, profile_picture_thumbnail_url: null as string | null };
+  
+  try {
+    if (user.profile_picture_key) {
+      userWithUrls.profile_picture_url = await fastify.s3.getSignedUrl(user.profile_picture_key);
+    }
+    if (user.profile_picture_thumbnail_key) {
+      userWithUrls.profile_picture_thumbnail_url = await fastify.s3.getSignedUrl(user.profile_picture_thumbnail_key);
+    }
+  } catch (error) {
+    fastify.log.warn(`Failed to generate signed URLs for user ${user.id}:`, error);
+    // Continue without URLs rather than failing the entire request
+  }
+  
+  return userWithUrls;
 }
 
 export default async function userRoutes(fastify: FastifyInstance) {
@@ -53,7 +73,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
         }
 
         const user = await fastify.user.create(request.body);
-        return reply.status(201).send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.status(201).send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (
@@ -81,7 +104,12 @@ export default async function userRoutes(fastify: FastifyInstance) {
     ) => {
       try {
         const users = await fastify.user.get();
-        return reply.send(users);
+        
+        // Add profile picture URLs to all users
+        const usersWithUrls = await Promise.all(
+          users.map(user => addProfilePictureUrls(fastify, user))
+        );
+        return reply.send(usersWithUrls);
       } catch (error) {
         fastify.log.error(error);
         return reply.status(500).send({
@@ -110,7 +138,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("Invalid")) {
@@ -141,7 +172,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.EMAIL_NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("Invalid")) {
@@ -170,7 +204,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.UPDATE_NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (
@@ -209,7 +246,10 @@ export default async function userRoutes(fastify: FastifyInstance) {
             error: USER_ERRORS.SECURITY_UPDATE_NOT_FOUND,
           });
         }
-        return reply.send(user);
+        
+        // Add profile picture URLs to the response
+        const userWithUrls = await addProfilePictureUrls(fastify, user);
+        return reply.send(userWithUrls);
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error) {
@@ -502,9 +542,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
           profile_picture_thumbnail_key: thumbnailS3Key,
         });
 
+        // Generate signed URLs
+        const originalUrl = await fastify.s3.getSignedUrl(originalS3Key);
+        const thumbnailUrl = await fastify.s3.getSignedUrl(thumbnailS3Key);
+
         return reply.send({
-          url: fastify.s3.getSignedUrl(originalS3Key),
-          thumbnail_url: fastify.s3.getSignedUrl(thumbnailS3Key),
+          url: originalUrl,
+          thumbnail_url: thumbnailUrl,
         });
       } catch (error) {
         fastify.log.error("Profile picture upload error:", error);
