@@ -139,6 +139,11 @@ function AppContent() {
     navigate("/photo-view");
   };
 
+  const handleUserUpdate = (userData: any) => {
+    setUser(userData);
+    // Don't navigate - stay on current page
+  };
+
   const handleLogout = async () => {
     try {
       await authService.logout();
@@ -273,7 +278,7 @@ function AppContent() {
             path="/account"
             element={
               <ProtectedRoute user={user} isLoadingAuth={isLoadingAuth}>
-                <Account user={user} onUserUpdate={handleLogin} />
+                <Account user={user} onUserUpdate={handleUserUpdate} />
               </ProtectedRoute>
             }
           />
