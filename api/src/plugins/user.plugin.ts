@@ -124,6 +124,24 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           ]
         );
 
+        // Create "My Collection" family for the new user
+        try {
+          const myCollectionFamily = await fastify.family.create(
+            { name: "My Collection" },
+            user.id
+          );
+          
+          fastify.log.info(
+            `Created "My Collection" family for user: ${user.email} (Family ID: ${myCollectionFamily.id})`
+          );
+        } catch (familyError) {
+          // Log the error but don't fail user creation
+          fastify.log.error(
+            `Failed to create "My Collection" family for user ${user.id}:`, 
+            familyError
+          );
+        }
+
         // Format birthday for consistent frontend display
         if (user.birthday) {
           user.birthday = new Date(user.birthday).toISOString().split("T")[0];

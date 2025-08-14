@@ -33,6 +33,7 @@ const mockQuery = jest.fn();
 
 // Mock the family plugin
 const mockFamilyExists = jest.fn();
+const mockFamilyCreate = jest.fn();
 
 // Mock the auth plugin
 const mockRevokeUserTokens = jest.fn();
@@ -51,6 +52,7 @@ describe("User Plugin", () => {
 
     fastify.decorate("family", {
       exists: mockFamilyExists,
+      create: mockFamilyCreate,
     } as any);
 
     fastify.decorate("auth", {
@@ -125,9 +127,25 @@ describe("User Plugin", () => {
       // Mock user creation
       mockQuery.mockResolvedValueOnce({ rows: [mockUser] }); // INSERT
 
+      // Mock family creation for "My Collection"
+      mockFamilyCreate.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "My Collection",
+        member_count: 1,
+        owner_id: "550e8400-e29b-41d4-a716-446655440000",
+        user_role: "owner",
+        related_families: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
       const result = await fastify.user.create(userInput);
 
       expect(mockArgon2.hash).toHaveBeenCalledWith("StrongPassword123!");
+      expect(mockFamilyCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440000"
+      );
       expect(result).toEqual({
         id: "550e8400-e29b-41d4-a716-446655440000",
         email: "test@example.com",
@@ -171,8 +189,24 @@ describe("User Plugin", () => {
       mockArgon2.hash.mockResolvedValueOnce("hashed-password");
       mockQuery.mockResolvedValueOnce({ rows: [minimalUser] }); // INSERT
 
+      // Mock family creation for "My Collection"
+      mockFamilyCreate.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "My Collection",
+        member_count: 1,
+        owner_id: "550e8400-e29b-41d4-a716-446655440002",
+        user_role: "owner",
+        related_families: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
       const result = await fastify.user.create(userInput);
 
+      expect(mockFamilyCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440002"
+      );
       expect(result.email).toBe("minimal@example.com");
       expect(result.families).toEqual([]);
       expect(result.first_name).toBeNull();
@@ -213,8 +247,24 @@ describe("User Plugin", () => {
         ],
       }); // INSERT
 
+      // Mock family creation for "My Collection"
+      mockFamilyCreate.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "My Collection",
+        member_count: 1,
+        owner_id: "550e8400-e29b-41d4-a716-446655440000",
+        user_role: "owner",
+        related_families: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
       const result = await fastify.user.create(userInput);
 
+      expect(mockFamilyCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440000"
+      );
       expect(result.families).toEqual([
         "550e8400-e29b-41d4-a716-446655440001",
         "550e8400-e29b-41d4-a716-446655440002",
@@ -258,6 +308,58 @@ describe("User Plugin", () => {
       await expect(fastify.user.create(userInput)).rejects.toThrow(
         "Database error"
       );
+    });
+
+    it("should create user successfully even if family creation fails", async () => {
+      const userInput: UserInput = {
+        email: "test@example.com",
+        password: "StrongPassword123!",
+        first_name: "John",
+        middle_name: null,
+        last_name: "Doe",
+        birthday: null,
+        families: [],
+      };
+
+      const testUser: User = {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        email: "test@example.com",
+        password_hash: "hashed-password",
+        first_name: "John",
+        middle_name: null,
+        last_name: "Doe",
+        birthday: null,
+        families: [],
+        profile_picture_key: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // getByEmail
+      mockArgon2.hash.mockResolvedValueOnce("hashed-password");
+      mockQuery.mockResolvedValueOnce({ rows: [testUser] }); // INSERT
+
+      // Mock family creation failure
+      mockFamilyCreate.mockRejectedValueOnce(new Error("Family creation failed"));
+
+      const result = await fastify.user.create(userInput);
+
+      expect(mockFamilyCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440000"
+      );
+      expect(result).toEqual({
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        email: "test@example.com",
+        first_name: "John",
+        middle_name: null,
+        last_name: "Doe",
+        birthday: null,
+        families: [],
+        profile_picture_key: null,
+        created_at: testUser.created_at,
+        updated_at: testUser.updated_at,
+      });
     });
   });
 
