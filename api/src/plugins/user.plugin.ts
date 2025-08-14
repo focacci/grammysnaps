@@ -328,8 +328,54 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           throw new Error("User not found");
         }
 
+        // Get all families owned by this user before deletion
+        const { rows: ownedFamilies } = await fastify.pg.query<{ id: UUID; name: string }>(
+          "SELECT id, name FROM families WHERE owner_id = $1",
+          [id]
+        );
+
+        // For each owned family, clean up orphaned images before the family gets cascade deleted
+        for (const family of ownedFamilies) {
+          try {
+            // Find images that only belong to this family and delete them
+            const orphanedImages = await fastify.image.getOrphanedByFamily(family.id);
+
+            // Delete orphaned images from S3 and database
+            for (const image of orphanedImages) {
+              try {
+                // Delete from S3 if original_key exists
+                if (image.original_key) {
+                  await fastify.s3.delete(image.original_key);
+                }
+
+                // Delete thumbnail from S3 if thumbnail_key exists
+                if (image.thumbnail_key) {
+                  await fastify.s3.delete(image.thumbnail_key);
+                }
+
+                // Delete from database (will cascade delete image_tags and image_families)
+                await fastify.pg.query("DELETE FROM images WHERE id = $1", [
+                  image.id,
+                ]);
+                fastify.log.info(`Deleted orphaned image: ${image.id} from family: ${family.name}`);
+              } catch (imageErr) {
+                fastify.log.error(`Failed to delete image ${image.id}:`, imageErr);
+                // Continue with other images even if one fails
+              }
+            }
+
+            fastify.log.info(
+              `Deleted ${orphanedImages.length} orphaned images for family: ${family.name} (owner: ${user.email})`
+            );
+          } catch (familyErr) {
+            fastify.log.error(`Failed to clean up images for family ${family.id}:`, familyErr);
+            // Continue with other families even if one fails
+          }
+        }
+
+        // Delete user (families owned by this user will be cascade deleted by the database)
         await fastify.pg.query("DELETE FROM users WHERE id = $1", [id]);
-        fastify.log.info(`Deleted user: ${user.email}`);
+        fastify.log.info(`Deleted user: ${user.email} and ${ownedFamilies.length} owned families`);
       } catch (err) {
         fastify.log.error(err);
         if (err instanceof Error) {

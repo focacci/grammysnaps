@@ -35,6 +35,12 @@ const mockQuery = jest.fn();
 const mockFamilyExists = jest.fn();
 const mockFamilyCreate = jest.fn();
 
+// Mock the image plugin
+const mockImageGetOrphanedByFamily = jest.fn();
+
+// Mock the S3 plugin
+const mockS3Delete = jest.fn();
+
 // Mock the auth plugin
 const mockRevokeUserTokens = jest.fn();
 
@@ -53,6 +59,14 @@ describe("User Plugin", () => {
     fastify.decorate("family", {
       exists: mockFamilyExists,
       create: mockFamilyCreate,
+    } as any);
+
+    fastify.decorate("image", {
+      getOrphanedByFamily: mockImageGetOrphanedByFamily,
+    } as any);
+
+    fastify.decorate("s3", {
+      delete: mockS3Delete,
     } as any);
 
     fastify.decorate("auth", {
@@ -686,10 +700,18 @@ describe("User Plugin", () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
-      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE
+      mockQuery.mockResolvedValueOnce({ 
+        rows: [{ id: "family-1", name: "My Collection" }] 
+      }); // SELECT families owned by user
+      mockImageGetOrphanedByFamily.mockResolvedValueOnce([]); // No orphaned images
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE user
 
       await fastify.user.delete("550e8400-e29b-41d4-a716-446655440000");
 
+      expect(mockQuery).toHaveBeenCalledWith(
+        "SELECT id, name FROM families WHERE owner_id = $1",
+        ["550e8400-e29b-41d4-a716-446655440000"]
+      );
       expect(mockQuery).toHaveBeenCalledWith(
         "DELETE FROM users WHERE id = $1",
         ["550e8400-e29b-41d4-a716-446655440000"]
@@ -708,11 +730,53 @@ describe("User Plugin", () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
+      mockQuery.mockResolvedValueOnce({ 
+        rows: [{ id: "family-1", name: "My Collection" }] 
+      }); // SELECT families owned by user
+      mockImageGetOrphanedByFamily.mockResolvedValueOnce([]); // No orphaned images
       mockQuery.mockRejectedValueOnce(new Error("Database error")); // DELETE
 
       await expect(
         fastify.user.delete("550e8400-e29b-41d4-a716-446655440000")
       ).rejects.toThrow("Database error");
+    });
+
+    it("should delete user and clean up orphaned images from owned families", async () => {
+      const mockOrphanedImages = [
+        {
+          id: "image-1",
+          original_key: "original-key-1",
+          thumbnail_key: "thumb-key-1",
+        },
+        {
+          id: "image-2",
+          original_key: "original-key-2",
+          thumbnail_key: "thumb-key-2",
+        },
+      ];
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ ...mockUser, password_hash: "hash" }],
+      }); // getById
+      mockQuery.mockResolvedValueOnce({ 
+        rows: [{ id: "family-1", name: "My Collection" }] 
+      }); // SELECT families owned by user
+      mockImageGetOrphanedByFamily.mockResolvedValueOnce(mockOrphanedImages);
+      mockS3Delete.mockResolvedValue(undefined);
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE image 1
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE image 2
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE user
+
+      await fastify.user.delete("550e8400-e29b-41d4-a716-446655440000");
+
+      expect(mockImageGetOrphanedByFamily).toHaveBeenCalledWith("family-1");
+      expect(mockS3Delete).toHaveBeenCalledWith("original-key-1");
+      expect(mockS3Delete).toHaveBeenCalledWith("thumb-key-1");
+      expect(mockS3Delete).toHaveBeenCalledWith("original-key-2");
+      expect(mockS3Delete).toHaveBeenCalledWith("thumb-key-2");
+      expect(mockQuery).toHaveBeenCalledWith("DELETE FROM images WHERE id = $1", ["image-1"]);
+      expect(mockQuery).toHaveBeenCalledWith("DELETE FROM images WHERE id = $1", ["image-2"]);
+      expect(mockQuery).toHaveBeenCalledWith("DELETE FROM users WHERE id = $1", ["550e8400-e29b-41d4-a716-446655440000"]);
     });
   });
 
