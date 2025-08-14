@@ -386,7 +386,6 @@ class AuthService {
     }
 
     const headers = {
-      "Content-Type": "application/json",
       ...options.headers,
       Authorization: authHeader,
     };
