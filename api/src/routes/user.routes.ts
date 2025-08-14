@@ -485,12 +485,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
         );
 
         // Generate a unique key for S3 (original)
+        const s3Id = uuidv4() as UUID;
         const fileExtension = file.filename?.split(".").pop() || "jpg";
         const originalS3Key = fastify.s3.createKey({
           env: (process.env.NODE_ENV || "local") as S3Environment,
           userId: id,
           type: "profile",
-          s3Id: uuidv4() as UUID,
+          s3Id: s3Id,
           filename: `profile.${fileExtension}`
         });
 
@@ -499,7 +500,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
           env: (process.env.NODE_ENV || "local") as S3Environment,
           userId: id,
           type: "profile",
-          s3Id: uuidv4() as UUID,
+          s3Id: s3Id,
           filename: `thumb_profile.${fileExtension}`
         });
 
