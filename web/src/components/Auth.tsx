@@ -22,7 +22,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
     middle_name?: string | null;
     last_name: string | null;
     birthday?: string | null;
-    families: string[];
+    collections: string[];
     created_at: string;
     updated_at: string;
     profile_picture_url?: string | null;
@@ -74,8 +74,8 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthday, setBirthday] = useState("");
-  const [families, setFamilies] = useState<string[]>([]);
-  const [familyInput, setFamilyInput] = useState("");
+  const [collections, setCollections] = useState<string[]>([]);
+  const [collectionInput, setCollectionInput] = useState("");
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
     firstName: "",
     lastName: "",
     birthday: "",
-    familyInput: "",
+    collectionInput: "",
     inviteKey: "",
   });
 
@@ -167,32 +167,32 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
     setFieldErrors((prev) => ({ ...prev, birthday: error || "" }));
   };
 
-  // Add family ID to the list
-  const addFamily = () => {
+  // Add collection ID to the list
+  const addCollection = () => {
     const { sanitized, error } =
-      ClientValidationUtils.validateFamilyId(familyInput);
+      ClientValidationUtils.validateCollectionId(collectionInput);
 
     if (error) {
-      setFieldErrors((prev) => ({ ...prev, familyInput: error }));
+      setFieldErrors((prev) => ({ ...prev, collectionInput: error }));
       return;
     }
 
-    if (families.includes(sanitized)) {
+    if (collections.includes(sanitized)) {
       setFieldErrors((prev) => ({
         ...prev,
-        familyInput: "Family ID already added",
+        collectionInput: "Collection ID already added",
       }));
       return;
     }
 
-    setFamilies([...families, sanitized]);
-    setFamilyInput("");
-    setFieldErrors((prev) => ({ ...prev, familyInput: "" }));
+    setCollections([...collections, sanitized]);
+    setCollectionInput("");
+    setFieldErrors((prev) => ({ ...prev, collectionInput: "" }));
   };
 
-  // Remove family ID from the list
-  const removeFamily = (familyId: string) => {
-    setFamilies(families.filter((id) => id !== familyId));
+  // Remove collection ID from the list
+  const removeCollection = (collectionId: string) => {
+    setCollections(collections.filter((id) => id !== collectionId));
   };
 
   // Clear all form fields
@@ -205,8 +205,8 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
     setMiddleName("");
     setLastName("");
     setBirthday("");
-    setFamilies([]);
-    setFamilyInput("");
+    setCollections([]);
+    setCollectionInput("");
     setError("");
     setPasswordMismatch(false);
     setShowProfileCompletion(false);
@@ -218,7 +218,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
       firstName: "",
       lastName: "",
       birthday: "",
-      familyInput: "",
+      collectionInput: "",
       inviteKey: "",
     });
   };
@@ -391,7 +391,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
               middle_name: middleName.trim() || null,
               last_name: lastName.trim() || null,
               birthday: birthday.trim() || null,
-              families,
+              collections,
             }),
           }
         );
@@ -495,7 +495,7 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
                 type="text"
                 id="lastName"
                 name="lastName"
-                autoComplete="family-name"
+                autoComplete="collection-name"
                 value={lastName}
                 onChange={(e) =>
                   handleTextFieldChange(
@@ -529,50 +529,50 @@ const Auth = ({ onLogin, onCancel, initialMode = "login" }: AuthProps) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="families">Family IDs (Optional)</label>
-              <div className="family-input-container">
+              <label htmlFor="collections">Collection IDs (Optional)</label>
+              <div className="collection-input-container">
                 <input
                   type="text"
-                  id="familyInput"
-                  name="familyId"
+                  id="collectionInput"
+                  name="collectionId"
                   autoComplete="off"
-                  value={familyInput}
+                  value={collectionInput}
                   onChange={(e) => {
                     const sanitized = ClientValidationUtils.sanitizeInput(
                       e.target.value
                     );
-                    setFamilyInput(sanitized);
-                    setFieldErrors((prev) => ({ ...prev, familyInput: "" }));
+                    setCollectionInput(sanitized);
+                    setFieldErrors((prev) => ({ ...prev, collectionInput: "" }));
                   }}
-                  placeholder="Enter a family ID"
+                  placeholder="Enter a collection ID"
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      addFamily();
+                      addCollection();
                     }
                   }}
                 />
                 <button
                   type="button"
-                  className="add-family-btn"
-                  onClick={addFamily}
-                  disabled={!familyInput.trim()}
+                  className="add-collection-btn"
+                  onClick={addCollection}
+                  disabled={!collectionInput.trim()}
                 >
                   Add
                 </button>
               </div>
-              {fieldErrors.familyInput && (
-                <div className="field-error">{fieldErrors.familyInput}</div>
+              {fieldErrors.collectionInput && (
+                <div className="field-error">{fieldErrors.collectionInput}</div>
               )}
-              {families.length > 0 && (
-                <div className="family-list">
-                  {families.map((familyId, index) => (
-                    <div key={index} className="family-item">
-                      <span>{familyId}</span>
+              {collections.length > 0 && (
+                <div className="collection-list">
+                  {collections.map((collectionId, index) => (
+                    <div key={index} className="collection-item">
+                      <span>{collectionId}</span>
                       <button
                         type="button"
-                        className="remove-family-btn"
-                        onClick={() => removeFamily(familyId)}
+                        className="remove-collection-btn"
+                        onClick={() => removeCollection(collectionId)}
                       >
                         ×
                       </button>

@@ -7,7 +7,7 @@ interface User {
   middle_name?: string | null;
   last_name: string | null;
   birthday?: string | null;
-  families: string[];
+  collections: string[];
   created_at: string;
   updated_at: string;
   profile_picture_url?: string | null;
