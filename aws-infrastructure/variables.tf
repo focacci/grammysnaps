@@ -166,9 +166,9 @@ variable "stripe_secret_key" {
   sensitive   = true
 }
 
-# Invite Key for family invitations
+# Invite Key for beta testing
 variable "invite_key" {
-  description = "Secret key for generating family invitation codes"
+  description = "Beta test invitation code"
   type        = string
   default     = ""
   sensitive   = true

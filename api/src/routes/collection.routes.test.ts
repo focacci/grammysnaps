@@ -1,13 +1,13 @@
 import Fastify, { FastifyInstance } from "fastify";
-import familyRoutes from "./family.routes";
+import collectionRoutes from "./collection.routes";
 import {
-  Family,
-  FamilyUpdate,
-  FamilyPublic,
-  FamilyMember,
-  RelatedFamily,
-} from "../types/family.types";
-import { FAMILY_ERRORS } from "../types/errors";
+  Collection,
+  CollectionUpdate,
+  CollectionPublic,
+  CollectionMember,
+  RelatedCollection,
+} from "../types/collection.types";
+import { COLLECTION_ERRORS } from "../types/errors";
 import { TEST_UUIDS } from "../test-utils/test-data";
 
 // Mock auth middleware to always pass
@@ -22,52 +22,52 @@ jest.mock("../middleware/auth.middleware", () => ({
   }),
 }));
 
-const mockFamilyCreate = jest.fn();
-const mockFamilyGet = jest.fn();
-const mockFamilyGetById = jest.fn();
-const mockFamilyExists = jest.fn();
-const mockFamilyGetUserFamilies = jest.fn();
-const mockFamilyGetMembers = jest.fn();
-const mockFamilyGetRelatedFamilies = jest.fn();
-const mockFamilyAddRelatedFamily = jest.fn();
-const mockFamilyRemoveRelatedFamily = jest.fn();
-const mockFamilyUpdate = jest.fn();
-const mockFamilyDelete = jest.fn();
-const mockFamilyAddMember = jest.fn();
-const mockFamilyRemoveMember = jest.fn();
+const mockCollectionCreate = jest.fn();
+const mockCollectionGet = jest.fn();
+const mockCollectionGetById = jest.fn();
+const mockCollectionExists = jest.fn();
+const mockCollectionGetUserCollections = jest.fn();
+const mockCollectionGetMembers = jest.fn();
+const mockCollectionGetRelatedCollections = jest.fn();
+const mockCollectionAddRelatedCollection = jest.fn();
+const mockCollectionRemoveRelatedCollection = jest.fn();
+const mockCollectionUpdate = jest.fn();
+const mockCollectionDelete = jest.fn();
+const mockCollectionAddMember = jest.fn();
+const mockCollectionRemoveMember = jest.fn();
 
-describe("Family Routes", () => {
+describe("Collection Routes", () => {
   let fastify: FastifyInstance;
 
-  const mockFamily: Family = {
-    id: TEST_UUIDS.FAMILY_1,
+  const mockCollection: Collection = {
+    id: TEST_UUIDS.COLLECTION_1,
     name: "The Smiths",
     members: [TEST_UUIDS.USER_1, TEST_UUIDS.USER_2],
     owner_id: TEST_UUIDS.USER_1,
-    related_families: [TEST_UUIDS.FAMILY_2],
+    related_collections: [TEST_UUIDS.COLLECTION_2],
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
 
-  const mockFamilyPublic: FamilyPublic = {
-    id: TEST_UUIDS.FAMILY_1,
+  const mockCollectionPublic: CollectionPublic = {
+    id: TEST_UUIDS.COLLECTION_1,
     name: "The Smiths",
     member_count: 2,
     owner_id: TEST_UUIDS.USER_1,
     user_role: "owner",
-    related_families: [TEST_UUIDS.FAMILY_2],
+    related_collections: [TEST_UUIDS.COLLECTION_2],
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
 
-  const mockFamilyMember: FamilyMember = {
+  const mockCollectionMember: CollectionMember = {
     id: TEST_UUIDS.USER_1,
     email: "john@example.com",
     first_name: "John",
     middle_name: null,
     last_name: "Smith",
     birthday: "1990-01-01",
-    families: [TEST_UUIDS.FAMILY_1],
+    collections: [TEST_UUIDS.COLLECTION_1],
     profile_picture_key: null,
     profile_picture_thumbnail_key: null,
     created_at: "2023-01-01T00:00:00Z",
@@ -76,8 +76,8 @@ describe("Family Routes", () => {
     joined_at: "2023-01-01T00:00:00Z",
   };
 
-  const mockRelatedFamily: RelatedFamily = {
-    id: TEST_UUIDS.FAMILY_2,
+  const mockRelatedCollection: RelatedCollection = {
+    id: TEST_UUIDS.COLLECTION_2,
     name: "The Johnsons",
     member_count: 3,
     created_at: "2023-01-01T00:00:00Z",
@@ -88,24 +88,24 @@ describe("Family Routes", () => {
     fastify = Fastify({ logger: false });
 
     // Decorate the fastify instance with mock plugin
-    fastify.decorate("family", {
-      create: mockFamilyCreate,
-      get: mockFamilyGet,
-      getById: mockFamilyGetById,
-      exists: mockFamilyExists,
-      getUserFamilies: mockFamilyGetUserFamilies,
-      getMembers: mockFamilyGetMembers,
-      getRelatedFamilies: mockFamilyGetRelatedFamilies,
-      addRelatedFamily: mockFamilyAddRelatedFamily,
-      removeRelatedFamily: mockFamilyRemoveRelatedFamily,
-      update: mockFamilyUpdate,
-      delete: mockFamilyDelete,
-      addMember: mockFamilyAddMember,
-      removeMember: mockFamilyRemoveMember,
+    fastify.decorate("collection", {
+      create: mockCollectionCreate,
+      get: mockCollectionGet,
+      getById: mockCollectionGetById,
+      exists: mockCollectionExists,
+      getUserCollections: mockCollectionGetUserCollections,
+      getMembers: mockCollectionGetMembers,
+      getRelatedCollections: mockCollectionGetRelatedCollections,
+      addRelatedCollection: mockCollectionAddRelatedCollection,
+      removeRelatedCollection: mockCollectionRemoveRelatedCollection,
+      update: mockCollectionUpdate,
+      delete: mockCollectionDelete,
+      addMember: mockCollectionAddMember,
+      removeMember: mockCollectionRemoveMember,
     });
 
-    // Register family routes
-    await fastify.register(familyRoutes);
+    // Register collection routes
+    await fastify.register(collectionRoutes);
 
     // Wait for all plugins to be ready
     await fastify.ready();
@@ -119,9 +119,9 @@ describe("Family Routes", () => {
   });
 
   describe("GET /", () => {
-    it("should successfully get all families", async () => {
-      const mockFamilies = [mockFamilyPublic];
-      mockFamilyGet.mockResolvedValue(mockFamilies);
+    it("should successfully get all collections", async () => {
+      const mockCollections = [mockCollectionPublic];
+      mockCollectionGet.mockResolvedValue(mockCollections);
 
       const response = await fastify.inject({
         method: "GET",
@@ -130,12 +130,12 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody).toEqual(mockFamilies);
-      expect(mockFamilyGet).toHaveBeenCalledWith();
+      expect(responseBody).toEqual(mockCollections);
+      expect(mockCollectionGet).toHaveBeenCalledWith();
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyGet.mockRejectedValue(new Error("Database error"));
+      mockCollectionGet.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
@@ -144,14 +144,14 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.RETRIEVE_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.RETRIEVE_FAILED);
     });
   });
 
   describe("GET /user/:userId", () => {
-    it("should successfully get families for a user", async () => {
-      const mockFamilies = [mockFamilyPublic];
-      mockFamilyGetUserFamilies.mockResolvedValue(mockFamilies);
+    it("should successfully get collections for a user", async () => {
+      const mockCollections = [mockCollectionPublic];
+      mockCollectionGetUserCollections.mockResolvedValue(mockCollections);
 
       const response = await fastify.inject({
         method: "GET",
@@ -160,12 +160,12 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody).toEqual(mockFamilies);
-      expect(mockFamilyGetUserFamilies).toHaveBeenCalledWith(TEST_UUIDS.USER_1);
+      expect(responseBody).toEqual(mockCollections);
+      expect(mockCollectionGetUserCollections).toHaveBeenCalledWith(TEST_UUIDS.USER_1);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyGetUserFamilies.mockRejectedValue(new Error("Database error"));
+      mockCollectionGetUserCollections.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
@@ -175,104 +175,104 @@ describe("Family Routes", () => {
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.error).toBe(
-        FAMILY_ERRORS.RETRIEVE_USER_FAMILIES_FAILED
+        COLLECTION_ERRORS.RETRIEVE_USER_COLLECTIONS_FAILED
       );
     });
   });
 
   describe("GET /:id", () => {
-    it("should successfully get family by ID", async () => {
-      mockFamilyGetById.mockResolvedValue(mockFamily);
+    it("should successfully get collection by ID", async () => {
+      mockCollectionGetById.mockResolvedValue(mockCollection);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody).toEqual(mockFamily);
-      expect(mockFamilyGetById).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
+      expect(responseBody).toEqual(mockCollection);
+      expect(mockCollectionGetById).toHaveBeenCalledWith(TEST_UUIDS.COLLECTION_1);
     });
 
-    it("should return 404 for non-existent family", async () => {
-      mockFamilyGetById.mockResolvedValue(null);
+    it("should return 404 for non-existent collection", async () => {
+      mockCollectionGetById.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(404);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.NOT_FOUND);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.NOT_FOUND);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyGetById.mockRejectedValue(new Error("Database error"));
+      mockCollectionGetById.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.GET_BY_ID_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.GET_BY_ID_FAILED);
     });
   });
 
   describe("GET /:id/members", () => {
-    it("should successfully get family members", async () => {
-      const mockMembers = [mockFamilyMember];
-      mockFamilyGetMembers.mockResolvedValue(mockMembers);
+    it("should successfully get collection members", async () => {
+      const mockMembers = [mockCollectionMember];
+      mockCollectionGetMembers.mockResolvedValue(mockMembers);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}/members`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody).toEqual(mockMembers);
-      expect(mockFamilyGetMembers).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
+      expect(mockCollectionGetMembers).toHaveBeenCalledWith(TEST_UUIDS.COLLECTION_1);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyGetMembers.mockRejectedValue(new Error("Database error"));
+      mockCollectionGetMembers.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}/members`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.GET_MEMBERS_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.GET_MEMBERS_FAILED);
     });
   });
 
   describe("POST /", () => {
-    const validFamilyData = {
+    const validCollectionData = {
       name: "The Johnsons",
-      description: "A lovely family",
+      description: "A lovely collection",
       owner_id: TEST_UUIDS.USER_1,
     };
 
-    it("should successfully create a new family", async () => {
-      mockFamilyCreate.mockResolvedValue(mockFamilyPublic);
+    it("should successfully create a new collection", async () => {
+      mockCollectionCreate.mockResolvedValue(mockCollectionPublic);
 
       const response = await fastify.inject({
         method: "POST",
         url: "/",
-        payload: validFamilyData,
+        payload: validCollectionData,
       });
 
       expect(response.statusCode).toBe(201);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody).toEqual(mockFamilyPublic);
-      expect(mockFamilyCreate).toHaveBeenCalledWith(
-        { name: "The Johnsons", description: "A lovely family" },
+      expect(responseBody).toEqual(mockCollectionPublic);
+      expect(mockCollectionCreate).toHaveBeenCalledWith(
+        { name: "The Johnsons", description: "A lovely collection" },
         TEST_UUIDS.USER_1
       );
     });
@@ -288,10 +288,10 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.OWNER_ID_REQUIRED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.OWNER_ID_REQUIRED);
     });
 
-    it("should return 400 for missing family name", async () => {
+    it("should return 400 for missing collection name", async () => {
       const response = await fastify.inject({
         method: "POST",
         url: "/",
@@ -302,10 +302,10 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.NAME_REQUIRED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.NAME_REQUIRED);
     });
 
-    it("should return 400 for empty family name", async () => {
+    it("should return 400 for empty collection name", async () => {
       const response = await fastify.inject({
         method: "POST",
         url: "/",
@@ -317,85 +317,85 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.NAME_REQUIRED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.NAME_REQUIRED);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyCreate.mockRejectedValue(
-        new Error(FAMILY_ERRORS.CREATE_FAILED)
+      mockCollectionCreate.mockRejectedValue(
+        new Error(COLLECTION_ERRORS.CREATE_FAILED)
       );
 
       const response = await fastify.inject({
         method: "POST",
         url: "/",
-        payload: validFamilyData,
+        payload: validCollectionData,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.CREATE_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.CREATE_FAILED);
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyCreate.mockRejectedValue("String error");
+      mockCollectionCreate.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "POST",
         url: "/",
-        payload: validFamilyData,
+        payload: validCollectionData,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.CREATE_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.CREATE_FAILED);
     });
   });
 
   describe("PUT /:id", () => {
-    const validUpdateData: FamilyUpdate = {
-      name: "Updated Family Name",
+    const validUpdateData: CollectionUpdate = {
+      name: "Updated Collection Name",
       description: "Updated description",
     };
 
-    it("should successfully update family", async () => {
-      const updatedFamily = { ...mockFamily, ...validUpdateData };
-      mockFamilyUpdate.mockResolvedValue(updatedFamily);
+    it("should successfully update collection", async () => {
+      const updatedCollection = { ...mockCollection, ...validUpdateData };
+      mockCollectionUpdate.mockResolvedValue(updatedCollection);
 
       const response = await fastify.inject({
         method: "PUT",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
         payload: validUpdateData,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody).toEqual(updatedFamily);
-      expect(mockFamilyUpdate).toHaveBeenCalledWith(
-        TEST_UUIDS.FAMILY_1,
+      expect(responseBody).toEqual(updatedCollection);
+      expect(mockCollectionUpdate).toHaveBeenCalledWith(
+        TEST_UUIDS.COLLECTION_1,
         validUpdateData
       );
     });
 
-    it("should return 404 for non-existent family", async () => {
-      mockFamilyUpdate.mockResolvedValue(null);
+    it("should return 404 for non-existent collection", async () => {
+      mockCollectionUpdate.mockResolvedValue(null);
 
       const response = await fastify.inject({
         method: "PUT",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
         payload: validUpdateData,
       });
 
       expect(response.statusCode).toBe(404);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.UPDATE_NOT_FOUND);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.UPDATE_NOT_FOUND);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyUpdate.mockRejectedValue(new Error("Update error"));
+      mockCollectionUpdate.mockRejectedValue(new Error("Update error"));
 
       const response = await fastify.inject({
         method: "PUT",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
         payload: validUpdateData,
       });
 
@@ -405,74 +405,74 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyUpdate.mockRejectedValue("String error");
+      mockCollectionUpdate.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "PUT",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
         payload: validUpdateData,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.UPDATE_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.UPDATE_FAILED);
     });
 
     it("should handle empty update data", async () => {
-      const updatedFamily = mockFamily;
-      mockFamilyUpdate.mockResolvedValue(updatedFamily);
+      const updatedCollection = mockCollection;
+      mockCollectionUpdate.mockResolvedValue(updatedCollection);
 
       const response = await fastify.inject({
         method: "PUT",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
         payload: {},
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyUpdate).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1, {});
+      expect(mockCollectionUpdate).toHaveBeenCalledWith(TEST_UUIDS.COLLECTION_1, {});
     });
   });
 
   describe("DELETE /:id", () => {
-    it("should successfully delete family", async () => {
-      mockFamilyDelete.mockResolvedValue(undefined);
+    it("should successfully delete collection", async () => {
+      mockCollectionDelete.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(204);
       expect(response.body).toBe("");
-      expect(mockFamilyDelete).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
+      expect(mockCollectionDelete).toHaveBeenCalledWith(TEST_UUIDS.COLLECTION_1);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyDelete.mockRejectedValue(
-        new Error(FAMILY_ERRORS.DELETE_FAILED)
+      mockCollectionDelete.mockRejectedValue(
+        new Error(COLLECTION_ERRORS.DELETE_FAILED)
       );
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.DELETE_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.DELETE_FAILED);
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyDelete.mockRejectedValue("String error");
+      mockCollectionDelete.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.DELETE_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.DELETE_FAILED);
     });
   });
 
@@ -481,20 +481,20 @@ describe("Family Routes", () => {
       user_id: TEST_UUIDS.USER_2,
     };
 
-    it("should successfully add member to family", async () => {
-      mockFamilyAddMember.mockResolvedValue(undefined);
+    it("should successfully add member to collection", async () => {
+      mockCollectionAddMember.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/members`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members`,
         payload: validMemberData,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Member added successfully");
-      expect(mockFamilyAddMember).toHaveBeenCalledWith(
-        TEST_UUIDS.FAMILY_1,
+      expect(mockCollectionAddMember).toHaveBeenCalledWith(
+        TEST_UUIDS.COLLECTION_1,
         TEST_UUIDS.USER_2
       );
     });
@@ -502,21 +502,21 @@ describe("Family Routes", () => {
     it("should return 400 for missing user_id", async () => {
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/members`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members`,
         payload: {},
       });
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.USER_ID_REQUIRED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.USER_ID_REQUIRED);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyAddMember.mockRejectedValue(new Error("Add member error"));
+      mockCollectionAddMember.mockRejectedValue(new Error("Add member error"));
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/members`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members`,
         payload: validMemberData,
       });
 
@@ -526,46 +526,46 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyAddMember.mockRejectedValue("String error");
+      mockCollectionAddMember.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/members`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members`,
         payload: validMemberData,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.ADD_MEMBER_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.ADD_MEMBER_FAILED);
     });
   });
 
   describe("DELETE /:id/members/:userId", () => {
-    it("should successfully remove member from family", async () => {
-      mockFamilyRemoveMember.mockResolvedValue(undefined);
+    it("should successfully remove member from collection", async () => {
+      mockCollectionRemoveMember.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}/members/${TEST_UUIDS.USER_2}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members/${TEST_UUIDS.USER_2}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toBe("Member removed successfully");
-      expect(mockFamilyRemoveMember).toHaveBeenCalledWith(
-        TEST_UUIDS.FAMILY_1,
+      expect(mockCollectionRemoveMember).toHaveBeenCalledWith(
+        TEST_UUIDS.COLLECTION_1,
         TEST_UUIDS.USER_2
       );
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyRemoveMember.mockRejectedValue(
+      mockCollectionRemoveMember.mockRejectedValue(
         new Error("Remove member error")
       );
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}/members/${TEST_UUIDS.USER_2}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members/${TEST_UUIDS.USER_2}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -574,161 +574,161 @@ describe("Family Routes", () => {
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyRemoveMember.mockRejectedValue("String error");
+      mockCollectionRemoveMember.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}/members/${TEST_UUIDS.USER_2}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/members/${TEST_UUIDS.USER_2}`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.REMOVE_MEMBER_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.REMOVE_MEMBER_FAILED);
     });
   });
 
   describe("GET /:id/related", () => {
-    it("should successfully get related families", async () => {
-      const mockRelatedFamilies = [mockRelatedFamily];
-      mockFamilyGetRelatedFamilies.mockResolvedValue(mockRelatedFamilies);
+    it("should successfully get related collections", async () => {
+      const mockRelatedCollections = [mockRelatedCollection];
+      mockCollectionGetRelatedCollections.mockResolvedValue(mockRelatedCollections);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}/related`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody).toEqual(mockRelatedFamilies);
-      expect(mockFamilyGetRelatedFamilies).toHaveBeenCalledWith(TEST_UUIDS.FAMILY_1);
+      expect(responseBody).toEqual(mockRelatedCollections);
+      expect(mockCollectionGetRelatedCollections).toHaveBeenCalledWith(TEST_UUIDS.COLLECTION_1);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyGetRelatedFamilies.mockRejectedValue(
+      mockCollectionGetRelatedCollections.mockRejectedValue(
         new Error("Database error")
       );
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/${TEST_UUIDS.FAMILY_1}/related`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.GET_RELATED_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.GET_RELATED_FAILED);
     });
   });
 
   describe("POST /:id/related", () => {
-    const validRelatedFamilyData = {
-      family_id: TEST_UUIDS.FAMILY_2,
+    const validRelatedCollectionData = {
+      collection_id: TEST_UUIDS.COLLECTION_2,
     };
 
-    it("should successfully add related family", async () => {
-      mockFamilyAddRelatedFamily.mockResolvedValue(undefined);
+    it("should successfully add related collection", async () => {
+      mockCollectionAddRelatedCollection.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/related`,
-        payload: validRelatedFamilyData,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related`,
+        payload: validRelatedCollectionData,
       });
 
       expect(response.statusCode).toBe(201);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.message).toBe("Related family added successfully");
-      expect(mockFamilyAddRelatedFamily).toHaveBeenCalledWith(
-        TEST_UUIDS.FAMILY_1,
-        TEST_UUIDS.FAMILY_2
+      expect(responseBody.message).toBe("Related collection added successfully");
+      expect(mockCollectionAddRelatedCollection).toHaveBeenCalledWith(
+        TEST_UUIDS.COLLECTION_1,
+        TEST_UUIDS.COLLECTION_2
       );
     });
 
-    it("should return 400 for missing family_id", async () => {
+    it("should return 400 for missing collection_id", async () => {
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/related`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related`,
         payload: {},
       });
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.FAMILY_ID_REQUIRED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.COLLECTION_ID_REQUIRED);
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyAddRelatedFamily.mockRejectedValue(
-        new Error("Add related family error")
+      mockCollectionAddRelatedCollection.mockRejectedValue(
+        new Error("Add related collection error")
       );
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/related`,
-        payload: validRelatedFamilyData,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related`,
+        payload: validRelatedCollectionData,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Add related family error");
+      expect(responseBody.error).toBe("Add related collection error");
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyAddRelatedFamily.mockRejectedValue("String error");
+      mockCollectionAddRelatedCollection.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.FAMILY_1}/related`,
-        payload: validRelatedFamilyData,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related`,
+        payload: validRelatedCollectionData,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.ADD_RELATED_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.ADD_RELATED_FAILED);
     });
   });
 
   describe("DELETE /:id/related/:relatedId", () => {
-    it("should successfully remove related family", async () => {
-      mockFamilyRemoveRelatedFamily.mockResolvedValue(undefined);
+    it("should successfully remove related collection", async () => {
+      mockCollectionRemoveRelatedCollection.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}/related/${TEST_UUIDS.FAMILY_2}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related/${TEST_UUIDS.COLLECTION_2}`,
       });
 
       expect(response.statusCode).toBe(200);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.message).toBe("Related family removed successfully");
-      expect(mockFamilyRemoveRelatedFamily).toHaveBeenCalledWith(
-        TEST_UUIDS.FAMILY_1,
-        TEST_UUIDS.FAMILY_2
+      expect(responseBody.message).toBe("Related collection removed successfully");
+      expect(mockCollectionRemoveRelatedCollection).toHaveBeenCalledWith(
+        TEST_UUIDS.COLLECTION_1,
+        TEST_UUIDS.COLLECTION_2
       );
     });
 
     it("should return 500 for database error", async () => {
-      mockFamilyRemoveRelatedFamily.mockRejectedValue(
-        new Error("Remove related family error")
+      mockCollectionRemoveRelatedCollection.mockRejectedValue(
+        new Error("Remove related collection error")
       );
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}/related/${TEST_UUIDS.FAMILY_2}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related/${TEST_UUIDS.COLLECTION_2}`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe("Remove related family error");
+      expect(responseBody.error).toBe("Remove related collection error");
     });
 
     it("should return 500 for unexpected error", async () => {
-      mockFamilyRemoveRelatedFamily.mockRejectedValue("String error");
+      mockCollectionRemoveRelatedCollection.mockRejectedValue("String error");
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.FAMILY_1}/related/${TEST_UUIDS.FAMILY_2}`,
+        url: `/${TEST_UUIDS.COLLECTION_1}/related/${TEST_UUIDS.COLLECTION_2}`,
       });
 
       expect(response.statusCode).toBe(500);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.REMOVE_RELATED_FAILED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.REMOVE_RELATED_FAILED);
     });
   });
 
@@ -755,49 +755,49 @@ describe("Family Routes", () => {
 
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
-      expect(responseBody.error).toBe(FAMILY_ERRORS.OWNER_ID_REQUIRED);
+      expect(responseBody.error).toBe(COLLECTION_ERRORS.OWNER_ID_REQUIRED);
     });
 
     it("should properly handle URL parameters", async () => {
-      mockFamilyGetById.mockResolvedValue(mockFamily);
+      mockCollectionGetById.mockResolvedValue(mockCollection);
 
       const response = await fastify.inject({
         method: "GET",
-        url: "/family-123-with-dashes",
+        url: "/collection-123-with-dashes",
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyGetById).toHaveBeenCalledWith("family-123-with-dashes");
+      expect(mockCollectionGetById).toHaveBeenCalledWith("collection-123-with-dashes");
     });
 
-    it("should handle special characters in family ID", async () => {
-      mockFamilyGetById.mockResolvedValue(mockFamily);
+    it("should handle special characters in collection ID", async () => {
+      mockCollectionGetById.mockResolvedValue(mockCollection);
 
-      const familyId = "550e8400-e29b-41d4-a716-446655440000";
+      const collectionId = "550e8400-e29b-41d4-a716-446655440000";
       const response = await fastify.inject({
         method: "GET",
-        url: `/${familyId}`,
+        url: `/${collectionId}`,
       });
 
       expect(response.statusCode).toBe(200);
-      expect(mockFamilyGetById).toHaveBeenCalledWith(familyId);
+      expect(mockCollectionGetById).toHaveBeenCalledWith(collectionId);
     });
 
-    it("should handle family creation with only required fields", async () => {
-      mockFamilyCreate.mockResolvedValue(mockFamilyPublic);
+    it("should handle collection creation with only required fields", async () => {
+      mockCollectionCreate.mockResolvedValue(mockCollectionPublic);
 
       const response = await fastify.inject({
         method: "POST",
         url: "/",
         payload: {
-          name: "Minimal Family",
+          name: "Minimal Collection",
           owner_id: "user-123",
         },
       });
 
       expect(response.statusCode).toBe(201);
-      expect(mockFamilyCreate).toHaveBeenCalledWith(
-        { name: "Minimal Family" },
+      expect(mockCollectionCreate).toHaveBeenCalledWith(
+        { name: "Minimal Collection" },
         "user-123"
       );
     });

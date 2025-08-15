@@ -3,7 +3,7 @@ import { UUID } from "crypto";
 export type Tag = {
   id: UUID;
   name: string;
-  family_id: UUID;
+  collection_id: UUID;
   created_at: string;
   updated_at: string;
 };
@@ -41,12 +41,12 @@ export type TimeTag = Tag & {
 export interface TagInput {
   type: "Person" | "Location" | "Event" | "Time";
   name: string;
-  family_id: UUID;
+  collection_id: UUID;
   created_by: UUID;
 }
 
 export interface TagUpdateInput {
   type: "Person" | "Location" | "Event" | "Time";
   name: string;
-  family_id: UUID;
+  collection_id: UUID;
 }

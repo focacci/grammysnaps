@@ -22,11 +22,11 @@ const mockImageCreate = jest.fn();
 const mockImageUpdate = jest.fn();
 const mockImageDelete = jest.fn();
 const mockImageApplyTags = jest.fn();
-const mockImageApplyFamilies = jest.fn();
-const mockImageGetByFamily = jest.fn();
-const mockImageGetByFamilies = jest.fn();
+const mockImageApplyCollections = jest.fn();
+const mockImageGetByCollection = jest.fn();
+const mockImageGetByCollections = jest.fn();
 const mockImageGetAllWithTag = jest.fn();
-const mockImageGetOrphanedByFamily = jest.fn();
+const mockImageGetOrphanedByCollection = jest.fn();
 const mockImageGetForUser = jest.fn();
 
 const mockS3Upload = jest.fn();
@@ -48,7 +48,7 @@ describe("Image Routes", () => {
     title: "Test Image",
     filename: "test.jpg",
     tags: [TEST_UUIDS.TAG_1, TEST_UUIDS.TAG_2],
-    family_ids: [TEST_UUIDS.FAMILY_1, TEST_UUIDS.FAMILY_2],
+    collection_ids: [TEST_UUIDS.COLLECTION_1, TEST_UUIDS.COLLECTION_2],
     original_key: TEST_S3_KEYS.ORIGINAL_1,
     thumbnail_key: TEST_S3_KEYS.THUMBNAIL_1,
     created_at: "2023-01-01T00:00:00Z",
@@ -60,7 +60,7 @@ describe("Image Routes", () => {
     title: mockImage.title,
     filename: mockImage.filename,
     tags: mockImage.tags,
-    family_ids: mockImage.family_ids,
+    collection_ids: mockImage.collection_ids,
     original_url: TEST_S3_URLS.ORIGINAL_1,
     thumbnail_url: TEST_S3_URLS.THUMBNAIL_1,
     created_at: mockImage.created_at,
@@ -101,7 +101,7 @@ describe("Image Routes", () => {
 
     // Setup other image functions to return fresh copies
     mockImageGet.mockImplementation(async () => [{ ...mockImage }]);
-    mockImageGetByFamily.mockImplementation(async () => [{ ...mockImage }]);
+    mockImageGetByCollection.mockImplementation(async () => [{ ...mockImage }]);
     mockImageGetAllWithTag.mockImplementation(async () => [{ ...mockImage }]);
     mockImageGetForUser.mockImplementation(async () => [{ ...mockImage }]);
 
@@ -113,11 +113,11 @@ describe("Image Routes", () => {
       update: mockImageUpdate,
       delete: mockImageDelete,
       applyTags: mockImageApplyTags,
-      applyFamilies: mockImageApplyFamilies,
-      getByFamily: mockImageGetByFamily,
-      getByFamilies: mockImageGetByFamilies,
+      applyCollections: mockImageApplyCollections,
+      getByCollection: mockImageGetByCollection,
+      getByCollections: mockImageGetByCollections,
       getAllWithTag: mockImageGetAllWithTag,
-      getOrphanedByFamily: mockImageGetOrphanedByFamily,
+      getOrphanedByCollection: mockImageGetOrphanedByCollection,
       getForUser: mockImageGetForUser,
     });
 
@@ -309,7 +309,7 @@ describe("Image Routes", () => {
   });
 
   describe("POST /", () => {
-    const s3Key = "family-photos/generated-uuid/test.jpg";
+    const s3Key = "collection-photos/generated-uuid/test.jpg";
 
     beforeEach(() => {
       mockS3CreateKey.mockReturnValue(s3Key);
@@ -338,7 +338,7 @@ describe("Image Routes", () => {
     it("should handle multipart validation requirements", () => {
       // Test that the route exists and would handle:
       // - File presence validation
-      // - Family IDs requirement
+      // - Collection IDs requirement
       // - File type validation
       // - File size limits
       // - S3 upload process
@@ -354,7 +354,7 @@ describe("Image Routes", () => {
     const updateData: ImageInput = {
       title: "Updated Title",
       tags: [TEST_UUIDS.TAG_1], // Valid UUID for tag
-      family_ids: [TEST_UUIDS.FAMILY_1],
+      collection_ids: [TEST_UUIDS.COLLECTION_1],
     };
 
     it("should update image successfully", async () => {
@@ -416,7 +416,7 @@ describe("Image Routes", () => {
     it("should handle valid update with optional title", async () => {
       const updateDataNoTitle = {
         tags: [TEST_UUIDS.TAG_1],
-        family_ids: [TEST_UUIDS.FAMILY_1],
+        collection_ids: [TEST_UUIDS.COLLECTION_1],
       };
       const updatedImage = { ...mockImage, ...updateDataNoTitle };
       mockImageUpdate.mockResolvedValue(updatedImage);
@@ -434,7 +434,7 @@ describe("Image Routes", () => {
       const updateDataEmptyTags = {
         title: "Test",
         tags: [],
-        family_ids: [TEST_UUIDS.FAMILY_1],
+        collection_ids: [TEST_UUIDS.COLLECTION_1],
       };
       const updatedImage = { ...mockImage, ...updateDataEmptyTags };
       mockImageUpdate.mockResolvedValue(updatedImage);
@@ -448,43 +448,43 @@ describe("Image Routes", () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it("should reject empty family_ids array due to validation", async () => {
-      const updateDataEmptyFamilies = {
+    it("should reject empty collection_ids array due to validation", async () => {
+      const updateDataEmptyCollections = {
         title: "Test",
         tags: [TEST_UUIDS.TAG_1],
-        family_ids: [],
+        collection_ids: [],
       };
 
       const response = await fastify.inject({
         method: "PUT",
         url: `/${validImageId}`,
-        payload: updateDataEmptyFamilies,
+        payload: updateDataEmptyCollections,
       });
 
       expect(response.statusCode).toBe(400); // Should fail validation due to minItems: 1
     });
   });
 
-  describe("GET /family/:familyId", () => {
-    const validFamilyId = TEST_UUIDS.FAMILY_1;
+  describe("GET /collection/:collectionId", () => {
+    const validCollectionId = TEST_UUIDS.COLLECTION_1;
 
-    it("should return images for family", async () => {
+    it("should return images for collection", async () => {
       const response = await fastify.inject({
         method: "GET",
-        url: `/family/${validFamilyId}`,
+        url: `/collection/${validCollectionId}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.body)).toEqual({ images: [mockPublicImage] });
-      expect(mockImageGetByFamily).toHaveBeenCalledWith(validFamilyId);
+      expect(mockImageGetByCollection).toHaveBeenCalledWith(validCollectionId);
     });
 
     it("should return empty array when no images found", async () => {
-      mockImageGetByFamily.mockResolvedValue([]);
+      mockImageGetByCollection.mockResolvedValue([]);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/family/${validFamilyId}`,
+        url: `/collection/${validCollectionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -494,23 +494,23 @@ describe("Image Routes", () => {
     it("should reject invalid UUID format", async () => {
       const response = await fastify.inject({
         method: "GET",
-        url: "/family/invalid-uuid",
+        url: "/collection/invalid-uuid",
       });
 
       expect(response.statusCode).toBe(400);
     });
 
     it("should handle database errors", async () => {
-      mockImageGetByFamily.mockRejectedValue(new Error("Database error"));
+      mockImageGetByCollection.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/family/${validFamilyId}`,
+        url: `/collection/${validCollectionId}`,
       });
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
-        message: IMAGE_ERRORS.GET_BY_FAMILY_FAILED,
+        message: IMAGE_ERRORS.GET_BY_COLLECTION_FAILED,
         error: "Database error",
       });
     });

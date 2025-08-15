@@ -21,8 +21,8 @@ const TEST_USER = {
   invite_key: "dev123", // For dev environment
 };
 
-const TEST_FAMILY = {
-  name: "Test Family for Images",
+const TEST_COLLECTION = {
+  name: "Test Collection for Images",
 };
 
 // Colors for generating different test images
@@ -122,46 +122,46 @@ async function login() {
   };
 }
 
-// Create a test family
-async function createFamily(token, userId) {
-  console.log("Creating test family...");
-  const response = await fetch(`${API_BASE_URL}/family`, {
+// Create a test collection
+async function createCollection(token, userId) {
+  console.log("Creating test collection...");
+  const response = await fetch(`${API_BASE_URL}/collection`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      ...TEST_FAMILY,
+      ...TEST_COLLECTION,
       owner_id: userId,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Family creation failed: ${response.status} ${errorText}`);
+    throw new Error(`Collection creation failed: ${response.status} ${errorText}`);
   }
 
-  const family = await response.json();
-  console.log("✓ Test family created successfully");
-  return family;
+  const collection = await response.json();
+  console.log("✓ Test collection created successfully");
+  return collection;
 }
 
-// Get user's family IDs
-async function getUserFamilies(token) {
-  console.log("Getting user families...");
-  const response = await fetch(`${API_BASE_URL}/family`, {
+// Get user's collection IDs
+async function getUserCollections(token) {
+  console.log("Getting user collections...");
+  const response = await fetch(`${API_BASE_URL}/collection`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to get families: ${response.status}`);
+    throw new Error(`Failed to get collections: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.families || data;
+  return data.collections || data;
 }
 
 // Upload a single image
@@ -170,7 +170,7 @@ async function uploadImage(
   imageBuffer,
   filename,
   title,
-  familyIds,
+  collectionIds,
   index
 ) {
   const form = new FormData();
@@ -183,7 +183,7 @@ async function uploadImage(
 
   // Add metadata
   form.append("title", title);
-  form.append("family_ids", JSON.stringify(familyIds));
+  form.append("collection_ids", JSON.stringify(collectionIds));
   form.append("tags", JSON.stringify([])); // Empty tags for now
 
   const response = await fetch(`${API_BASE_URL}/image`, {
@@ -216,18 +216,18 @@ async function uploadTestImages() {
     // Login and get auth token
     const { token, user } = await login();
 
-    // Get or create a family
-    let families = await getUserFamilies(token);
-    if (!families || families.length === 0) {
-      console.log("No families found, creating one...");
-      const newFamily = await createFamily(token, user.id);
-      families = [newFamily];
+    // Get or create a collection
+    let collections = await getUserCollections(token);
+    if (!collections || collections.length === 0) {
+      console.log("No collections found, creating one...");
+      const newCollection = await createCollection(token, user.id);
+      collections = [newCollection];
     }
 
-    const familyIds = families.map((f) => f.id);
+    const collectionIds = collections.map((f) => f.id);
     console.log(
-      `✓ Using ${families.length} families:`,
-      families.map((f) => f.name)
+      `✓ Using ${collections.length} collections:`,
+      collections.map((f) => f.name)
     );
 
     // Upload images in batches to avoid overwhelming the server
@@ -254,7 +254,7 @@ async function uploadTestImages() {
         const title = `Test Image ${i + 1}`;
 
         uploadPromises.push(
-          uploadImage(token, imageBuffer, filename, title, familyIds, i + 1)
+          uploadImage(token, imageBuffer, filename, title, collectionIds, i + 1)
             .then((result) => {
               console.log(`  ✓ Uploaded: ${filename}`);
               successCount++;

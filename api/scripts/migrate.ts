@@ -40,43 +40,43 @@ CREATE TABLE IF NOT EXISTS users (
     middle_name VARCHAR(100),
     last_name VARCHAR(100),
     birthday DATE,
-    families UUID[] NOT NULL,
+    collection UUID[] NOT NULL,
     profile_picture_key VARCHAR(1000),
     profile_picture_thumbnail_key VARCHAR(1000),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Families table
-CREATE TABLE IF NOT EXISTS families (
+-- Collections table
+CREATE TABLE IF NOT EXISTS collection (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     members TEXT[] NOT NULL,
     owner_id UUID NOT NULL,
-    related_families UUID[] NOT NULL,
+    related_collection UUID[] NOT NULL,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Family members junction table
-CREATE TABLE IF NOT EXISTS family_members (
-    family_id UUID NOT NULL,
+-- Collection members junction table
+CREATE TABLE IF NOT EXISTS collection_members (
+    collection_id UUID NOT NULL,
     user_id UUID NOT NULL,
-    PRIMARY KEY (family_id, user_id),
-    FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
+    PRIMARY KEY (collection_id, user_id),
+    FOREIGN KEY (collection_id) REFERENCES collection(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Family relations junction table
-CREATE TABLE IF NOT EXISTS family_relations (
-    family_id_1 UUID NOT NULL,
-    family_id_2 UUID NOT NULL,
+-- Collection relations junction table
+CREATE TABLE IF NOT EXISTS collection_relations (
+    collection_id_1 UUID NOT NULL,
+    collection_id_2 UUID NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (family_id_1, family_id_2),
-    FOREIGN KEY (family_id_1) REFERENCES families(id) ON DELETE CASCADE,
-    FOREIGN KEY (family_id_2) REFERENCES families(id) ON DELETE CASCADE,
-    CHECK (family_id_1 != family_id_2)
+    PRIMARY KEY (collection_id_1, collection_id_2),
+    FOREIGN KEY (collection_id_1) REFERENCES collection(id) ON DELETE CASCADE,
+    FOREIGN KEY (collection_id_2) REFERENCES collection(id) ON DELETE CASCADE,
+    CHECK (collection_id_1 != collection_id_2)
 );
 
 -- Images table
@@ -87,10 +87,10 @@ CREATE TABLE IF NOT EXISTS images (
     original_key VARCHAR(1000),
     thumbnail_key VARCHAR(1000),
     tags TEXT[] NOT NULL,
-    family_ids UUID[] NOT NULL,
+    collection_ids UUID[] NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (array_length(family_ids, 1) >= 1)
+    CHECK (array_length(collection_ids, 1) >= 1)
 );
 
 -- Tags table
@@ -98,12 +98,12 @@ CREATE TABLE IF NOT EXISTS tags (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type VARCHAR(63) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    family_id UUID NOT NULL,
-    UNIQUE (type, name, family_id),
+    collection_id UUID NOT NULL,
+    UNIQUE (type, name, collection_id),
     created_by UUID NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+    FOREIGN KEY (collection_id) REFERENCES collection(id) ON DELETE CASCADE
 );
 
 -- Image tags junction table
@@ -115,25 +115,25 @@ CREATE TABLE IF NOT EXISTS image_tags (
     FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 );
 
--- Image families junction table
-CREATE TABLE IF NOT EXISTS image_families (
+-- Image collection junction table
+CREATE TABLE IF NOT EXISTS image_collection (
     image_id UUID NOT NULL,
-    family_id UUID NOT NULL,
-    PRIMARY KEY (image_id, family_id),
+    collection_id UUID NOT NULL,
+    PRIMARY KEY (image_id, collection_id),
     FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
-    FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+    FOREIGN KEY (collection_id) REFERENCES collection(id) ON DELETE CASCADE
 );
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_family_members_family_id ON family_members(family_id);
-CREATE INDEX IF NOT EXISTS idx_family_members_user_id ON family_members(user_id);
-CREATE INDEX IF NOT EXISTS idx_families_owner_id ON families(owner_id);
-CREATE INDEX IF NOT EXISTS idx_tags_family_id ON tags(family_id);
+CREATE INDEX IF NOT EXISTS idx_collection_members_collection_id ON collection_members(collection_id);
+CREATE INDEX IF NOT EXISTS idx_collection_members_user_id ON collection_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_collection_owner_id ON collection(owner_id);
+CREATE INDEX IF NOT EXISTS idx_tags_collection_id ON tags(collection_id);
 CREATE INDEX IF NOT EXISTS idx_image_tags_image_id ON image_tags(image_id);
 CREATE INDEX IF NOT EXISTS idx_image_tags_tag_id ON image_tags(tag_id);
-CREATE INDEX IF NOT EXISTS idx_image_families_image_id ON image_families(image_id);
-CREATE INDEX IF NOT EXISTS idx_image_families_family_id ON image_families(family_id);
+CREATE INDEX IF NOT EXISTS idx_image_collection_image_id ON image_collection(image_id);
+CREATE INDEX IF NOT EXISTS idx_image_collection_collection_id ON image_collection(collection_id);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -151,9 +151,9 @@ CREATE TRIGGER update_users_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
-DROP TRIGGER IF EXISTS update_families_updated_at ON families;
-CREATE TRIGGER update_families_updated_at
-    BEFORE UPDATE ON families
+DROP TRIGGER IF EXISTS update_collection_updated_at ON collection;
+CREATE TRIGGER update_collection_updated_at
+    BEFORE UPDATE ON collection
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

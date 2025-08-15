@@ -149,22 +149,22 @@ export class ValidationUtils {
   }
 
   /**
-   * Sanitize array of family IDs
+   * Sanitize array of collection IDs
    */
-  static sanitizeFamilyIds(families: UUID[]): UUID[] {
-    if (!Array.isArray(families)) {
+  static sanitizeCollectionIds(collections: UUID[]): UUID[] {
+    if (!Array.isArray(collections)) {
       return [];
     }
 
     const sanitized: UUID[] = [];
 
-    for (const familyId of families) {
-      if (typeof familyId === "string") {
-        const trimmed = familyId.trim();
+    for (const collectionId of collections) {
+      if (typeof collectionId === "string") {
+        const trimmed = collectionId.trim();
         if (trimmed) {
-          // Validate family ID format (UUID)
+          // Validate collection ID format (UUID)
           if (!validator.isUUID(trimmed)) {
-            throw new Error("Family ID must be a valid UUID");
+            throw new Error("Collection ID must be a valid UUID");
           }
 
           sanitized.push(trimmed as UUID);
