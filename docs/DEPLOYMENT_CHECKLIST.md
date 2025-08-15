@@ -121,7 +121,7 @@ terraform apply
 - [ ] User registration works
 - [ ] User login works
 - [ ] Image upload works
-- [ ] Family creation/joining works
+- [ ] Collection creation/joining works
 
 ### 14. Monitoring Setup
 

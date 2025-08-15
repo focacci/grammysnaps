@@ -12,19 +12,19 @@ interface User {
   middle_name: string | null;
   last_name: string | null;
   birthday: string | null;
-  families: string[];
+  collections: string[];
   created_at: string;
   updated_at: string;
   profilePicture: string;
 }
 
-interface FamilyGroup {
+interface CollectionGroup {
   id: string;
   name: string;
   member_count: number;
   owner_id: string;
   user_role: "owner" | "member";
-  related_families: string[];
+  related_collections: string[];
   created_at: string;
   updated_at: string;
 }
@@ -34,7 +34,7 @@ interface Image {
   title?: string;
   filename: string;
   tags?: string[];
-  family_ids?: string[];
+  collection_ids?: string[];
   original_url?: string;
   thumbnail_url?: string;
   created_at?: string;
@@ -45,7 +45,7 @@ interface Tag {
   id: string;
   name: string;
   type: "Person" | "Location" | "Event" | "Time";
-  family_id: string;
+  collection_id: string;
   created_by: string;
   created_at?: string;
   updated_at?: string;
@@ -64,7 +64,7 @@ function PhotoView({ user }: PhotoViewProps) {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadTitle, setUploadTitle] = useState("");
   const [selectedUploadTags, setSelectedUploadTags] = useState<string[]>([]);
-  const [selectedUploadFamilies, setSelectedUploadFamilies] = useState<
+  const [selectedUploadCollections, setSelectedUploadCollections] = useState<
     string[]
   >([]);
   const [uploading, setUploading] = useState(false);
@@ -79,7 +79,7 @@ function PhotoView({ user }: PhotoViewProps) {
   const [newTagType, setNewTagType] = useState<
     "Person" | "Location" | "Event" | "Time"
   >("Person");
-  const [newTagFamilyId, setNewTagFamilyId] = useState<string>("");
+  const [newTagCollectionId, setNewTagCollectionId] = useState<string>("");
   const [creatingTag, setCreatingTag] = useState(false);
   const [showEditTagModal, setShowEditTagModal] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
@@ -87,7 +87,7 @@ function PhotoView({ user }: PhotoViewProps) {
   const [editTagType, setEditTagType] = useState<
     "Person" | "Location" | "Event" | "Time"
   >("Person");
-  const [editTagFamilyId, setEditTagFamilyId] = useState<string>("");
+  const [editTagCollectionId, setEditTagCollectionId] = useState<string>("");
   const [savingTag, setSavingTag] = useState(false);
   const [deletingTag, setDeletingTag] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -95,13 +95,13 @@ function PhotoView({ user }: PhotoViewProps) {
   const [isEditingImage, setIsEditingImage] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editImageTags, setEditImageTags] = useState<string[]>([]);
-  const [editImageFamilies, setEditImageFamilies] = useState<string[]>([]);
+  const [editImageCollections, setEditImageCollections] = useState<string[]>([]);
   const [savingImage, setSavingImage] = useState(false);
   const [deletingImage, setDeletingImage] = useState(false);
 
-  // Family-related state
-  const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
-  const [selectedFamily, setSelectedFamily] = useState<string>("all");
+  // Collection-related state
+  const [collectionGroups, setCollectionGroups] = useState<CollectionGroup[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<string>("all");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -130,7 +130,7 @@ function PhotoView({ user }: PhotoViewProps) {
     Time: true,
   });
 
-  // Function to load user's family groups
+  // Function to load user's collections
   // This function has been replaced by inline fetching in useEffect
 
   // Fetch data from API
@@ -140,29 +140,29 @@ function PhotoView({ user }: PhotoViewProps) {
         setLoading(true);
         setError(null);
 
-        // First fetch user's families
-        const familiesResponse = await authService.apiCall(
-          getApiEndpoint("/family/user/" + user.id)
+        // First fetch user's collections
+        const collectionsResponse = await authService.apiCall(
+          getApiEndpoint("/collection/user/" + user.id)
         );
-        if (!familiesResponse.ok) {
+        if (!collectionsResponse.ok) {
           throw new Error(
-            `Failed to fetch families: ${familiesResponse.status}`
+            `Failed to fetch collections: ${collectionsResponse.status}`
           );
         }
-        const familiesData = await familiesResponse.json();
-        setFamilyGroups(familiesData);
+        const collectionsData = await collectionsResponse.json();
+        setCollectionGroups(collectionsData);
 
-        // Set default family for new tags
-        if (familiesData.length > 0 && !newTagFamilyId) {
-          setNewTagFamilyId(familiesData[0].id);
+        // Set default collection for new tags
+        if (collectionsData.length > 0 && !newTagCollectionId) {
+          setNewTagCollectionId(collectionsData[0].id);
         }
 
-        // Fetch images and tags for all user's families in parallel
+        // Fetch images and tags for all user's collections in parallel
         // Use the new paginated user endpoint
-        const familyIds = familiesData.map((family: FamilyGroup) => family.id);
+        const collectionIds = collectionsData.map((collection: CollectionGroup) => collection.id);
 
         let imagesResponse;
-        if (familyIds.length > 0) {
+        if (collectionIds.length > 0) {
           // Build query parameters for pagination
           const queryParams = new URLSearchParams({
             limit: pageSize.toString(),
@@ -181,15 +181,15 @@ function PhotoView({ user }: PhotoViewProps) {
             getApiEndpoint(`/image/user/${user.id}?${queryParams.toString()}`)
           );
         } else {
-          // If user has no families, set empty images
+          // If user has no collections, set empty images
           setImages([]);
           setTags([]);
           setLoading(false);
           return;
         }
 
-        const tagPromises = familiesData.map((family: FamilyGroup) =>
-          authService.apiCall(getApiEndpoint(`/tag/family/${family.id}`))
+        const tagPromises = collectionsData.map((collection: CollectionGroup) =>
+          authService.apiCall(getApiEndpoint(`/tag/collection/${collection.id}`))
         );
 
         const [, ...tagResponses] = await Promise.all([
@@ -214,7 +214,7 @@ function PhotoView({ user }: PhotoViewProps) {
         const receivedImages = imagesData.images || [];
         setHasMoreImages(receivedImages.length === pageSize);
 
-        // Combine tags from all families
+        // Combine tags from all collections
         const allTags: Tag[] = [];
         for (const tagResponse of tagResponses) {
           if (tagResponse.ok) {
@@ -441,11 +441,11 @@ function PhotoView({ user }: PhotoViewProps) {
     );
   };
 
-  const handleUploadFamilyToggle = (familyId: string) => {
-    setSelectedUploadFamilies((prev) =>
-      prev.includes(familyId)
-        ? prev.filter((f) => f !== familyId)
-        : [...prev, familyId]
+  const handleUploadCollectionToggle = (collectionId: string) => {
+    setSelectedUploadCollections((prev) =>
+      prev.includes(collectionId)
+        ? prev.filter((f) => f !== collectionId)
+        : [...prev, collectionId]
     );
   };
 
@@ -458,9 +458,9 @@ function PhotoView({ user }: PhotoViewProps) {
       return;
     }
 
-    // Validate family selection
-    if (selectedUploadFamilies.length === 0) {
-      setUploadError("Please select at least one family for this image");
+    // Validate collection selection
+    if (selectedUploadCollections.length === 0) {
+      setUploadError("Please select at least one collection for this image");
       return;
     }
 
@@ -494,7 +494,7 @@ function PhotoView({ user }: PhotoViewProps) {
         formData.append("title", uploadTitle.trim());
       }
       formData.append("tags", JSON.stringify(selectedUploadTags));
-      formData.append("family_ids", JSON.stringify(selectedUploadFamilies));
+      formData.append("collection_ids", JSON.stringify(selectedUploadCollections));
 
       const authHeader = await authService.getAuthHeader();
       if (!authHeader) {
@@ -521,7 +521,7 @@ function PhotoView({ user }: PhotoViewProps) {
       // Reset form and close modal
       setUploadTitle("");
       setSelectedUploadTags([]);
-      setSelectedUploadFamilies([]);
+      setSelectedUploadCollections([]);
       // Clean up preview URL
       if (uploadFilePreviewUrl) {
         URL.revokeObjectURL(uploadFilePreviewUrl);
@@ -548,7 +548,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setShowUploadModal(false);
     setUploadTitle("");
     setSelectedUploadTags([]);
-    setSelectedUploadFamilies([]);
+    setSelectedUploadCollections([]);
     setUploadFile(null);
     setUploadError(null);
     setDragOver(false);
@@ -612,8 +612,8 @@ function PhotoView({ user }: PhotoViewProps) {
       alert("Please enter a tag name");
       return;
     }
-    if (!newTagFamilyId) {
-      alert("Must select a family group");
+    if (!newTagCollectionId) {
+      alert("Must select a collection group");
       return;
     }
 
@@ -627,7 +627,7 @@ function PhotoView({ user }: PhotoViewProps) {
         body: JSON.stringify({
           name: newTagName.trim(),
           type: newTagType,
-          family_id: newTagFamilyId,
+          collection_id: newTagCollectionId,
           created_by: user.id,
         }),
       });
@@ -644,7 +644,7 @@ function PhotoView({ user }: PhotoViewProps) {
       // Reset form and close modal
       setNewTagName("");
       setNewTagType("Person");
-      // Don't reset family selection to keep the same family selected
+      // Don't reset collection selection to keep the same collection selected
       setShowCreateTagModal(false);
     } catch (err) {
       console.error("Error creating tag:", err);
@@ -658,14 +658,14 @@ function PhotoView({ user }: PhotoViewProps) {
     setShowCreateTagModal(false);
     setNewTagName("");
     setNewTagType("Person");
-    // Keep the family selection for next time
+    // Keep the collection selection for next time
   };
 
   const handleEditTag = (tag: Tag) => {
     setEditingTag(tag);
     setEditTagName(tag.name);
     setEditTagType(tag.type);
-    setEditTagFamilyId(tag.family_id);
+    setEditTagCollectionId(tag.collection_id);
     setShowEditTagModal(true);
   };
 
@@ -674,7 +674,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setEditingTag(null);
     setEditTagName("");
     setEditTagType("Person");
-    setEditTagFamilyId("");
+    setEditTagCollectionId("");
   };
 
   const handleEditTagSubmit = async (e: React.FormEvent) => {
@@ -683,8 +683,8 @@ function PhotoView({ user }: PhotoViewProps) {
       alert("Please enter a tag name");
       return;
     }
-    if (!editTagFamilyId) {
-      alert("Must select a family group");
+    if (!editTagCollectionId) {
+      alert("Must select a collection group");
       return;
     }
 
@@ -700,7 +700,7 @@ function PhotoView({ user }: PhotoViewProps) {
           body: JSON.stringify({
             name: editTagName.trim(),
             type: editTagType,
-            family_id: editTagFamilyId,
+            collection_id: editTagCollectionId,
           }),
         }
       );
@@ -770,7 +770,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setSelectedImage(image);
     setEditTitle(image.title || "");
     setEditImageTags(image.tags || []);
-    setEditImageFamilies(image.family_ids || []);
+    setEditImageCollections(image.collection_ids || []);
     setIsEditingImage(false);
     setShowImageModal(true);
   };
@@ -781,7 +781,7 @@ function PhotoView({ user }: PhotoViewProps) {
     setIsEditingImage(false);
     setEditTitle("");
     setEditImageTags([]);
-    setEditImageFamilies([]);
+    setEditImageCollections([]);
   };
 
   const handleEditToggle = () => {
@@ -789,7 +789,7 @@ function PhotoView({ user }: PhotoViewProps) {
     if (selectedImage && !isEditingImage) {
       setEditTitle(selectedImage.title || "");
       setEditImageTags(selectedImage.tags || []);
-      setEditImageFamilies(selectedImage.family_ids || []);
+      setEditImageCollections(selectedImage.collection_ids || []);
     }
   };
 
@@ -799,14 +799,14 @@ function PhotoView({ user }: PhotoViewProps) {
     );
   };
 
-  const handleEditImageFamilyToggle = (familyId: string) => {
-    setEditImageFamilies((prev) => {
-      const newFamilies = prev.includes(familyId)
-        ? prev.filter((f) => f !== familyId)
-        : [...prev, familyId];
+  const handleEditImageCollectionToggle = (collectionId: string) => {
+    setEditImageCollections((prev) => {
+      const newCollections = prev.includes(collectionId)
+        ? prev.filter((f) => f !== collectionId)
+        : [...prev, collectionId];
 
-      // Ensure at least one family is always selected
-      return newFamilies.length === 0 ? prev : newFamilies;
+      // Ensure at least one collection is always selected
+      return newCollections.length === 0 ? prev : newCollections;
     });
   };
 
@@ -817,9 +817,9 @@ function PhotoView({ user }: PhotoViewProps) {
       return;
     }
 
-    // Validate that at least one family is selected
-    if (editImageFamilies.length === 0) {
-      alert("Please select at least one family for this image");
+    // Validate that at least one collection is selected
+    if (editImageCollections.length === 0) {
+      alert("Please select at least one collection for this image");
       return;
     }
 
@@ -835,7 +835,7 @@ function PhotoView({ user }: PhotoViewProps) {
           body: JSON.stringify({
             title: editTitle.trim() || null,
             tags: editImageTags,
-            family_ids: editImageFamilies,
+            collection_ids: editImageCollections,
           }),
         }
       );
@@ -949,22 +949,22 @@ function PhotoView({ user }: PhotoViewProps) {
     }));
   };
 
-  // Group tags by family and then by type
-  const tagsByFamilyAndType = familyGroups
+  // Group tags by collection and then by type
+  const tagsByCollectionAndType = collectionGroups
     .filter(
-      (family) => selectedFamily === "all" || family.id === selectedFamily
+      (collection) => selectedCollection === "all" || collection.id === selectedCollection
     )
     .reduce(
-      (acc, family) => {
-        const familyTags = tags.filter((tag) => tag.family_id === family.id);
-        acc[family.id] = {
-          familyName: family.name,
-          familyId: family.id,
+      (acc, collection) => {
+        const collectionTags = tags.filter((tag) => tag.collection_id === collection.id);
+        acc[collection.id] = {
+          collectionName: collection.name,
+          collectionId: collection.id,
           tagsByType: {
-            People: familyTags.filter((tag) => tag.type === "Person"),
-            Places: familyTags.filter((tag) => tag.type === "Location"),
-            Events: familyTags.filter((tag) => tag.type === "Event"),
-            Time: familyTags.filter((tag) => tag.type === "Time"),
+            People: collectionTags.filter((tag) => tag.type === "Person"),
+            Places: collectionTags.filter((tag) => tag.type === "Location"),
+            Events: collectionTags.filter((tag) => tag.type === "Event"),
+            Time: collectionTags.filter((tag) => tag.type === "Time"),
           },
         };
         return acc;
@@ -972,8 +972,8 @@ function PhotoView({ user }: PhotoViewProps) {
       {} as Record<
         string,
         {
-          familyName: string;
-          familyId: string;
+          collectionName: string;
+          collectionId: string;
           tagsByType: {
             People: Tag[];
             Places: Tag[];
@@ -999,10 +999,10 @@ function PhotoView({ user }: PhotoViewProps) {
       if (!hasAllSelectedTags) return false;
     }
 
-    // Filter by family if not "all"
-    if (selectedFamily !== "all") {
-      // Check if image belongs to the selected family
-      if (!image.family_ids || !image.family_ids.includes(selectedFamily)) {
+    // Filter by collection if not "all"
+    if (selectedCollection !== "all") {
+      // Check if image belongs to the selected collection
+      if (!image.collection_ids || !image.collection_ids.includes(selectedCollection)) {
         return false;
       }
     }
@@ -1076,17 +1076,17 @@ function PhotoView({ user }: PhotoViewProps) {
               </button>
             </div>
             <div className="filter-sections">
-              {Object.entries(tagsByFamilyAndType).map(
-                ([familyId, familyData]) => (
-                  <div key={familyId} className="filter-section">
+              {Object.entries(tagsByCollectionAndType).map(
+                ([collectionId, collectionData]) => (
+                  <div key={collectionId} className="filter-section">
                     <button
                       className="section-header"
-                      onClick={() => toggleSection(`family-${familyId}`)}
-                      aria-expanded={!collapsedSections[`family-${familyId}`]}
+                      onClick={() => toggleSection(`collection-${collectionId}`)}
+                      aria-expanded={!collapsedSections[`collection-${collectionId}`]}
                     >
                       <span
                         className={`section-caret ${
-                          collapsedSections[`family-${familyId}`]
+                          collapsedSections[`collection-${collectionId}`]
                             ? "collapsed"
                             : ""
                         }`}
@@ -1094,32 +1094,32 @@ function PhotoView({ user }: PhotoViewProps) {
                         ▼
                       </span>
                       <span className="section-title">
-                        {familyData.familyName}
+                        {collectionData.collectionName}
                       </span>
                     </button>
-                    {!collapsedSections[`family-${familyId}`] && (
+                    {!collapsedSections[`collection-${collectionId}`] && (
                       <div className="filter-list">
-                        {Object.entries(familyData.tagsByType).map(
+                        {Object.entries(collectionData.tagsByType).map(
                           ([tagType, typeTags]) =>
                             typeTags.length > 0 && (
                               <div
-                                key={`${familyId}-${tagType}`}
+                                key={`${collectionId}-${tagType}`}
                                 className="filter-section"
                               >
                                 <button
                                   className="section-header"
                                   onClick={() =>
-                                    toggleSection(`${familyId}-${tagType}`)
+                                    toggleSection(`${collectionId}-${tagType}`)
                                   }
                                   aria-expanded={
-                                    !collapsedSections[`${familyId}-${tagType}`]
+                                    !collapsedSections[`${collectionId}-${tagType}`]
                                   }
                                   style={{ paddingLeft: "1rem" }}
                                 >
                                   <span
                                     className={`section-caret ${
                                       collapsedSections[
-                                        `${familyId}-${tagType}`
+                                        `${collectionId}-${tagType}`
                                       ]
                                         ? "collapsed"
                                         : ""
@@ -1132,7 +1132,7 @@ function PhotoView({ user }: PhotoViewProps) {
                                   </span>
                                 </button>
                                 {!collapsedSections[
-                                  `${familyId}-${tagType}`
+                                  `${collectionId}-${tagType}`
                                 ] && (
                                   <div className="filter-list">
                                     {typeTags.map((tag) => (
@@ -1206,18 +1206,18 @@ function PhotoView({ user }: PhotoViewProps) {
                 + Upload Image
               </button>
 
-              <div className="family-filter">
-                <label htmlFor="family-select">Family:</label>
+              <div className="collection-filter">
+                <label htmlFor="collection-select">Collection:</label>
                 <select
-                  id="family-select"
-                  value={selectedFamily}
-                  onChange={(e) => setSelectedFamily(e.target.value)}
-                  className="family-dropdown"
+                  id="collection-select"
+                  value={selectedCollection}
+                  onChange={(e) => setSelectedCollection(e.target.value)}
+                  className="collection-dropdown"
                 >
-                  <option value="all">All Families</option>
-                  {familyGroups.map((family) => (
-                    <option key={family.id} value={family.id}>
-                      {family.name}
+                  <option value="all">All Collections</option>
+                  {collectionGroups.map((collection) => (
+                    <option key={collection.id} value={collection.id}>
+                      {collection.name}
                     </option>
                   ))}
                 </select>
@@ -1228,14 +1228,14 @@ function PhotoView({ user }: PhotoViewProps) {
             <div className="empty-state">
               <p>
                 No images found{" "}
-                {selectedTags.length > 0 && selectedFamily !== "all"
-                  ? "with selected tags and family"
+                {selectedTags.length > 0 && selectedCollection !== "all"
+                  ? "with selected tags and collection"
                   : selectedTags.length > 0
                   ? "with selected tags"
-                  : selectedFamily !== "all"
+                  : selectedCollection !== "all"
                   ? `in ${
-                      familyGroups.find((f) => f.id === selectedFamily)?.name ||
-                      "selected family"
+                      collectionGroups.find((f) => f.id === selectedCollection)?.name ||
+                      "selected collection"
                     }`
                   : ""}
               </p>
@@ -1311,7 +1311,7 @@ function PhotoView({ user }: PhotoViewProps) {
         leftButtonClass="cancel-btn"
         rightButtonClass="submit-btn"
         rightButtonDisabled={
-          uploading || !uploadFile || familyGroups.length === 0
+          uploading || !uploadFile || collectionGroups.length === 0
         }
         showAdditionalButton={uploadFile && uploadFilePreviewUrl ? true : false}
         onAdditionalAction={() =>
@@ -1407,26 +1407,26 @@ function PhotoView({ user }: PhotoViewProps) {
         </div>
 
         <div className="form-group">
-          <label>Select Families (required):</label>
-          {familyGroups.length > 0 ? (
-            <div className="family-selection">
-              {familyGroups.map((family) => (
+          <label>Select Collections (required):</label>
+          {collectionGroups.length > 0 ? (
+            <div className="collection-selection">
+              {collectionGroups.map((collection) => (
                 <div
-                  key={family.id}
-                  className={`family-checkbox ${
-                    selectedUploadFamilies.includes(family.id) ? "selected" : ""
+                  key={collection.id}
+                  className={`collection-checkbox ${
+                    selectedUploadCollections.includes(collection.id) ? "selected" : ""
                   }`}
-                  onClick={() => handleUploadFamilyToggle(family.id)}
+                  onClick={() => handleUploadCollectionToggle(collection.id)}
                 >
-                  <span>{family.name}</span>
+                  <span>{collection.name}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="empty-families-message">
+            <div className="empty-collections-message">
               <span>
-                You are not a member of any families. Please join or create a
-                family to upload photos.
+                You are not a member of any collections. Please join or create a
+                collection to upload photos.
               </span>
             </div>
           )}
@@ -1439,21 +1439,21 @@ function PhotoView({ user }: PhotoViewProps) {
         <div className="form-group">
           <label>Select Tags:</label>
           <div className="tag-selection">
-            {Object.entries(tagsByFamilyAndType)
-              .filter(([familyId]) => selectedUploadFamilies.includes(familyId))
-              .map(([familyId, familyData]) => (
-                <div key={familyId} className="filter-section">
+            {Object.entries(tagsByCollectionAndType)
+              .filter(([collectionId]) => selectedUploadCollections.includes(collectionId))
+              .map(([collectionId, collectionData]) => (
+                <div key={collectionId} className="filter-section">
                   <button
                     type="button"
                     className="section-header"
-                    onClick={() => toggleModalSection(`family-${familyId}`)}
+                    onClick={() => toggleModalSection(`collection-${collectionId}`)}
                     aria-expanded={
-                      !modalCollapsedSections[`family-${familyId}`]
+                      !modalCollapsedSections[`collection-${collectionId}`]
                     }
                   >
                     <span
                       className={`section-caret ${
-                        modalCollapsedSections[`family-${familyId}`]
+                        modalCollapsedSections[`collection-${collectionId}`]
                           ? "collapsed"
                           : ""
                       }`}
@@ -1461,27 +1461,27 @@ function PhotoView({ user }: PhotoViewProps) {
                       ▼
                     </span>
                     <span className="section-title">
-                      {familyData.familyName}
+                      {collectionData.collectionName}
                     </span>
                   </button>
-                  {!modalCollapsedSections[`family-${familyId}`] && (
+                  {!modalCollapsedSections[`collection-${collectionId}`] && (
                     <div className="filter-list">
-                      {Object.entries(familyData.tagsByType).map(
+                      {Object.entries(collectionData.tagsByType).map(
                         ([tagType, typeTags]) =>
                           typeTags.length > 0 && (
                             <div
-                              key={`${familyId}-${tagType}`}
+                              key={`${collectionId}-${tagType}`}
                               className="filter-section"
                             >
                               <button
                                 type="button"
                                 className="section-header"
                                 onClick={() =>
-                                  toggleModalSection(`${familyId}-${tagType}`)
+                                  toggleModalSection(`${collectionId}-${tagType}`)
                                 }
                                 aria-expanded={
                                   !modalCollapsedSections[
-                                    `${familyId}-${tagType}`
+                                    `${collectionId}-${tagType}`
                                   ]
                                 }
                                 style={{ paddingLeft: "1rem" }}
@@ -1489,7 +1489,7 @@ function PhotoView({ user }: PhotoViewProps) {
                                 <span
                                   className={`section-caret ${
                                     modalCollapsedSections[
-                                      `${familyId}-${tagType}`
+                                      `${collectionId}-${tagType}`
                                     ]
                                       ? "collapsed"
                                       : ""
@@ -1500,7 +1500,7 @@ function PhotoView({ user }: PhotoViewProps) {
                                 <span className="section-title">{tagType}</span>
                               </button>
                               {!modalCollapsedSections[
-                                `${familyId}-${tagType}`
+                                `${collectionId}-${tagType}`
                               ] && (
                                 <div
                                   className="filter-list"
@@ -1582,18 +1582,18 @@ function PhotoView({ user }: PhotoViewProps) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="tagFamily">Family:</label>
+          <label htmlFor="tagCollection">Collection:</label>
           <select
-            id="tagFamily"
-            value={newTagFamilyId}
-            onChange={(e) => setNewTagFamilyId(e.target.value)}
+            id="tagCollection"
+            value={newTagCollectionId}
+            onChange={(e) => setNewTagCollectionId(e.target.value)}
             className="tag-type-select"
             required
           >
-            <option value="">Select a family</option>
-            {familyGroups.map((family) => (
-              <option key={family.id} value={family.id}>
-                {family.name}
+            <option value="">Select a collection</option>
+            {collectionGroups.map((collection) => (
+              <option key={collection.id} value={collection.id}>
+                {collection.name}
               </option>
             ))}
           </select>
@@ -1722,24 +1722,24 @@ function PhotoView({ user }: PhotoViewProps) {
         </div>
 
         <div className="form-group">
-          <label>Select Families:</label>
-          <div className="family-selection">
-            {familyGroups.length > 0 ? (
-              familyGroups.map((family) => (
+          <label>Select Collections:</label>
+          <div className="collection-selection">
+            {collectionGroups.length > 0 ? (
+              collectionGroups.map((collection) => (
                 <div
-                  key={family.id}
-                  className={`family-checkbox ${
-                    editImageFamilies.includes(family.id) ? "selected" : ""
+                  key={collection.id}
+                  className={`collection-checkbox ${
+                    editImageCollections.includes(collection.id) ? "selected" : ""
                   }`}
-                  onClick={() => handleEditImageFamilyToggle(family.id)}
+                  onClick={() => handleEditImageCollectionToggle(collection.id)}
                 >
-                  <span>{family.name}</span>
+                  <span>{collection.name}</span>
                 </div>
               ))
             ) : (
-              <div className="empty-families-message">
+              <div className="empty-collections-message">
                 <span>
-                  You must be a member of at least one family to edit images.
+                  You must be a member of at least one collection to edit images.
                 </span>
               </div>
             )}
@@ -1749,21 +1749,21 @@ function PhotoView({ user }: PhotoViewProps) {
         <div className="form-group">
           <label>Select Tags:</label>
           <div className="tag-selection">
-            {Object.entries(tagsByFamilyAndType)
-              .filter(([familyId]) => editImageFamilies.includes(familyId))
-              .map(([familyId, familyData]) => (
-                <div key={familyId} className="filter-section">
+            {Object.entries(tagsByCollectionAndType)
+              .filter(([collectionId]) => editImageCollections.includes(collectionId))
+              .map(([collectionId, collectionData]) => (
+                <div key={collectionId} className="filter-section">
                   <button
                     type="button"
                     className="section-header"
-                    onClick={() => toggleModalSection(`family-${familyId}`)}
+                    onClick={() => toggleModalSection(`collection-${collectionId}`)}
                     aria-expanded={
-                      !modalCollapsedSections[`family-${familyId}`]
+                      !modalCollapsedSections[`collection-${collectionId}`]
                     }
                   >
                     <span
                       className={`section-caret ${
-                        modalCollapsedSections[`family-${familyId}`]
+                        modalCollapsedSections[`collection-${collectionId}`]
                           ? "collapsed"
                           : ""
                       }`}
@@ -1771,27 +1771,27 @@ function PhotoView({ user }: PhotoViewProps) {
                       ▼
                     </span>
                     <span className="section-title">
-                      {familyData.familyName}
+                      {collectionData.collectionName}
                     </span>
                   </button>
-                  {!modalCollapsedSections[`family-${familyId}`] && (
+                  {!modalCollapsedSections[`collection-${collectionId}`] && (
                     <div className="filter-list">
-                      {Object.entries(familyData.tagsByType).map(
+                      {Object.entries(collectionData.tagsByType).map(
                         ([tagType, typeTags]) =>
                           typeTags.length > 0 && (
                             <div
-                              key={`${familyId}-${tagType}`}
+                              key={`${collectionId}-${tagType}`}
                               className="filter-section"
                             >
                               <button
                                 type="button"
                                 className="section-header"
                                 onClick={() =>
-                                  toggleModalSection(`${familyId}-${tagType}`)
+                                  toggleModalSection(`${collectionId}-${tagType}`)
                                 }
                                 aria-expanded={
                                   !modalCollapsedSections[
-                                    `${familyId}-${tagType}`
+                                    `${collectionId}-${tagType}`
                                   ]
                                 }
                                 style={{ paddingLeft: "1rem" }}
@@ -1799,7 +1799,7 @@ function PhotoView({ user }: PhotoViewProps) {
                                 <span
                                   className={`section-caret ${
                                     modalCollapsedSections[
-                                      `${familyId}-${tagType}`
+                                      `${collectionId}-${tagType}`
                                     ]
                                       ? "collapsed"
                                       : ""
@@ -1810,7 +1810,7 @@ function PhotoView({ user }: PhotoViewProps) {
                                 <span className="section-title">{tagType}</span>
                               </button>
                               {!modalCollapsedSections[
-                                `${familyId}-${tagType}`
+                                `${collectionId}-${tagType}`
                               ] && (
                                 <div
                                   className="filter-list"
@@ -1897,18 +1897,18 @@ function PhotoView({ user }: PhotoViewProps) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="editTagFamily">Family:</label>
+          <label htmlFor="editTagCollection">Collection:</label>
           <select
-            id="editTagFamily"
-            value={editTagFamilyId}
-            onChange={(e) => setEditTagFamilyId(e.target.value)}
+            id="editTagCollection"
+            value={editTagCollectionId}
+            onChange={(e) => setEditTagCollectionId(e.target.value)}
             className="tag-type-select"
             required
           >
-            <option value="">Select a family</option>
-            {familyGroups.map((family) => (
-              <option key={family.id} value={family.id}>
-                {family.name}
+            <option value="">Select a collection</option>
+            {collectionGroups.map((collection) => (
+              <option key={collection.id} value={collection.id}>
+                {collection.name}
               </option>
             ))}
           </select>

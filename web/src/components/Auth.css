@@ -332,8 +332,8 @@
   }
 }
 
-/* Family Input Styles */
-.family-input-container {
+/* Collection Input Styles */
+.collection-input-container {
   display: flex; /* Flexbox for horizontal layout */
   gap: 8px; /* Space between input and button */
   margin-bottom: 8px; /* Space below container */
@@ -343,8 +343,8 @@
   overflow: hidden; /* Hide any overflow content */
 }
 
-/* Family input field styling */
-.family-input-container input {
+/* Collection input field styling */
+.collection-input-container input {
   flex: 1; /* Take remaining space after button */
   /* Ensure consistent font size with other inputs */
   font-size: 16px; /* 16px prevents iOS zoom */
@@ -353,8 +353,8 @@
   box-sizing: border-box; /* Include padding in width calculations */
 }
 
-/* Add family button styling */
-.add-family-btn {
+/* Add collection button styling */
+.add-collection-btn {
   background: var(--primary-color); /* Primary theme color */
   color: var(--text-inverse); /* White text for contrast */
   border: none; /* Remove default button border */
@@ -370,40 +370,40 @@
   min-height: 44px; /* iOS recommended touch target size */
 }
 
-/* Add family button hover effect */
-.add-family-btn:hover:not(:disabled) {
+/* Add collection button hover effect */
+.add-collection-btn:hover:not(:disabled) {
   background: #388e3c; /* Darker green on hover */
 }
 
-/* Add family button disabled state */
-.add-family-btn:disabled {
+/* Add collection button disabled state */
+.add-collection-btn:disabled {
   opacity: 0.5; /* Reduced opacity when disabled */
   cursor: not-allowed; /* Not-allowed cursor when disabled */
 }
 
-/* Mobile family input responsive optimizations */
+/* Mobile collection input responsive optimizations */
 @media (max-width: 480px) {
-  .family-input-container {
+  .collection-input-container {
     gap: 6px; /* Reduced gap for mobile */
   }
 
-  .add-family-btn {
+  .add-collection-btn {
     padding: 14px 12px; /* Adjusted padding for mobile */
     font-size: 16px; /* Larger font size for mobile readability */
     min-height: 48px; /* Larger touch target for mobile */
   }
 }
 
-/* Family list container for displaying added families */
-.family-list {
+/* Collection list container for displaying added collections */
+.collection-list {
   display: flex; /* Flexbox for flexible layout */
   flex-wrap: wrap; /* Allow items to wrap to new lines */
-  gap: 8px; /* Space between family items */
-  margin-top: 8px; /* Space above family list */
+  gap: 8px; /* Space between collection items */
+  margin-top: 8px; /* Space above collection list */
 }
 
-/* Individual family item styling */
-.family-item {
+/* Individual collection item styling */
+.collection-item {
   display: flex; /* Flexbox for horizontal layout */
   align-items: center; /* Vertically center content */
   gap: 6px; /* Space between text and remove button */
@@ -414,13 +414,13 @@
   font-size: 14px; /* Small font size for compact display */
 }
 
-/* Family item text styling */
-.family-item span {
+/* Collection item text styling */
+.collection-item span {
   color: var(--text-primary); /* Theme text color */
 }
 
-/* Remove family button styling */
-.remove-family-btn {
+/* Remove collection button styling */
+.remove-collection-btn {
   background: #d32f2f; /* Red background for remove action */
   color: white; /* White text for contrast */
   border: none; /* Remove default button border */
@@ -436,8 +436,8 @@
   transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
-/* Remove family button hover effect */
-.remove-family-btn:hover {
+/* Remove collection button hover effect */
+.remove-collection-btn:hover {
   background: #b71c1c; /* Darker red on hover */
 }
 
@@ -459,13 +459,13 @@
     font-size: 16px; /* Larger font size for mobile readability */
   }
 
-  .family-item {
+  .collection-item {
     padding: 8px 12px; /* Increased padding for mobile */
     font-size: 16px; /* Larger font size for mobile readability */
     min-height: 36px; /* Larger touch target for mobile */
   }
 
-  .remove-family-btn {
+  .remove-collection-btn {
     width: 24px; /* Larger button for mobile */
     height: 24px; /* Larger button for mobile */
     font-size: 14px; /* Larger font size for mobile */

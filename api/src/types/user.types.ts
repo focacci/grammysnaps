@@ -11,7 +11,7 @@ export interface User {
   middle_name?: string | null;
   last_name?: string | null;
   birthday?: string | null; // YYYY-MM-DD format
-  families: UUID[];
+  collections: UUID[];
   profile_picture_key?: S3Key | null;
   profile_picture_thumbnail_key?: S3Key | null;
   created_at: string;
@@ -25,7 +25,7 @@ export interface UserInput {
   middle_name: string | null;
   last_name: string | null;
   birthday: string | null;
-  families: UUID[];
+  collections: UUID[];
   profile_picture_key?: S3Key;
   invite_key?: string;
 }
@@ -36,7 +36,7 @@ export interface UserUpdate {
   middle_name?: string | null;
   last_name?: string | null;
   birthday?: string | null;
-  families?: UUID[];
+  collections?: UUID[];
   profile_picture_key?: S3Key;
   profile_picture_thumbnail_key?: S3Key;
 }
@@ -48,7 +48,7 @@ export interface UserPublic {
   middle_name?: string | null;
   last_name?: string | null;
   birthday?: string | null;
-  families: UUID[];
+  collections: UUID[];
   profile_picture_key?: S3Key | null;
   profile_picture_thumbnail_key?: S3Key | null;
   profile_picture_url?: string | null;

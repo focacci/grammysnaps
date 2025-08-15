@@ -34,8 +34,8 @@ describe("User Routes", () => {
   const mockUserUpdateSecurity = jest.fn();
   const mockUserDelete = jest.fn();
   const mockUserValidatePassword = jest.fn();
-  const mockUserAddToFamily = jest.fn();
-  const mockUserRemoveFromFamily = jest.fn();
+  const mockUserAddToCollection = jest.fn();
+  const mockUserRemoveFromCollection = jest.fn();
 
   // Mock auth decorator methods
   const mockAuthGenerateTokens = jest.fn();
@@ -70,8 +70,8 @@ describe("User Routes", () => {
       updateSecurity: mockUserUpdateSecurity,
       delete: mockUserDelete,
       validatePassword: mockUserValidatePassword,
-      addToFamily: mockUserAddToFamily,
-      removeFromFamily: mockUserRemoveFromFamily,
+      addToCollection: mockUserAddToCollection,
+      removeFromCollection: mockUserRemoveFromCollection,
     });
 
     fastify.decorate("auth", {
@@ -115,7 +115,7 @@ describe("User Routes", () => {
       middle_name: "Middle",
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: [TEST_UUIDS.FAMILY_1],
+      collections: [TEST_UUIDS.COLLECTION_1],
     };
 
     const mockUserResponse: UserPublic = {
@@ -125,7 +125,7 @@ describe("User Routes", () => {
       middle_name: "Middle",
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: [TEST_UUIDS.FAMILY_1],
+      collections: [TEST_UUIDS.COLLECTION_1],
       profile_picture_url: null,
       profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
@@ -277,7 +277,7 @@ describe("User Routes", () => {
         middle_name: null,
         last_name: "One",
         birthday: "1990-01-01",
-        families: [],
+        collections: [],
         profile_picture_url: null,
         profile_picture_thumbnail_url: null,
         created_at: "2024-01-01T00:00:00Z",
@@ -290,7 +290,7 @@ describe("User Routes", () => {
         middle_name: null,
         last_name: "Two",
         birthday: "1985-06-15",
-        families: [TEST_UUIDS.FAMILY_1],
+        collections: [TEST_UUIDS.COLLECTION_1],
         profile_picture_url: null,
         profile_picture_thumbnail_url: null,
         created_at: "2024-01-01T00:00:00Z",
@@ -346,7 +346,7 @@ describe("User Routes", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: [],
+      collections: [],
       profile_picture_url: null,
       profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
@@ -418,7 +418,7 @@ describe("User Routes", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: [],
+      collections: [],
       profile_picture_key: null,
       profile_picture_thumbnail_key: null,
       profile_picture_url: null,
@@ -487,7 +487,7 @@ describe("User Routes", () => {
       first_name: "Updated",
       last_name: "User",
       birthday: "1985-12-25",
-      families: [TEST_UUIDS.FAMILY_1],
+      collections: [TEST_UUIDS.COLLECTION_1],
     };
 
     const mockUpdatedUser: UserPublic = {
@@ -497,7 +497,7 @@ describe("User Routes", () => {
       middle_name: null,
       last_name: "User",
       birthday: "1985-12-25",
-      families: [TEST_UUIDS.FAMILY_1],
+      collections: [TEST_UUIDS.COLLECTION_1],
       profile_picture_url: null,
       profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
@@ -580,7 +580,7 @@ describe("User Routes", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: [],
+      collections: [],
       profile_picture_url: null,
       profile_picture_thumbnail_url: null,
       created_at: "2024-01-01T00:00:00Z",
@@ -756,130 +756,130 @@ describe("User Routes", () => {
     });
   });
 
-  describe("POST /:userId/family/:familyId", () => {
-    it("should add user to family successfully", async () => {
-      mockUserAddToFamily.mockResolvedValue(undefined);
+  describe("POST /:userId/collection/:collectionId", () => {
+    it("should add user to collection successfully", async () => {
+      mockUserAddToCollection.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(201);
       expect(JSON.parse(response.payload)).toEqual({
-        message: "User added to family successfully",
+        message: "User added to collection successfully",
       });
-      expect(mockUserAddToFamily).toHaveBeenCalledWith(
+      expect(mockUserAddToCollection).toHaveBeenCalledWith(
         TEST_UUIDS.USER_1,
-        TEST_UUIDS.FAMILY_1
+        TEST_UUIDS.COLLECTION_1
       );
     });
 
     it("should handle user not found error", async () => {
-      mockUserAddToFamily.mockRejectedValue(new Error("User not found"));
+      mockUserAddToCollection.mockRejectedValue(new Error("User not found"));
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: USER_ERRORS.ADD_TO_FAMILY_USER_NOT_FOUND,
+        error: USER_ERRORS.ADD_TO_COLLECTION_USER_NOT_FOUND,
       });
     });
 
-    it("should handle family not found error", async () => {
-      mockUserAddToFamily.mockRejectedValue(new Error("Family not found"));
+    it("should handle collection not found error", async () => {
+      mockUserAddToCollection.mockRejectedValue(new Error("Collection not found"));
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: USER_ERRORS.ADD_TO_FAMILY_FAMILY_NOT_FOUND,
+        error: USER_ERRORS.ADD_TO_COLLECTION_COLLECTION_NOT_FOUND,
       });
     });
 
     it("should handle database errors", async () => {
-      mockUserAddToFamily.mockRejectedValue(
+      mockUserAddToCollection.mockRejectedValue(
         new Error("Database connection failed")
       );
 
       const response = await fastify.inject({
         method: "POST",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: USER_ERRORS.ADD_TO_FAMILY_FAILED,
+        error: USER_ERRORS.ADD_TO_COLLECTION_FAILED,
       });
     });
   });
 
-  describe("DELETE /:userId/family/:familyId", () => {
-    it("should remove user from family successfully", async () => {
-      mockUserRemoveFromFamily.mockResolvedValue(undefined);
+  describe("DELETE /:userId/collection/:collectionId", () => {
+    it("should remove user from collection successfully", async () => {
+      mockUserRemoveFromCollection.mockResolvedValue(undefined);
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.payload)).toEqual({
-        message: "User removed from family successfully",
+        message: "User removed from collection successfully",
       });
-      expect(mockUserRemoveFromFamily).toHaveBeenCalledWith(
+      expect(mockUserRemoveFromCollection).toHaveBeenCalledWith(
         TEST_UUIDS.USER_1,
-        TEST_UUIDS.FAMILY_1
+        TEST_UUIDS.COLLECTION_1
       );
     });
 
     it("should handle user not found error", async () => {
-      mockUserRemoveFromFamily.mockRejectedValue(new Error("User not found"));
+      mockUserRemoveFromCollection.mockRejectedValue(new Error("User not found"));
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: USER_ERRORS.REMOVE_FROM_FAMILY_USER_NOT_FOUND,
+        error: USER_ERRORS.REMOVE_FROM_COLLECTION_USER_NOT_FOUND,
       });
     });
 
-    it("should handle family not found error", async () => {
-      mockUserRemoveFromFamily.mockRejectedValue(new Error("Family not found"));
+    it("should handle collection not found error", async () => {
+      mockUserRemoveFromCollection.mockRejectedValue(new Error("Collection not found"));
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(404);
       expect(JSON.parse(response.payload)).toEqual({
-        error: USER_ERRORS.REMOVE_FROM_FAMILY_FAMILY_NOT_FOUND,
+        error: USER_ERRORS.REMOVE_FROM_COLLECTION_COLLECTION_NOT_FOUND,
       });
     });
 
     it("should handle database errors", async () => {
-      mockUserRemoveFromFamily.mockRejectedValue(
+      mockUserRemoveFromCollection.mockRejectedValue(
         new Error("Database connection failed")
       );
 
       const response = await fastify.inject({
         method: "DELETE",
-        url: `/${TEST_UUIDS.USER_1}/family/${TEST_UUIDS.FAMILY_1}`,
+        url: `/${TEST_UUIDS.USER_1}/collection/${TEST_UUIDS.COLLECTION_1}`,
       });
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.payload)).toEqual({
-        error: USER_ERRORS.REMOVE_FROM_FAMILY_FAILED,
+        error: USER_ERRORS.REMOVE_FROM_COLLECTION_FAILED,
       });
     });
   });

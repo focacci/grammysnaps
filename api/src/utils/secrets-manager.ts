@@ -179,7 +179,7 @@ class SecretsManager {
   }
 
   /**
-   * Get invite key for family invitations
+   * Get invite key for collection invitations
    */
   async getInviteKey(): Promise<string> {
     // Fallback to environment variable for local development
@@ -252,8 +252,8 @@ const databaseUrl = dbConfig.database_url;
 const jwt = require('jsonwebtoken');
 const token = jwt.sign(payload, jwtSecret);
 
-// Generate family invitation code
-const invitationCode = generateInviteCode(inviteKey, familyId);
+// Generate collection invitation code
+const invitationCode = generateInviteCode(inviteKey, collectionId);
 
 // Setup S3 client
 const s3Client = new S3Client({

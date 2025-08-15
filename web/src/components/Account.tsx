@@ -13,25 +13,25 @@ interface User {
   middle_name?: string | null;
   last_name: string | null;
   birthday?: string | null;
-  families: string[];
+  collections: string[];
   created_at: string;
   updated_at: string;
   profile_picture_url?: string | null;
   profile_picture_thumbnail_url?: string | null;
 }
 
-interface FamilyGroup {
+interface CollectionGroup {
   id: string;
   name: string;
   member_count: number;
   owner_id: string;
   user_role: "owner" | "member";
-  related_families: string[];
+  related_collections: string[];
   created_at: string;
   updated_at: string;
 }
 
-interface FamilyMember {
+interface CollectionMember {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -43,7 +43,7 @@ interface FamilyMember {
   profile_picture_thumbnail_url?: string | null;
 }
 
-interface RelatedFamily {
+interface RelatedCollection {
   id: string;
   name: string;
   member_count: number;
@@ -59,12 +59,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
   const [collapsedSections, setCollapsedSections] = useState<{
     [key: string]: boolean;
   }>({
-    familyGroups: false,
+    collections: false,
   });
 
-  // Family state
-  const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
-  const [loadingFamilies, setLoadingFamilies] = useState(true);
+  // Collection state
+  const [collections, setCollections] = useState<CollectionGroup[]>([]);
+  const [loadingCollections, setLoadingCollections] = useState(true);
 
   // Profile Picture and Edit Profile Modal State (merged)
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
@@ -83,73 +83,73 @@ function Account({ user, onUserUpdate }: AccountProps) {
   });
   const [error, setError] = useState("");
 
-  // Create Family Modal State
-  const [showCreateFamilyModal, setShowCreateFamilyModal] = useState(false);
-  const [createFamilyForm, setCreateFamilyForm] = useState({
+  // Create Collection Modal State
+  const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
+  const [createCollectionForm, setCreateCollectionForm] = useState({
     name: "",
     description: "",
   });
-  const [createFamilyLoading, setCreateFamilyLoading] = useState(false);
-  const [createFamilyError, setCreateFamilyError] = useState("");
+  const [createCollectionLoading, setCreateCollectionLoading] = useState(false);
+  const [createCollectionError, setCreateCollectionError] = useState("");
 
-  // Join Family Modal State
-  const [showJoinFamilyModal, setShowJoinFamilyModal] = useState(false);
-  const [joinFamilyId, setJoinFamilyId] = useState("");
-  const [joinFamilyInfo, setJoinFamilyInfo] = useState<FamilyGroup | null>(
+  // Join Collection Modal State
+  const [showJoinCollectionModal, setShowJoinCollectionModal] = useState(false);
+  const [joinCollectionId, setJoinCollectionId] = useState("");
+  const [joinCollectionInfo, setJoinCollectionInfo] = useState<CollectionGroup | null>(
     null
   );
-  const [loadingJoinFamilyInfo, setLoadingJoinFamilyInfo] = useState(false);
-  const [joinFamilyLoading, setJoinFamilyLoading] = useState(false);
-  const [joinFamilyError, setJoinFamilyError] = useState("");
+  const [loadingJoinCollectionInfo, setLoadingJoinCollectionInfo] = useState(false);
+  const [joinCollectionLoading, setJoinCollectionLoading] = useState(false);
+  const [joinCollectionError, setJoinCollectionError] = useState("");
 
-  // Manage Family Modal State
-  const [showManageFamilyModal, setShowManageFamilyModal] = useState(false);
-  const [selectedFamily, setSelectedFamily] = useState<FamilyGroup | null>(
+  // Manage Collection Modal State
+  const [showManageCollectionModal, setShowManageCollectionModal] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState<CollectionGroup | null>(
     null
   );
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [collectionMembers, setCollectionMembers] = useState<CollectionMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [addMemberEmail, setAddMemberEmail] = useState("");
   const [addMemberLoading, setAddMemberLoading] = useState(false);
-  const [manageFamilyError, setManageFamilyError] = useState("");
+  const [manageCollectionError, setManageCollectionError] = useState("");
 
-  // Related Families State
-  const [relatedFamilies, setRelatedFamilies] = useState<RelatedFamily[]>([]);
-  const [loadingRelatedFamilies, setLoadingRelatedFamilies] = useState(false);
-  const [addRelatedFamilyId, setAddRelatedFamilyId] = useState("");
-  const [addRelatedFamilyLoading, setAddRelatedFamilyLoading] = useState(false);
-  const [relatedFamilyError, setRelatedFamilyError] = useState("");
+  // Related Collections State
+  const [relatedCollections, setRelatedCollections] = useState<RelatedCollection[]>([]);
+  const [loadingRelatedCollections, setLoadingRelatedCollections] = useState(false);
+  const [addRelatedCollectionId, setAddRelatedCollectionId] = useState("");
+  const [addRelatedCollectionLoading, setAddRelatedCollectionLoading] = useState(false);
+  const [relatedCollectionError, setRelatedCollectionError] = useState("");
 
-  // Delete Family State
-  const [deleteFamilyLoading, setDeleteFamilyLoading] = useState(false);
+  // Delete Collection State
+  const [deleteCollectionLoading, setDeleteCollectionLoading] = useState(false);
 
   // Remove Member Confirmation State
   const [showRemoveMemberModal, setShowRemoveMemberModal] = useState(false);
-  const [memberToRemove, setMemberToRemove] = useState<FamilyMember | null>(
+  const [memberToRemove, setMemberToRemove] = useState<CollectionMember | null>(
     null
   );
 
-  // Remove Related Family Confirmation State
-  const [showRemoveRelatedFamilyModal, setShowRemoveRelatedFamilyModal] =
+  // Remove Related Collection Confirmation State
+  const [showRemoveRelatedCollectionModal, setShowRemoveRelatedCollectionModal] =
     useState(false);
-  const [relatedFamilyToRemove, setRelatedFamilyToRemove] =
-    useState<RelatedFamily | null>(null);
+  const [relatedCollectionToRemove, setRelatedCollectionToRemove] =
+    useState<RelatedCollection | null>(null);
 
   // Copy Feedback State
-  const [copiedFamilyId, setCopiedFamilyId] = useState<string | null>(null);
+  const [copiedCollectionId, setCopiedCollectionId] = useState<string | null>(null);
 
-  // Leave Family State
-  const [leaveFamilyLoading, setLeaveFamilyLoading] = useState<string | null>(
+  // Leave Collection State
+  const [leaveCollectionLoading, setLeaveCollectionLoading] = useState<string | null>(
     null
   );
-  const [showLeaveFamilyModal, setShowLeaveFamilyModal] = useState(false);
-  const [familyToLeave, setFamilyToLeave] = useState<FamilyGroup | null>(null);
+  const [showLeaveCollectionModal, setShowLeaveCollectionModal] = useState(false);
+  const [collectionToLeave, setCollectionToLeave] = useState<CollectionGroup | null>(null);
 
   // View Members Modal State
   const [showViewMembersModal, setShowViewMembersModal] = useState(false);
-  const [viewMembersFamily, setViewMembersFamily] =
-    useState<FamilyGroup | null>(null);
-  const [viewMembersList, setViewMembersList] = useState<FamilyMember[]>([]);
+  const [viewMembersCollection, setViewMembersCollection] =
+    useState<CollectionGroup | null>(null);
+  const [viewMembersList, setViewMembersList] = useState<CollectionMember[]>([]);
   const [loadingViewMembers, setLoadingViewMembers] = useState(false);
 
   // Security Modal State
@@ -168,29 +168,29 @@ function Account({ user, onUserUpdate }: AccountProps) {
     confirm: false,
   });
 
-  const loadUserFamilies = useCallback(async () => {
+  const loadUserCollections = useCallback(async () => {
     try {
-      setLoadingFamilies(true);
+      setLoadingCollections(true);
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/user/${user.id}`)
+        getApiEndpoint(`/collection/user/${user.id}`)
       );
       if (response.ok) {
-        const families = await response.json();
-        setFamilyGroups(families);
+        const collections = await response.json();
+        setCollections(collections);
       } else {
-        console.error("Failed to fetch families");
+        console.error("Failed to fetch collections");
       }
     } catch (error) {
-      console.error("Error fetching families:", error);
+      console.error("Error fetching collections:", error);
     } finally {
-      setLoadingFamilies(false);
+      setLoadingCollections(false);
     }
   }, [user.id]);
 
-  // Load user's families on component mount
+  // Load user's collections on component mount
   useEffect(() => {
-    loadUserFamilies();
-  }, [loadUserFamilies]);
+    loadUserCollections();
+  }, [loadUserCollections]);
 
   const toggleSection = (sectionName: string) => {
     setCollapsedSections((prev) => ({
@@ -260,20 +260,20 @@ function Account({ user, onUserUpdate }: AccountProps) {
     return parts.join(" ");
   };
 
-  // Copy Family ID to Clipboard
-  const handleCopyFamilyId = async (familyId: string) => {
+  // Copy Collection ID to Clipboard
+  const handleCopyCollectionId = async (collectionId: string) => {
     try {
       // Check if clipboard API is available
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(familyId);
-        setCopiedFamilyId(familyId);
+        await navigator.clipboard.writeText(collectionId);
+        setCopiedCollectionId(collectionId);
         if (env.isDevelopment()) {
-          console.log("Copied via clipboard API:", familyId);
+          console.log("Copied via clipboard API:", collectionId);
         }
       } else {
         // Fallback for browsers without clipboard API
         const textArea = document.createElement("textarea");
-        textArea.value = familyId;
+        textArea.value = collectionId;
         textArea.style.position = "fixed";
         textArea.style.top = "-1000px";
         textArea.style.left = "-1000px";
@@ -282,43 +282,43 @@ function Account({ user, onUserUpdate }: AccountProps) {
         textArea.select();
         document.execCommand("copy");
         document.body.removeChild(textArea);
-        setCopiedFamilyId(familyId);
+        setCopiedCollectionId(collectionId);
         if (env.isDevelopment()) {
-          console.log("Copied via fallback method:", familyId);
+          console.log("Copied via fallback method:", collectionId);
         }
       }
 
       // Clear the feedback after 3 seconds
       setTimeout(() => {
-        setCopiedFamilyId(null);
+        setCopiedCollectionId(null);
       }, 3000);
     } catch (error) {
-      console.error("Failed to copy family ID:", error);
+      console.error("Failed to copy collection ID:", error);
       // Show error feedback to user
-      alert(`Failed to copy. Family ID: ${familyId}`);
+      alert(`Failed to copy. Collection ID: ${collectionId}`);
     }
   };
 
-  // Create Family Handlers
-  const handleCreateFamily = () => {
-    setShowCreateFamilyModal(true);
-    setCreateFamilyForm({ name: "", description: "" });
-    setCreateFamilyError("");
+  // Create Collection Handlers
+  const handleCreateCollection = () => {
+    setShowCreateCollectionModal(true);
+    setCreateCollectionForm({ name: "", description: "" });
+    setCreateCollectionError("");
   };
 
-  const handleCreateFamilySubmit = async (e: React.FormEvent) => {
+  const handleCreateCollectionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCreateFamilyError("");
-    setCreateFamilyLoading(true);
+    setCreateCollectionError("");
+    setCreateCollectionLoading(true);
 
     try {
-      const response = await authService.apiCall(getApiEndpoint("/family"), {
+      const response = await authService.apiCall(getApiEndpoint("/collection"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: createFamilyForm.name.trim(),
+          name: createCollectionForm.name.trim(),
           owner_id: user.id,
         }),
       });
@@ -326,75 +326,75 @@ function Account({ user, onUserUpdate }: AccountProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create family");
+        throw new Error(data.error || "Failed to create collection");
       }
 
-      // Reload families to show the new one
-      await loadUserFamilies();
+      // Reload collections to show the new one
+      await loadUserCollections();
 
       // Close modal
-      setShowCreateFamilyModal(false);
+      setShowCreateCollectionModal(false);
     } catch (err) {
-      setCreateFamilyError(
-        err instanceof Error ? err.message : "Failed to create family"
+      setCreateCollectionError(
+        err instanceof Error ? err.message : "Failed to create collection"
       );
     } finally {
-      setCreateFamilyLoading(false);
+      setCreateCollectionLoading(false);
     }
   };
 
-  const handleCloseCreateFamilyModal = () => {
-    setShowCreateFamilyModal(false);
-    setCreateFamilyError("");
+  const handleCloseCreateCollectionModal = () => {
+    setShowCreateCollectionModal(false);
+    setCreateCollectionError("");
   };
 
-  // Join Family Handlers
-  const handleJoinFamily = () => {
-    setShowJoinFamilyModal(true);
-    setJoinFamilyId("");
-    setJoinFamilyInfo(null);
-    setJoinFamilyError("");
+  // Join Collection Handlers
+  const handleJoinCollection = () => {
+    setShowJoinCollectionModal(true);
+    setJoinCollectionId("");
+    setJoinCollectionInfo(null);
+    setJoinCollectionError("");
   };
 
-  const handleJoinFamilyIdChange = async (
+  const handleJoinCollectionIdChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const familyId = e.target.value;
-    setJoinFamilyId(familyId);
-    setJoinFamilyInfo(null);
-    setJoinFamilyError("");
+    const collectionId = e.target.value;
+    setJoinCollectionId(collectionId);
+    setJoinCollectionInfo(null);
+    setJoinCollectionError("");
 
-    if (familyId.trim()) {
-      setLoadingJoinFamilyInfo(true);
+    if (collectionId.trim()) {
+      setLoadingJoinCollectionInfo(true);
       try {
         const response = await authService.apiCall(
-          getApiEndpoint(`/family/${familyId.trim()}`)
+          getApiEndpoint(`/collection/${collectionId.trim()}`)
         );
         if (response.ok) {
-          const familyData = await response.json();
-          setJoinFamilyInfo(familyData);
+          const collectionData = await response.json();
+          setJoinCollectionInfo(collectionData);
         } else if (response.status === 404) {
-          setJoinFamilyError("Family not found");
+          setJoinCollectionError("Collection not found");
         } else {
-          setJoinFamilyError("Failed to fetch family information");
+          setJoinCollectionError("Failed to fetch collection information");
         }
       } catch {
-        setJoinFamilyError("Failed to fetch family information");
+        setJoinCollectionError("Failed to fetch collection information");
       } finally {
-        setLoadingJoinFamilyInfo(false);
+        setLoadingJoinCollectionInfo(false);
       }
     }
   };
 
-  const handleJoinFamilySubmit = async () => {
-    if (!joinFamilyInfo) return;
+  const handleJoinCollectionSubmit = async () => {
+    if (!joinCollectionInfo) return;
 
-    setJoinFamilyLoading(true);
-    setJoinFamilyError("");
+    setJoinCollectionLoading(true);
+    setJoinCollectionError("");
 
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${joinFamilyInfo.id}/members`),
+        getApiEndpoint(`/collection/${joinCollectionInfo.id}/members`),
         {
           method: "POST",
           headers: {
@@ -408,144 +408,144 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to join family");
+        throw new Error(data.error || "Failed to join collection");
       }
 
-      // Reload families to show the new one
-      await loadUserFamilies();
+      // Reload collections to show the new one
+      await loadUserCollections();
 
       // Close modal
-      setShowJoinFamilyModal(false);
+      setShowJoinCollectionModal(false);
     } catch (err) {
-      setJoinFamilyError(
-        err instanceof Error ? err.message : "Failed to join family"
+      setJoinCollectionError(
+        err instanceof Error ? err.message : "Failed to join collection"
       );
     } finally {
-      setJoinFamilyLoading(false);
+      setJoinCollectionLoading(false);
     }
   };
 
-  const handleCloseJoinFamilyModal = () => {
-    setShowJoinFamilyModal(false);
-    setJoinFamilyId("");
-    setJoinFamilyInfo(null);
-    setJoinFamilyError("");
+  const handleCloseJoinCollectionModal = () => {
+    setShowJoinCollectionModal(false);
+    setJoinCollectionId("");
+    setJoinCollectionInfo(null);
+    setJoinCollectionError("");
   };
 
-  // Manage Family Handlers
-  const handleManageFamily = async (family: FamilyGroup) => {
+  // Manage Collection Handlers
+  const handleManageCollection = async (collection: CollectionGroup) => {
     if (env.isDevelopment()) {
-      console.log("Managing family:", family);
-      console.log("User role:", family.user_role);
+      console.log("Managing collection:", collection);
+      console.log("User role:", collection.user_role);
     }
-    setSelectedFamily(family);
-    setShowManageFamilyModal(true);
-    setManageFamilyError("");
-    setRelatedFamilyError("");
+    setSelectedCollection(collection);
+    setShowManageCollectionModal(true);
+    setManageCollectionError("");
+    setRelatedCollectionError("");
     setAddMemberEmail("");
-    setAddRelatedFamilyId("");
-    await loadFamilyMembers(family.id);
-    await loadRelatedFamilies(family.id);
+    setAddRelatedCollectionId("");
+    await loadCollectionMembers(collection.id);
+    await loadRelatedCollections(collection.id);
   };
 
-  const loadFamilyMembers = async (familyId: string) => {
+  const loadCollectionMembers = async (collectionId: string) => {
     try {
       setLoadingMembers(true);
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${familyId}/members`)
+        getApiEndpoint(`/collection/${collectionId}/members`)
       );
       if (response.ok) {
         const members = await response.json();
         // Sort members so owner is always first
         const sortedMembers = members.sort(
-          (a: FamilyMember, b: FamilyMember) => {
+          (a: CollectionMember, b: CollectionMember) => {
             if (a.role === "owner") return -1;
             if (b.role === "owner") return 1;
             return 0;
           }
         );
-        setFamilyMembers(sortedMembers);
+        setCollectionMembers(sortedMembers);
       } else {
-        console.error("Failed to fetch family members");
-        setManageFamilyError("Failed to load family members");
+        console.error("Failed to fetch collection members");
+        setManageCollectionError("Failed to load collection members");
       }
     } catch (error) {
-      console.error("Error fetching family members:", error);
-      setManageFamilyError("Failed to load family members");
+      console.error("Error fetching collection members:", error);
+      setManageCollectionError("Failed to load collection members");
     } finally {
       setLoadingMembers(false);
     }
   };
 
-  const loadRelatedFamilies = async (familyId: string) => {
+  const loadRelatedCollections = async (collectionId: string) => {
     try {
-      setLoadingRelatedFamilies(true);
+      setLoadingRelatedCollections(true);
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${familyId}/related`)
+        getApiEndpoint(`/collection/${collectionId}/related`)
       );
       if (response.ok) {
         const relatedFams = await response.json();
-        setRelatedFamilies(relatedFams);
+        setRelatedCollections(relatedFams);
       } else {
-        console.error("Failed to fetch related families");
-        setRelatedFamilyError("Failed to load related families");
+        console.error("Failed to fetch related collections");
+        setRelatedCollectionError("Failed to load related collections");
       }
     } catch (error) {
-      console.error("Error fetching related families:", error);
-      setRelatedFamilyError("Failed to load related families");
+      console.error("Error fetching related collections:", error);
+      setRelatedCollectionError("Failed to load related collections");
     } finally {
-      setLoadingRelatedFamilies(false);
+      setLoadingRelatedCollections(false);
     }
   };
 
-  const handleAddRelatedFamily = async (e: React.FormEvent) => {
+  const handleAddRelatedCollection = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFamily || !addRelatedFamilyId.trim()) return;
+    if (!selectedCollection || !addRelatedCollectionId.trim()) return;
 
-    setAddRelatedFamilyLoading(true);
-    setRelatedFamilyError("");
+    setAddRelatedCollectionLoading(true);
+    setRelatedCollectionError("");
 
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${selectedFamily.id}/related`),
+        getApiEndpoint(`/collection/${selectedCollection.id}/related`),
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            family_id: addRelatedFamilyId.trim(),
+            collection_id: addRelatedCollectionId.trim(),
           }),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to add related family");
+        throw new Error(errorData.error || "Failed to add related collection");
       }
 
-      // Reload related families and families list
-      await loadRelatedFamilies(selectedFamily.id);
-      await loadUserFamilies();
+      // Reload related collections and collections list
+      await loadRelatedCollections(selectedCollection.id);
+      await loadUserCollections();
 
       // Clear the input
-      setAddRelatedFamilyId("");
+      setAddRelatedCollectionId("");
     } catch (err) {
-      setRelatedFamilyError(
-        err instanceof Error ? err.message : "Failed to add related family"
+      setRelatedCollectionError(
+        err instanceof Error ? err.message : "Failed to add related collection"
       );
     } finally {
-      setAddRelatedFamilyLoading(false);
+      setAddRelatedCollectionLoading(false);
     }
   };
 
-  const handleRemoveRelatedFamily = async () => {
-    if (!selectedFamily || !relatedFamilyToRemove) return;
+  const handleRemoveRelatedCollection = async () => {
+    if (!selectedCollection || !relatedCollectionToRemove) return;
 
     try {
       const response = await authService.apiCall(
         getApiEndpoint(
-          `/family/${selectedFamily.id}/related/${relatedFamilyToRemove.id}`
+          `/collection/${selectedCollection.id}/related/${relatedCollectionToRemove.id}`
         ),
         {
           method: "DELETE",
@@ -554,39 +554,39 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to remove related family");
+        throw new Error(errorData.error || "Failed to remove related collection");
       }
 
-      // Reload related families and families list
-      await loadRelatedFamilies(selectedFamily.id);
-      await loadUserFamilies();
+      // Reload related collections and collections list
+      await loadRelatedCollections(selectedCollection.id);
+      await loadUserCollections();
 
       // Close the confirmation modal
-      setShowRemoveRelatedFamilyModal(false);
-      setRelatedFamilyToRemove(null);
+      setShowRemoveRelatedCollectionModal(false);
+      setRelatedCollectionToRemove(null);
     } catch (err) {
-      setRelatedFamilyError(
-        err instanceof Error ? err.message : "Failed to remove related family"
+      setRelatedCollectionError(
+        err instanceof Error ? err.message : "Failed to remove related collection"
       );
     }
   };
 
-  const handleRemoveRelatedFamilyClick = (relatedFamily: RelatedFamily) => {
-    setRelatedFamilyToRemove(relatedFamily);
-    setShowRemoveRelatedFamilyModal(true);
+  const handleRemoveRelatedCollectionClick = (relatedCollection: RelatedCollection) => {
+    setRelatedCollectionToRemove(relatedCollection);
+    setShowRemoveRelatedCollectionModal(true);
   };
 
-  const handleCloseRemoveRelatedFamilyModal = () => {
-    setShowRemoveRelatedFamilyModal(false);
-    setRelatedFamilyToRemove(null);
+  const handleCloseRemoveRelatedCollectionModal = () => {
+    setShowRemoveRelatedCollectionModal(false);
+    setRelatedCollectionToRemove(null);
   };
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFamily || !addMemberEmail.trim()) return;
+    if (!selectedCollection || !addMemberEmail.trim()) return;
 
     setAddMemberLoading(true);
-    setManageFamilyError("");
+    setManageCollectionError("");
 
     try {
       // First, find the user by email
@@ -602,9 +602,9 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       const userData = await userResponse.json();
 
-      // Add the user to the family
+      // Add the user to the collection
       const addResponse = await authService.apiCall(
-        getApiEndpoint(`/family/${selectedFamily.id}/members`),
+        getApiEndpoint(`/collection/${selectedCollection.id}/members`),
         {
           method: "POST",
           headers: {
@@ -618,17 +618,17 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       if (!addResponse.ok) {
         const errorData = await addResponse.json();
-        throw new Error(errorData.error || "Failed to add member to family");
+        throw new Error(errorData.error || "Failed to add member to collection");
       }
 
-      // Reload family members and families list
-      await loadFamilyMembers(selectedFamily.id);
-      await loadUserFamilies();
+      // Reload collection members and collections list
+      await loadCollectionMembers(selectedCollection.id);
+      await loadUserCollections();
 
       // Clear the email input
       setAddMemberEmail("");
     } catch (err) {
-      setManageFamilyError(
+      setManageCollectionError(
         err instanceof Error ? err.message : "Failed to add member"
       );
     } finally {
@@ -637,12 +637,12 @@ function Account({ user, onUserUpdate }: AccountProps) {
   };
 
   const handleRemoveMember = async () => {
-    if (!selectedFamily || !memberToRemove) return;
+    if (!selectedCollection || !memberToRemove) return;
 
     try {
       const response = await authService.apiCall(
         getApiEndpoint(
-          `/family/${selectedFamily.id}/members/${memberToRemove.id}`
+          `/collection/${selectedCollection.id}/members/${memberToRemove.id}`
         ),
         {
           method: "DELETE",
@@ -654,21 +654,21 @@ function Account({ user, onUserUpdate }: AccountProps) {
         throw new Error(errorData.error || "Failed to remove member");
       }
 
-      // Reload family members and families list
-      await loadFamilyMembers(selectedFamily.id);
-      await loadUserFamilies();
+      // Reload collection members and collections list
+      await loadCollectionMembers(selectedCollection.id);
+      await loadUserCollections();
 
       // Close the confirmation modal
       setShowRemoveMemberModal(false);
       setMemberToRemove(null);
     } catch (err) {
-      setManageFamilyError(
+      setManageCollectionError(
         err instanceof Error ? err.message : "Failed to remove member"
       );
     }
   };
 
-  const handleRemoveMemberClick = (member: FamilyMember) => {
+  const handleRemoveMemberClick = (member: CollectionMember) => {
     setMemberToRemove(member);
     setShowRemoveMemberModal(true);
   };
@@ -678,15 +678,15 @@ function Account({ user, onUserUpdate }: AccountProps) {
     setMemberToRemove(null);
   };
 
-  const handleDeleteFamily = async () => {
-    if (!selectedFamily) return;
+  const handleDeleteCollection = async () => {
+    if (!selectedCollection) return;
 
-    setDeleteFamilyLoading(true);
-    setManageFamilyError("");
+    setDeleteCollectionLoading(true);
+    setManageCollectionError("");
 
     try {
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${selectedFamily.id}`),
+        getApiEndpoint(`/collection/${selectedCollection.id}`),
         {
           method: "DELETE",
         }
@@ -694,56 +694,56 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete family");
+        throw new Error(errorData.error || "Failed to delete collection");
       }
 
-      // Reload families list and close modal
-      await loadUserFamilies();
-      handleCloseManageFamilyModal();
+      // Reload collections list and close modal
+      await loadUserCollections();
+      handleCloseManageCollectionModal();
     } catch (err) {
-      setManageFamilyError(
-        err instanceof Error ? err.message : "Failed to delete family"
+      setManageCollectionError(
+        err instanceof Error ? err.message : "Failed to delete collection"
       );
     } finally {
-      setDeleteFamilyLoading(false);
+      setDeleteCollectionLoading(false);
     }
   };
 
-  const handleCloseManageFamilyModal = () => {
-    setShowManageFamilyModal(false);
-    setSelectedFamily(null);
-    setFamilyMembers([]);
-    setRelatedFamilies([]);
-    setManageFamilyError("");
-    setRelatedFamilyError("");
+  const handleCloseManageCollectionModal = () => {
+    setShowManageCollectionModal(false);
+    setSelectedCollection(null);
+    setCollectionMembers([]);
+    setRelatedCollections([]);
+    setManageCollectionError("");
+    setRelatedCollectionError("");
     setAddMemberEmail("");
-    setAddRelatedFamilyId("");
+    setAddRelatedCollectionId("");
 
     // Clean up confirmation modals
     setShowRemoveMemberModal(false);
     setMemberToRemove(null);
-    setShowRemoveRelatedFamilyModal(false);
-    setRelatedFamilyToRemove(null);
+    setShowRemoveRelatedCollectionModal(false);
+    setRelatedCollectionToRemove(null);
   };
 
   // View Members Modal Handlers
-  const handleViewMembers = async (family: FamilyGroup) => {
-    setViewMembersFamily(family);
+  const handleViewMembers = async (collection: CollectionGroup) => {
+    setViewMembersCollection(collection);
     setShowViewMembersModal(true);
-    await loadViewFamilyMembers(family.id);
+    await loadViewCollectionMembers(collection.id);
   };
 
-  const loadViewFamilyMembers = async (familyId: string) => {
+  const loadViewCollectionMembers = async (collectionId: string) => {
     try {
       setLoadingViewMembers(true);
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${familyId}/members`)
+        getApiEndpoint(`/collection/${collectionId}/members`)
       );
       if (response.ok) {
         const members = await response.json();
         // Sort members so owner is always first
         const sortedMembers = members.sort(
-          (a: FamilyMember, b: FamilyMember) => {
+          (a: CollectionMember, b: CollectionMember) => {
             if (a.role === "owner") return -1;
             if (b.role === "owner") return 1;
             return 0;
@@ -751,10 +751,10 @@ function Account({ user, onUserUpdate }: AccountProps) {
         );
         setViewMembersList(sortedMembers);
       } else {
-        console.error("Failed to fetch family members");
+        console.error("Failed to fetch collection members");
       }
     } catch (error) {
-      console.error("Error fetching family members:", error);
+      console.error("Error fetching collection members:", error);
     } finally {
       setLoadingViewMembers(false);
     }
@@ -762,50 +762,50 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
   const handleCloseViewMembersModal = () => {
     setShowViewMembersModal(false);
-    setViewMembersFamily(null);
+    setViewMembersCollection(null);
     setViewMembersList([]);
   };
 
-  // Leave Family Handler
-  const handleLeaveFamilyClick = (family: FamilyGroup) => {
-    setFamilyToLeave(family);
-    setShowLeaveFamilyModal(true);
+  // Leave Collection Handler
+  const handleLeaveCollectionClick = (collection: CollectionGroup) => {
+    setCollectionToLeave(collection);
+    setShowLeaveCollectionModal(true);
   };
 
-  const handleLeaveFamily = async () => {
-    if (!familyToLeave) return;
+  const handleLeaveCollection = async () => {
+    if (!collectionToLeave) return;
 
     try {
-      setLeaveFamilyLoading(familyToLeave.id);
+      setLeaveCollectionLoading(collectionToLeave.id);
 
       const response = await authService.apiCall(
-        getApiEndpoint(`/family/${familyToLeave.id}/members/${user.id}`),
+        getApiEndpoint(`/collection/${collectionToLeave.id}/members/${user.id}`),
         {
           method: "DELETE",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to leave family");
+        throw new Error("Failed to leave collection");
       }
 
-      // Refresh the family list
-      await loadUserFamilies();
+      // Refresh the collection list
+      await loadUserCollections();
 
       // Close the modal
-      setShowLeaveFamilyModal(false);
-      setFamilyToLeave(null);
+      setShowLeaveCollectionModal(false);
+      setCollectionToLeave(null);
     } catch (error) {
-      console.error("Error leaving family:", error);
-      alert("Failed to leave family. Please try again.");
+      console.error("Error leaving collection:", error);
+      alert("Failed to leave collection. Please try again.");
     } finally {
-      setLeaveFamilyLoading(null);
+      setLeaveCollectionLoading(null);
     }
   };
 
-  const handleCloseLeaveFamilyModal = () => {
-    setShowLeaveFamilyModal(false);
-    setFamilyToLeave(null);
+  const handleCloseLeaveCollectionModal = () => {
+    setShowLeaveCollectionModal(false);
+    setCollectionToLeave(null);
   };
 
   // Profile Picture and Edit Profile Handlers (merged)
@@ -1086,51 +1086,51 @@ function Account({ user, onUserUpdate }: AccountProps) {
           </div>
         </div>
 
-        {/* Family Groups Section */}
+        {/* Collections Section */}
         <div className="account-section">
           <button
             className="section-header"
-            onClick={() => toggleSection("familyGroups")}
-            aria-expanded={!collapsedSections.familyGroups}
+            onClick={() => toggleSection("collections")}
+            aria-expanded={!collapsedSections.collections}
           >
             <span
               className={`section-caret ${
-                collapsedSections.familyGroups ? "collapsed" : ""
+                collapsedSections.collections ? "collapsed" : ""
               }`}
             >
               ▼
             </span>
-            <span className="section-title">Family Groups</span>
-            <span className="section-count">({familyGroups.length})</span>
+            <span className="section-title">Collections</span>
+            <span className="section-count">({collections.length})</span>
           </button>
 
-          {!collapsedSections.familyGroups && (
+          {!collapsedSections.collections && (
             <div className="section-content">
-              {loadingFamilies ? (
+              {loadingCollections ? (
                 <div className="loading-state">
-                  <p>Loading family groups...</p>
+                  <p>Loading collections...</p>
                 </div>
-              ) : familyGroups.length === 0 ? (
+              ) : collections.length === 0 ? (
                 <div className="empty-state">
-                  <p>You're not a member of any family groups yet.</p>
+                  <p>You're not a member of any collections yet.</p>
                 </div>
               ) : (
-                <div className="family-groups-list">
-                  {familyGroups.map((family) => (
-                    <div key={family.id} className="family-group-card">
-                      <div className="family-group-header">
-                        <h3 className="family-group-name">{family.name}</h3>
-                        {getRoleBadge(family.user_role)}
+                <div className="collections-list">
+                  {collections.map((collection) => (
+                    <div key={collection.id} className="collection-card">
+                      <div className="collection-header">
+                        <h3 className="collection-name">{collection.name}</h3>
+                        {getRoleBadge(collection.user_role)}
                       </div>
-                      <div className="family-group-details">
-                        <div className="family-group-info">
-                          <span className="family-id-container">
+                      <div className="collection-details">
+                        <div className="collection-info">
+                          <span className="collection-id-container">
                             <button
                               className="copy-id-btn"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleCopyFamilyId(family.id);
+                                handleCopyCollectionId(collection.id);
                               }}
                               onTouchStart={(e) => {
                                 // Add visual feedback on touch start
@@ -1152,50 +1152,50 @@ function Account({ user, onUserUpdate }: AccountProps) {
                                     ) as Node
                                   )
                                 ) {
-                                  handleCopyFamilyId(family.id);
+                                  handleCopyCollectionId(collection.id);
                                 }
                               }}
                               onTouchCancel={(e) => {
                                 // Reset visual feedback if touch is cancelled
                                 e.currentTarget.style.transform = "";
                               }}
-                              title="Click to copy family ID"
+                              title="Click to copy collection ID"
                               type="button"
                             >
-                              {family.id}
+                              {collection.id}
                             </button>
-                            {copiedFamilyId === family.id && (
+                            {copiedCollectionId === collection.id && (
                               <span className="copy-feedback">
-                                Family ID copied to clipboard
+                                Collection ID copied to clipboard
                               </span>
                             )}
                           </span>
                           <span className="member-count">
-                            👥 {family.member_count}
+                            👥 {collection.member_count}
                           </span>
                         </div>
-                        <div className="family-group-actions">
+                        <div className="collection-actions">
                           <button
                             className="action-btn view-btn"
-                            onClick={() => handleViewMembers(family)}
+                            onClick={() => handleViewMembers(collection)}
                           >
                             View
                           </button>
-                          {family.user_role === "owner" && (
+                          {collection.user_role === "owner" && (
                             <button
                               className="action-btn manage-btn"
-                              onClick={() => handleManageFamily(family)}
+                              onClick={() => handleManageCollection(collection)}
                             >
                               Manage
                             </button>
                           )}
-                          {family.user_role === "member" && (
+                          {collection.user_role === "member" && (
                             <button
                               className="action-btn leave-btn"
-                              onClick={() => handleLeaveFamilyClick(family)}
-                              disabled={leaveFamilyLoading === family.id}
+                              onClick={() => handleLeaveCollectionClick(collection)}
+                              disabled={leaveCollectionLoading === collection.id}
                             >
-                              {leaveFamilyLoading === family.id
+                              {leaveCollectionLoading === collection.id
                                 ? "Leaving..."
                                 : "Leave"}
                             </button>
@@ -1207,14 +1207,14 @@ function Account({ user, onUserUpdate }: AccountProps) {
                 </div>
               )}
               <div className="section-footer">
-                <button className="join-family-btn" onClick={handleJoinFamily}>
-                  Join Family
+                <button className="join-collection-btn" onClick={handleJoinCollection}>
+                  Join Collection
                 </button>
                 <button
-                  className="create-family-btn-footer"
-                  onClick={handleCreateFamily}
+                  className="create-collection-btn-footer"
+                  onClick={handleCreateCollection}
                 >
-                  Create Family
+                  Create Collection
                 </button>
               </div>
             </div>
@@ -1244,77 +1244,77 @@ function Account({ user, onUserUpdate }: AccountProps) {
         </div>
       </div>
 
-      {/* Create Family Modal */}
+      {/* Create Collection Modal */}
       <Modal
-        isOpen={showCreateFamilyModal}
+        isOpen={showCreateCollectionModal}
         mode="form"
-        title="Create Family"
-        onClose={handleCloseCreateFamilyModal}
-        onRightAction={handleCreateFamilySubmit}
-        rightButtonText={createFamilyLoading ? "Creating..." : "Create"}
-        rightButtonDisabled={createFamilyLoading}
+        title="Create Collection"
+        onClose={handleCloseCreateCollectionModal}
+        onRightAction={handleCreateCollectionSubmit}
+        rightButtonText={createCollectionLoading ? "Creating..." : "Create"}
+        rightButtonDisabled={createCollectionLoading}
       >
         <div className="form-group">
-          <label htmlFor="familyName">Family Name *</label>
+          <label htmlFor="collectionName">Collection Name *</label>
           <input
             type="text"
-            id="familyName"
-            name="familyName"
-            value={createFamilyForm.name}
+            id="collectionName"
+            name="collectionName"
+            value={createCollectionForm.name}
             onChange={(e) =>
-              setCreateFamilyForm({
-                ...createFamilyForm,
+              setCreateCollectionForm({
+                ...createCollectionForm,
                 name: e.target.value,
               })
             }
             required
-            placeholder="Enter your family group name"
+            placeholder="Enter your collection group name"
           />
         </div>
 
-        {createFamilyError && (
-          <div className="auth-error">{createFamilyError}</div>
+        {createCollectionError && (
+          <div className="auth-error">{createCollectionError}</div>
         )}
       </Modal>
 
-      {/* Join Family Modal */}
+      {/* Join Collection Modal */}
       <Modal
-        isOpen={showJoinFamilyModal}
+        isOpen={showJoinCollectionModal}
         mode="form"
-        title="Join Family"
-        onClose={handleCloseJoinFamilyModal}
-        onRightAction={handleJoinFamilySubmit}
-        rightButtonText={joinFamilyLoading ? "Joining..." : "Join"}
-        rightButtonDisabled={joinFamilyLoading}
+        title="Join Collection"
+        onClose={handleCloseJoinCollectionModal}
+        onRightAction={handleJoinCollectionSubmit}
+        rightButtonText={joinCollectionLoading ? "Joining..." : "Join"}
+        rightButtonDisabled={joinCollectionLoading}
       >
         <div className="form-group">
-          <label htmlFor="familyId">Family ID *</label>
+          <label htmlFor="collectionId">Collection ID *</label>
           <input
             type="text"
-            id="familyId"
-            name="familyId"
+            id="collectionId"
+            name="collectionId"
             autoComplete="off"
-            value={joinFamilyId}
-            onChange={handleJoinFamilyIdChange}
-            placeholder="Enter the family ID to join"
+            value={joinCollectionId}
+            onChange={handleJoinCollectionIdChange}
+            placeholder="Enter the collection ID to join"
           />
         </div>
 
-        {joinFamilyError && <div className="auth-error">{joinFamilyError}</div>}
+        {joinCollectionError && <div className="auth-error">{joinCollectionError}</div>}
 
-        {loadingJoinFamilyInfo && (
-          <div className="loading-state">Loading family information...</div>
+        {loadingJoinCollectionInfo && (
+          <div className="loading-state">Loading collection information...</div>
         )}
 
-        {joinFamilyInfo && (
-          <div className="family-group-card">
-            <div className="family-group-header">
-              <h3 className="family-group-name">{joinFamilyInfo.name}</h3>
+        {joinCollectionInfo && (
+          <div className="collection-card">
+            <div className="collection-header">
+              <h3 className="collection-name">{joinCollectionInfo.name}</h3>
             </div>
-            <div className="family-group-details">
-              <div className="family-group-info">
-                <span className="family-id-container">
-                  <span className="family-id-display">{joinFamilyInfo.id}</span>
+            <div className="collection-details">
+              <div className="collection-info">
+                <span className="collection-id-container">
+                  <span className="collection-id-display">{joinCollectionInfo.id}</span>
                 </span>
               </div>
             </div>
@@ -1322,82 +1322,82 @@ function Account({ user, onUserUpdate }: AccountProps) {
         )}
       </Modal>
 
-      {/* Manage Family Modal */}
+      {/* Manage Collection Modal */}
       <Modal
-        isOpen={showManageFamilyModal && selectedFamily !== null}
+        isOpen={showManageCollectionModal && selectedCollection !== null}
         mode="view"
-        title={`Manage ${selectedFamily?.name || "Family"}`}
-        onClose={handleCloseManageFamilyModal}
+        title={`Manage ${selectedCollection?.name || "Collection"}`}
+        onClose={handleCloseManageCollectionModal}
         showLeftButton={false}
         showRightButton={false}
-        showDeleteButton={selectedFamily?.owner_id === user.id}
-        onDeleteAction={handleDeleteFamily}
+        showDeleteButton={selectedCollection?.owner_id === user.id}
+        onDeleteAction={handleDeleteCollection}
         deleteButtonText={
-          deleteFamilyLoading ? "Deleting..." : "🗑️ Delete Family"
+          deleteCollectionLoading ? "Deleting..." : "🗑️ Delete Collection"
         }
-        deleteButtonDisabled={deleteFamilyLoading}
-        deleteButtonClass="delete-family-btn"
+        deleteButtonDisabled={deleteCollectionLoading}
+        deleteButtonClass="delete-collection-btn"
         maxWidth="700px"
       >
-        <div className="family-manage-content">
-          {/* Related Families Section */}
+        <div className="collection-manage-content">
+          {/* Related Collections Section */}
           <div className="add-member-section">
-            <h3>Related Families</h3>
+            <h3>Related Collections</h3>
 
-            {relatedFamilyError && (
-              <div className="auth-error">{relatedFamilyError}</div>
+            {relatedCollectionError && (
+              <div className="auth-error">{relatedCollectionError}</div>
             )}
 
-            {/* Add Related Family Form */}
-            <form onSubmit={handleAddRelatedFamily} className="add-member-form">
+            {/* Add Related Collection Form */}
+            <form onSubmit={handleAddRelatedCollection} className="add-member-form">
               <div className="form-group">
                 <input
                   type="text"
-                  name="relatedFamilyId"
+                  name="relatedCollectionId"
                   autoComplete="off"
-                  value={addRelatedFamilyId}
-                  onChange={(e) => setAddRelatedFamilyId(e.target.value)}
-                  placeholder="Enter family ID to add relation"
+                  value={addRelatedCollectionId}
+                  onChange={(e) => setAddRelatedCollectionId(e.target.value)}
+                  placeholder="Enter collection ID to add relation"
                   required
-                  disabled={addRelatedFamilyLoading}
+                  disabled={addRelatedCollectionLoading}
                 />
                 <button
                   type="submit"
                   disabled={
-                    addRelatedFamilyLoading || !addRelatedFamilyId.trim()
+                    addRelatedCollectionLoading || !addRelatedCollectionId.trim()
                   }
                 >
-                  {addRelatedFamilyLoading ? "Adding..." : "Add Relation"}
+                  {addRelatedCollectionLoading ? "Adding..." : "Add Relation"}
                 </button>
               </div>
             </form>
 
-            {/* Related Families List */}
-            {loadingRelatedFamilies ? (
+            {/* Related Collections List */}
+            {loadingRelatedCollections ? (
               <div className="loading-state">
-                <p>Loading related families...</p>
+                <p>Loading related collections...</p>
               </div>
-            ) : relatedFamilies.length > 0 ? (
+            ) : relatedCollections.length > 0 ? (
               <div className="members-list" style={{ marginTop: "1rem" }}>
-                {relatedFamilies.map((relatedFamily) => (
-                  <div key={relatedFamily.id} className="member-row">
+                {relatedCollections.map((relatedCollection) => (
+                  <div key={relatedCollection.id} className="member-row">
                     <div className="member-avatar">
                       <span className="avatar-placeholder">👨‍👩‍👧‍👦</span>
                     </div>
                     <div className="member-info">
-                      <div className="member-name">{relatedFamily.name}</div>
+                      <div className="member-name">{relatedCollection.name}</div>
                       <div className="member-email">
-                        👥 {relatedFamily.member_count} members
+                        👥 {relatedCollection.member_count} members
                       </div>
                       <div className="member-birthday">
-                        📅 Created {formatDate(relatedFamily.created_at)}
+                        📅 Created {formatDate(relatedCollection.created_at)}
                       </div>
                     </div>
                     <div className="member-actions">
                       <button
                         className="remove-btn"
                         onClick={() =>
-                          handleRemoveRelatedFamilyClick(relatedFamily)
+                          handleRemoveRelatedCollectionClick(relatedCollection)
                         }
                       >
                         Remove
@@ -1408,7 +1408,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
               </div>
             ) : (
               <p style={{ margin: "1rem 0", color: "var(--text-secondary)" }}>
-                No related families yet.
+                No related collections yet.
               </p>
             )}
           </div>
@@ -1440,19 +1440,19 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
           {/* Members List Section */}
           <div className="members-section">
-            <h3>Family Members ({familyMembers.length})</h3>
+            <h3>Collection Members ({collectionMembers.length})</h3>
 
-            {manageFamilyError && (
-              <div className="auth-error">{manageFamilyError}</div>
+            {manageCollectionError && (
+              <div className="auth-error">{manageCollectionError}</div>
             )}
 
             {loadingMembers ? (
               <div className="loading-state">
-                <p>Loading family members...</p>
+                <p>Loading collection members...</p>
               </div>
             ) : (
               <div className="members-list">
-                {familyMembers.map((member) => (
+                {collectionMembers.map((member) => (
                   <div key={member.id} className="member-row">
                     <div className="member-avatar">
                       {member.profile_picture_thumbnail_url ? (
@@ -1508,22 +1508,22 @@ function Account({ user, onUserUpdate }: AccountProps) {
 
       {/* View Members Modal */}
       <Modal
-        isOpen={showViewMembersModal && viewMembersFamily !== null}
+        isOpen={showViewMembersModal && viewMembersCollection !== null}
         mode="view"
-        title={`${viewMembersFamily?.name || "Family"} Members`}
+        title={`${viewMembersCollection?.name || "Collection"} Members`}
         onClose={handleCloseViewMembersModal}
         showLeftButton={false}
         showRightButton={false}
         maxWidth="600px"
       >
-        <div className="family-manage-content">
+        <div className="collection-manage-content">
           {/* Members List Section */}
           <div className="members-section">
-            <h3>Family Members ({viewMembersList.length})</h3>
+            <h3>Collection Members ({viewMembersList.length})</h3>
 
             {loadingViewMembers ? (
               <div className="loading-state">
-                <p>Loading family members...</p>
+                <p>Loading collection members...</p>
               </div>
             ) : (
               <div className="members-list">
@@ -1843,7 +1843,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
               type="text"
               id="editLastName"
               name="lastName"
-              autoComplete="family-name"
+              autoComplete="collection-name"
               value={editForm.last_name || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, last_name: e.target.value || null })
@@ -1871,30 +1871,30 @@ function Account({ user, onUserUpdate }: AccountProps) {
         </div>
       </Modal>
 
-      {/* Leave Family Confirmation Modal */}
+      {/* Leave Collection Confirmation Modal */}
       <Modal
-        isOpen={showLeaveFamilyModal && familyToLeave !== null}
+        isOpen={showLeaveCollectionModal && collectionToLeave !== null}
         mode="view"
-        title="Leave Family"
-        onClose={handleCloseLeaveFamilyModal}
+        title="Leave Collection"
+        onClose={handleCloseLeaveCollectionModal}
         showLeftButton={false}
         showRightButton={false}
         showDeleteButton={true}
-        onDeleteAction={handleLeaveFamily}
+        onDeleteAction={handleLeaveCollection}
         confirmBeforeDelete={false}
-        deleteButtonText={leaveFamilyLoading ? "Leaving..." : "Leave Family"}
-        deleteButtonDisabled={!!leaveFamilyLoading}
+        deleteButtonText={leaveCollectionLoading ? "Leaving..." : "Leave Collection"}
+        deleteButtonDisabled={!!leaveCollectionLoading}
         deleteButtonClass="delete-btn"
         maxWidth="500px"
       >
-        <div className="leave-family-content">
+        <div className="leave-collection-content">
           <p>
             Are you sure you want to leave{" "}
-            <strong>{familyToLeave?.name}</strong>?
+            <strong>{collectionToLeave?.name}</strong>?
           </p>
           <p>
             You will no longer have access to photos and content shared in this
-            family group. You can rejoin later if invited again.
+            collection group. You can rejoin later if invited again.
           </p>
         </div>
       </Modal>
@@ -1903,7 +1903,7 @@ function Account({ user, onUserUpdate }: AccountProps) {
       <Modal
         isOpen={showRemoveMemberModal && memberToRemove !== null}
         mode="view"
-        title="Remove Family Member"
+        title="Remove Collection Member"
         onClose={handleCloseRemoveMemberModal}
         showLeftButton={false}
         showRightButton={false}
@@ -1922,38 +1922,38 @@ function Account({ user, onUserUpdate }: AccountProps) {
               {memberToRemove?.first_name || "No"}{" "}
               {memberToRemove?.last_name || "Name"}
             </strong>{" "}
-            from <strong>{selectedFamily?.name}</strong>?
+            from <strong>{selectedCollection?.name}</strong>?
           </p>
           <p>
             They will no longer have access to photos and content shared in this
-            family group. They can rejoin if invited again.
+            collection group. They can rejoin if invited again.
           </p>
         </div>
       </Modal>
 
-      {/* Remove Related Family Confirmation Modal */}
+      {/* Remove Related Collection Confirmation Modal */}
       <Modal
-        isOpen={showRemoveRelatedFamilyModal && relatedFamilyToRemove !== null}
+        isOpen={showRemoveRelatedCollectionModal && relatedCollectionToRemove !== null}
         mode="view"
-        title="Remove Family Relation"
-        onClose={handleCloseRemoveRelatedFamilyModal}
+        title="Remove Collection Relation"
+        onClose={handleCloseRemoveRelatedCollectionModal}
         showLeftButton={false}
         showRightButton={false}
         showDeleteButton={true}
         confirmBeforeDelete={false}
-        onDeleteAction={handleRemoveRelatedFamily}
+        onDeleteAction={handleRemoveRelatedCollection}
         deleteButtonText="Remove Relation"
         deleteButtonDisabled={false}
         deleteButtonClass="delete-btn"
         maxWidth="500px"
       >
-        <div className="remove-related-family-content">
+        <div className="remove-related-collection-content">
           <p>
             Are you sure you want to remove the relation with{" "}
-            <strong>{relatedFamilyToRemove?.name}</strong>?
+            <strong>{relatedCollectionToRemove?.name}</strong>?
           </p>
           <p>
-            This will remove the connection between your family groups. The
+            This will remove the connection between your collections. The
             relation can be re-established later if needed.
           </p>
         </div>

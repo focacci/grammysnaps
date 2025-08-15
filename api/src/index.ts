@@ -10,8 +10,8 @@ import tagRoutes from "./routes/tag.routes";
 import s3Plugin from "./plugins/s3.plugin";
 import userPlugin from "./plugins/user.plugin";
 import userRoutes from "./routes/user.routes";
-import familyPlugin from "./plugins/family.plugin";
-import familyRoutes from "./routes/family.routes";
+import collectionPlugin from "./plugins/collection.plugin";
+import collectionRoutes from "./routes/collection.routes";
 import authPlugin from "./plugins/auth.plugin";
 import authRoutes from "./routes/auth.routes";
 import { RATE_LIMIT_ERRORS } from "./types/errors";
@@ -147,14 +147,14 @@ const main = async () => {
   server.register(imagePlugin);
   server.register(tagPlugin);
   server.register(userPlugin);
-  server.register(familyPlugin);
+  server.register(collectionPlugin);
   server.register(authPlugin);
 
   // Routes
   await server.register(imageRoutes, { prefix: "/api/image" });
   await server.register(tagRoutes, { prefix: "/api/tag" });
   await server.register(userRoutes, { prefix: "/api/user" });
-  await server.register(familyRoutes, { prefix: "/api/family" });
+  await server.register(collectionRoutes, { prefix: "/api/collection" });
   await server.register(authRoutes, { prefix: "/api/auth" });
 
   // Health check for load balancer routing (/api/health)

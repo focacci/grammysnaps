@@ -39,7 +39,7 @@ const updateImageBodySchema = {
       type: "array",
       items: { type: "string", format: "uuid" },
     },
-    family_ids: {
+    collection_ids: {
       type: "array",
       items: { type: "string", format: "uuid" },
       minItems: 1,
@@ -147,7 +147,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       // Parse multipart form data - with attachFieldsToBody: true
       let fileData: MultipartFile | null = null;
       let tags: string[] = [];
-      let family_ids: string[] = [];
+      let collection_ids: string[] = [];
       let title: string | undefined = undefined;
 
       try {
@@ -204,29 +204,29 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
             }
           }
 
-          // Get family_ids from body
-          if (body.family_ids) {
+          // Get collection_ids from body
+          if (body.collection_ids) {
             try {
-              const familyIdsData = body.family_ids as
+              const collectionIdsData = body.collection_ids as
                 | { value?: string }
                 | string;
-              const familyIdsValue =
-                typeof familyIdsData === "object" && familyIdsData.value
-                  ? familyIdsData.value
-                  : familyIdsData;
-              fastify.log.info(`Raw family_ids value: ${familyIdsValue}`);
-              family_ids =
-                familyIdsValue &&
-                typeof familyIdsValue === "string" &&
-                familyIdsValue !== ""
-                  ? (JSON.parse(familyIdsValue) as UUID[])
+              const collectionIdsValue =
+                typeof collectionIdsData === "object" && collectionIdsData.value
+                  ? collectionIdsData.value
+                  : collectionIdsData;
+              fastify.log.info(`Raw collection_ids value: ${collectionIdsValue}`);
+              collection_ids =
+                collectionIdsValue &&
+                typeof collectionIdsValue === "string" &&
+                collectionIdsValue !== ""
+                  ? (JSON.parse(collectionIdsValue) as UUID[])
                   : ([] as UUID[]);
               fastify.log.info(
-                `Parsed family_ids: ${JSON.stringify(family_ids)}`
+                `Parsed collection_ids: ${JSON.stringify(collection_ids)}`
               );
             } catch (err) {
-              fastify.log.warn("Failed to parse family_ids:", err);
-              family_ids = ([] as UUID[]);
+              fastify.log.warn("Failed to parse collection_ids:", err);
+              collection_ids = ([] as UUID[]);
             }
           }
         }
@@ -243,10 +243,10 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      // Validate family_ids
-      if (!family_ids || family_ids.length === 0) {
+      // Validate collection_ids
+      if (!collection_ids || collection_ids.length === 0) {
         return reply.status(400).send({
-          message: IMAGE_ERRORS.FAMILY_REQUIRED,
+          message: IMAGE_ERRORS.COLLECTION_REQUIRED,
         });
       }
 
@@ -336,7 +336,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
         filename: fileData.filename,
         title,
         tags: tags as UUID[],
-        family_ids: family_ids as UUID[],
+        collection_ids: collection_ids as UUID[],
         original_key,
         thumbnail_key,
       });
@@ -363,7 +363,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { imageId } = request.params as UpdateImageParams;
-      const { title, tags, family_ids } = request.body as ImageInput;
+      const { title, tags, collection_ids } = request.body as ImageInput;
 
       // First get the existing image to preserve and filename
       const existingImage = await fastify.image.getById(imageId);
@@ -375,7 +375,7 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
       const image = await fastify.image.update(imageId, {
         title,
         tags,
-        family_ids,
+        collection_ids,
         original_key: existingImage.original_key,
         thumbnail_key: existingImage.thumbnail_key,
       });
@@ -383,30 +383,30 @@ const imageRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  // Get images by family
+  // Get images by collection
   fastify.get(
-    "/family/:familyId",
+    "/collection/:collectionId",
     {
       schema: {
         params: {
           type: "object",
-          required: ["familyId"],
+          required: ["collectionId"],
           properties: {
-            familyId: { type: "string", format: "uuid" },
+            collectionId: { type: "string", format: "uuid" },
           },
         },
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { familyId } = request.params as { familyId: UUID };
+      const { collectionId } = request.params as { collectionId: UUID };
       try {
-        const images = await fastify.image.getByFamily(familyId);
+        const images = await fastify.image.getByCollection(collectionId);
         const publicImages: ImagePublic[] = await Promise.all(images.map(async (image) => await toPublicImage(image)));
         return reply.status(200).send({ images: publicImages });
       } catch (error) {
-        fastify.log.error("Error getting images by family:", error);
+        fastify.log.error("Error getting images by collection:", error);
         return reply.status(500).send({
-          message: IMAGE_ERRORS.GET_BY_FAMILY_FAILED,
+          message: IMAGE_ERRORS.GET_BY_COLLECTION_FAILED,
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }

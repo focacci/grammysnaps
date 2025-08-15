@@ -19,7 +19,7 @@ jest.mock("../middleware/auth.middleware", () => ({
 
 const mockTagCreate = jest.fn();
 const mockTagGet = jest.fn();
-const mockTagGetByFamily = jest.fn();
+const mockTagGetByCollection = jest.fn();
 const mockTagGetById = jest.fn();
 const mockTagUpdate = jest.fn();
 const mockTagDelete = jest.fn();
@@ -30,7 +30,7 @@ describe("Tag Routes", () => {
   const mockTag: Tag = {
     id: TEST_UUIDS.TAG_1,
     name: "Test Tag",
-    family_id: TEST_UUIDS.FAMILY_1,
+    collection_id: TEST_UUIDS.COLLECTION_1,
     created_at: "2023-01-01T00:00:00Z",
     updated_at: "2023-01-01T00:00:00Z",
   };
@@ -43,7 +43,7 @@ describe("Tag Routes", () => {
     fastify.decorate("tag", {
       create: mockTagCreate,
       get: mockTagGet,
-      getByFamily: mockTagGetByFamily,
+      getByCollection: mockTagGetByCollection,
       getById: mockTagGetById,
       update: mockTagUpdate,
       delete: mockTagDelete,
@@ -102,29 +102,29 @@ describe("Tag Routes", () => {
     });
   });
 
-  describe("GET /family/:familyId", () => {
-    const validFamilyId = TEST_UUIDS.FAMILY_1;
+  describe("GET /collection/:collectionId", () => {
+    const validCollectionId = TEST_UUIDS.COLLECTION_1;
 
-    it("should return tags for family", async () => {
+    it("should return tags for collection", async () => {
       const mockTags = [mockTag];
-      mockTagGetByFamily.mockResolvedValue(mockTags);
+      mockTagGetByCollection.mockResolvedValue(mockTags);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/family/${validFamilyId}`,
+        url: `/collection/${validCollectionId}`,
       });
 
       expect(response.statusCode).toBe(200);
       expect(JSON.parse(response.body)).toEqual({ tags: mockTags });
-      expect(mockTagGetByFamily).toHaveBeenCalledWith(validFamilyId);
+      expect(mockTagGetByCollection).toHaveBeenCalledWith(validCollectionId);
     });
 
     it("should return empty array when no tags found", async () => {
-      mockTagGetByFamily.mockResolvedValue([]);
+      mockTagGetByCollection.mockResolvedValue([]);
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/family/${validFamilyId}`,
+        url: `/collection/${validCollectionId}`,
       });
 
       expect(response.statusCode).toBe(200);
@@ -134,18 +134,18 @@ describe("Tag Routes", () => {
     it("should reject invalid UUID format", async () => {
       const response = await fastify.inject({
         method: "GET",
-        url: "/family/invalid-uuid",
+        url: "/collection/invalid-uuid",
       });
 
       expect(response.statusCode).toBe(400);
     });
 
     it("should handle database errors", async () => {
-      mockTagGetByFamily.mockRejectedValue(new Error("Database error"));
+      mockTagGetByCollection.mockRejectedValue(new Error("Database error"));
 
       const response = await fastify.inject({
         method: "GET",
-        url: `/family/${validFamilyId}`,
+        url: `/collection/${validCollectionId}`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -207,7 +207,7 @@ describe("Tag Routes", () => {
     const validTagData: TagInput = {
       type: "Person",
       name: "John Doe",
-      family_id: TEST_UUIDS.FAMILY_1,
+      collection_id: TEST_UUIDS.COLLECTION_1,
       created_by: TEST_UUIDS.USER_1,
     };
 
@@ -229,7 +229,7 @@ describe("Tag Routes", () => {
     it("should reject missing required fields", async () => {
       const incompleteData = {
         name: "John Doe",
-        // Missing type, family_id, created_by
+        // Missing type, collection_id, created_by
       };
 
       const response = await fastify.inject({
@@ -241,10 +241,10 @@ describe("Tag Routes", () => {
       expect(response.statusCode).toBe(400);
     });
 
-    it("should reject invalid UUID format for family_id", async () => {
+    it("should reject invalid UUID format for collection_id", async () => {
       const invalidData = {
         ...validTagData,
-        family_id: "invalid-uuid",
+        collection_id: "invalid-uuid",
       };
 
       const response = await fastify.inject({
@@ -337,7 +337,7 @@ describe("Tag Routes", () => {
       const locationTagData: TagInput = {
         type: "Location",
         name: "Paris",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const createdTag = { ...mockTag, ...locationTagData };
@@ -357,7 +357,7 @@ describe("Tag Routes", () => {
       const eventTagData: TagInput = {
         type: "Event",
         name: "Wedding",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const createdTag = { ...mockTag, ...eventTagData };
@@ -377,7 +377,7 @@ describe("Tag Routes", () => {
       const timeTagData: TagInput = {
         type: "Time",
         name: "Morning",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const createdTag = { ...mockTag, ...timeTagData };
@@ -399,7 +399,7 @@ describe("Tag Routes", () => {
     const updateData: TagUpdateInput = {
       type: "Location",
       name: "Updated Tag Name",
-      family_id: TEST_UUIDS.FAMILY_1,
+      collection_id: TEST_UUIDS.COLLECTION_1,
     };
 
     it("should update tag successfully", async () => {
@@ -445,7 +445,7 @@ describe("Tag Routes", () => {
     it("should reject missing required fields", async () => {
       const incompleteData = {
         name: "Updated Name",
-        // Missing type and family_id
+        // Missing type and collection_id
       };
 
       const response = await fastify.inject({
@@ -457,10 +457,10 @@ describe("Tag Routes", () => {
       expect(response.statusCode).toBe(400);
     });
 
-    it("should reject invalid UUID format for family_id", async () => {
+    it("should reject invalid UUID format for collection_id", async () => {
       const invalidData = {
         ...updateData,
-        family_id: "invalid-uuid",
+        collection_id: "invalid-uuid",
       };
 
       const response = await fastify.inject({

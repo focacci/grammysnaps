@@ -22,7 +22,7 @@ jest.mock("../utils/validation", () => ({
     sanitizePassword: jest.fn((password) => password),
     sanitizeText: jest.fn((text) => text),
     sanitizeDate: jest.fn((date) => date),
-    sanitizeFamilyIds: jest.fn((families) => families || []),
+    sanitizeCollectionIds: jest.fn((collections) => collections || []),
     sanitizeUUID: jest.fn((uuid) => uuid),
     sanitizeURL: jest.fn((url) => url),
   },
@@ -31,8 +31,15 @@ jest.mock("../utils/validation", () => ({
 // Mock the postgres query function
 const mockQuery = jest.fn();
 
-// Mock the family plugin
-const mockFamilyExists = jest.fn();
+// Mock the collection plugin
+const mockCollectionExists = jest.fn();
+const mockCollectionCreate = jest.fn();
+
+// Mock the image plugin
+const mockImageGetOrphanedByCollection = jest.fn();
+
+// Mock the S3 plugin
+const mockS3Delete = jest.fn();
 
 // Mock the auth plugin
 const mockRevokeUserTokens = jest.fn();
@@ -49,8 +56,17 @@ describe("User Plugin", () => {
       query: mockQuery,
     } as any);
 
-    fastify.decorate("family", {
-      exists: mockFamilyExists,
+    fastify.decorate("collection", {
+      exists: mockCollectionExists,
+      create: mockCollectionCreate,
+    } as any);
+
+    fastify.decorate("image", {
+      getOrphanedByCollection: mockImageGetOrphanedByCollection,
+    } as any);
+
+    fastify.decorate("s3", {
+      delete: mockS3Delete,
     } as any);
 
     fastify.decorate("auth", {
@@ -82,8 +98,8 @@ describe("User Plugin", () => {
       expect(typeof fastify.user.updateSecurity).toBe("function");
       expect(typeof fastify.user.delete).toBe("function");
       expect(typeof fastify.user.validatePassword).toBe("function");
-      expect(typeof fastify.user.addToFamily).toBe("function");
-      expect(typeof fastify.user.removeFromFamily).toBe("function");
+      expect(typeof fastify.user.addToCollection).toBe("function");
+      expect(typeof fastify.user.removeFromCollection).toBe("function");
     });
   });
 
@@ -96,7 +112,7 @@ describe("User Plugin", () => {
       middle_name: "M",
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -110,11 +126,11 @@ describe("User Plugin", () => {
         middle_name: "M",
         last_name: "Doe",
         birthday: "1990-01-01",
-        families: ["550e8400-e29b-41d4-a716-446655440001"],
+        collections: ["550e8400-e29b-41d4-a716-446655440001"],
       };
 
-      // Mock family validation
-      mockFamilyExists.mockResolvedValueOnce(true);
+      // Mock collection validation
+      mockCollectionExists.mockResolvedValueOnce(true);
 
       // Mock getByEmail to return null (no existing user)
       mockQuery.mockResolvedValueOnce({ rows: [] }); // getByEmail
@@ -125,9 +141,25 @@ describe("User Plugin", () => {
       // Mock user creation
       mockQuery.mockResolvedValueOnce({ rows: [mockUser] }); // INSERT
 
+      // Mock collection creation for "My Collection"
+      mockCollectionCreate.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "My Collection",
+        member_count: 1,
+        owner_id: "550e8400-e29b-41d4-a716-446655440000",
+        user_role: "owner",
+        related_collections: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
       const result = await fastify.user.create(userInput);
 
       expect(mockArgon2.hash).toHaveBeenCalledWith("StrongPassword123!");
+      expect(mockCollectionCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440000"
+      );
       expect(result).toEqual({
         id: "550e8400-e29b-41d4-a716-446655440000",
         email: "test@example.com",
@@ -135,7 +167,7 @@ describe("User Plugin", () => {
         middle_name: "M",
         last_name: "Doe",
         birthday: "1990-01-01",
-        families: ["550e8400-e29b-41d4-a716-446655440001"],
+        collections: ["550e8400-e29b-41d4-a716-446655440001"],
         profile_picture_key: null,
         created_at: mockUser.created_at,
         updated_at: mockUser.updated_at,
@@ -150,7 +182,7 @@ describe("User Plugin", () => {
         middle_name: null,
         last_name: null,
         birthday: null,
-        families: [],
+        collections: [],
       };
 
       const minimalUser: User = {
@@ -161,7 +193,7 @@ describe("User Plugin", () => {
         middle_name: null,
         last_name: null,
         birthday: null,
-        families: [],
+        collections: [],
         profile_picture_key: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -171,14 +203,30 @@ describe("User Plugin", () => {
       mockArgon2.hash.mockResolvedValueOnce("hashed-password");
       mockQuery.mockResolvedValueOnce({ rows: [minimalUser] }); // INSERT
 
+      // Mock collection creation for "My Collection"
+      mockCollectionCreate.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "My Collection",
+        member_count: 1,
+        owner_id: "550e8400-e29b-41d4-a716-446655440002",
+        user_role: "owner",
+        related_collections: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
       const result = await fastify.user.create(userInput);
 
+      expect(mockCollectionCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440002"
+      );
       expect(result.email).toBe("minimal@example.com");
-      expect(result.families).toEqual([]);
+      expect(result.collections).toEqual([]);
       expect(result.first_name).toBeNull();
     });
 
-    it("should filter out invalid families", async () => {
+    it("should filter out invalid collections", async () => {
       const userInput: UserInput = {
         email: "test@example.com",
         password: "StrongPassword123!",
@@ -186,18 +234,18 @@ describe("User Plugin", () => {
         middle_name: null,
         last_name: "Doe",
         birthday: null,
-        families: [
-          TEST_UUIDS.FAMILY_1,
-          "550e8400-e29b-41d4-a716-446655440099" as UUID, // invalid family ID
-          TEST_UUIDS.FAMILY_2,
+        collections: [
+          TEST_UUIDS.COLLECTION_1,
+          "550e8400-e29b-41d4-a716-446655440099" as UUID, // invalid collection ID
+          TEST_UUIDS.COLLECTION_2,
         ],
       };
 
-      // Mock family validation - only valid UUIDs exist
-      mockFamilyExists
-        .mockResolvedValueOnce(true) // first family
-        .mockResolvedValueOnce(false) // invalid-family
-        .mockResolvedValueOnce(true); // second family
+      // Mock collection validation - only valid UUIDs exist
+      mockCollectionExists
+        .mockResolvedValueOnce(true) // first collection
+        .mockResolvedValueOnce(false) // invalid-collection
+        .mockResolvedValueOnce(true); // second collection
 
       mockQuery.mockResolvedValueOnce({ rows: [] }); // getByEmail
       mockArgon2.hash.mockResolvedValueOnce("hashed-password");
@@ -205,7 +253,7 @@ describe("User Plugin", () => {
         rows: [
           {
             ...mockUser,
-            families: [
+            collections: [
               "550e8400-e29b-41d4-a716-446655440001",
               "550e8400-e29b-41d4-a716-446655440002",
             ],
@@ -213,9 +261,25 @@ describe("User Plugin", () => {
         ],
       }); // INSERT
 
+      // Mock collection creation for "My Collection"
+      mockCollectionCreate.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440003",
+        name: "My Collection",
+        member_count: 1,
+        owner_id: "550e8400-e29b-41d4-a716-446655440000",
+        user_role: "owner",
+        related_collections: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
       const result = await fastify.user.create(userInput);
 
-      expect(result.families).toEqual([
+      expect(mockCollectionCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440000"
+      );
+      expect(result.collections).toEqual([
         "550e8400-e29b-41d4-a716-446655440001",
         "550e8400-e29b-41d4-a716-446655440002",
       ]);
@@ -229,7 +293,7 @@ describe("User Plugin", () => {
         middle_name: null,
         last_name: "Doe",
         birthday: null,
-        families: [],
+        collections: [],
       };
 
       // Mock getByEmail to return existing user
@@ -248,7 +312,7 @@ describe("User Plugin", () => {
         middle_name: null,
         last_name: "Doe",
         birthday: null,
-        families: [],
+        collections: [],
       };
 
       mockQuery.mockResolvedValueOnce({ rows: [] }); // getByEmail
@@ -258,6 +322,58 @@ describe("User Plugin", () => {
       await expect(fastify.user.create(userInput)).rejects.toThrow(
         "Database error"
       );
+    });
+
+    it("should create user successfully even if collection creation fails", async () => {
+      const userInput: UserInput = {
+        email: "test@example.com",
+        password: "StrongPassword123!",
+        first_name: "John",
+        middle_name: null,
+        last_name: "Doe",
+        birthday: null,
+        collections: [],
+      };
+
+      const testUser: User = {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        email: "test@example.com",
+        password_hash: "hashed-password",
+        first_name: "John",
+        middle_name: null,
+        last_name: "Doe",
+        birthday: null,
+        collections: [],
+        profile_picture_key: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // getByEmail
+      mockArgon2.hash.mockResolvedValueOnce("hashed-password");
+      mockQuery.mockResolvedValueOnce({ rows: [testUser] }); // INSERT
+
+      // Mock collection creation failure
+      mockCollectionCreate.mockRejectedValueOnce(new Error("Collection creation failed"));
+
+      const result = await fastify.user.create(userInput);
+
+      expect(mockCollectionCreate).toHaveBeenCalledWith(
+        { name: "My Collection" },
+        "550e8400-e29b-41d4-a716-446655440000"
+      );
+      expect(result).toEqual({
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        email: "test@example.com",
+        first_name: "John",
+        middle_name: null,
+        last_name: "Doe",
+        birthday: null,
+        collections: [],
+        profile_picture_key: null,
+        created_at: testUser.created_at,
+        updated_at: testUser.updated_at,
+      });
     });
   });
 
@@ -272,7 +388,7 @@ describe("User Plugin", () => {
           middle_name: null,
           last_name: "One",
           birthday: "1990-01-01",
-          families: ["550e8400-e29b-41d4-a716-446655440001"],
+          collections: ["550e8400-e29b-41d4-a716-446655440001"],
           profile_picture_key: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -285,7 +401,7 @@ describe("User Plugin", () => {
           middle_name: null,
           last_name: "Two",
           birthday: null,
-          families: [],
+          collections: [],
           profile_picture_key: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -328,7 +444,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -378,7 +494,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -423,7 +539,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -437,7 +553,7 @@ describe("User Plugin", () => {
       middle_name: "M",
       last_name: "Smith",
       birthday: "1985-05-15",
-      families: ["550e8400-e29b-41d4-a716-446655440002"],
+      collections: ["550e8400-e29b-41d4-a716-446655440002"],
       profile_picture_key: generateTestS3Key(TEST_UUIDS.USER_1, "profile", TEST_UUIDS.S3_ID_1, "pic.jpg"),
       created_at: existingUser.created_at,
       updated_at: new Date().toISOString(),
@@ -450,7 +566,7 @@ describe("User Plugin", () => {
         middle_name: "M",
         last_name: "Smith",
         birthday: "1985-05-15",
-        families: ["550e8400-e29b-41d4-a716-446655440002"],
+        collections: ["550e8400-e29b-41d4-a716-446655440002"],
         profile_picture_key: generateTestS3Key(TEST_UUIDS.USER_1, "profile", TEST_UUIDS.S3_ID_1, "pic.jpg"),
       };
 
@@ -459,8 +575,8 @@ describe("User Plugin", () => {
         rows: [{ ...existingUser, password_hash: "hash" }],
       }); // getById
 
-      // Mock family validation
-      mockFamilyExists.mockResolvedValueOnce(true);
+      // Mock collection validation
+      mockCollectionExists.mockResolvedValueOnce(true);
 
       // Mock email conflict check (getByEmail internal call)
       mockQuery.mockResolvedValueOnce({ rows: [] }); // getByEmail
@@ -508,7 +624,7 @@ describe("User Plugin", () => {
         middle_name: null,
         last_name: "User",
         birthday: null,
-        families: [],
+        collections: [],
         profile_picture_key: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -574,7 +690,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -584,10 +700,18 @@ describe("User Plugin", () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
-      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE
+      mockQuery.mockResolvedValueOnce({ 
+        rows: [{ id: "collection-1", name: "My Collection" }] 
+      }); // SELECT collections owned by user
+      mockImageGetOrphanedByCollection.mockResolvedValueOnce([]); // No orphaned images
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE user
 
       await fastify.user.delete("550e8400-e29b-41d4-a716-446655440000");
 
+      expect(mockQuery).toHaveBeenCalledWith(
+        "SELECT id, name FROM collections WHERE owner_id = $1",
+        ["550e8400-e29b-41d4-a716-446655440000"]
+      );
       expect(mockQuery).toHaveBeenCalledWith(
         "DELETE FROM users WHERE id = $1",
         ["550e8400-e29b-41d4-a716-446655440000"]
@@ -606,11 +730,53 @@ describe("User Plugin", () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
+      mockQuery.mockResolvedValueOnce({ 
+        rows: [{ id: "collection-1", name: "My Collection" }] 
+      }); // SELECT collections owned by user
+      mockImageGetOrphanedByCollection.mockResolvedValueOnce([]); // No orphaned images
       mockQuery.mockRejectedValueOnce(new Error("Database error")); // DELETE
 
       await expect(
         fastify.user.delete("550e8400-e29b-41d4-a716-446655440000")
       ).rejects.toThrow("Database error");
+    });
+
+    it("should delete user and clean up orphaned images from owned collections", async () => {
+      const mockOrphanedImages = [
+        {
+          id: "image-1",
+          original_key: "original-key-1",
+          thumbnail_key: "thumb-key-1",
+        },
+        {
+          id: "image-2",
+          original_key: "original-key-2",
+          thumbnail_key: "thumb-key-2",
+        },
+      ];
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ ...mockUser, password_hash: "hash" }],
+      }); // getById
+      mockQuery.mockResolvedValueOnce({ 
+        rows: [{ id: "collection-1", name: "My Collection" }] 
+      }); // SELECT collections owned by user
+      mockImageGetOrphanedByCollection.mockResolvedValueOnce(mockOrphanedImages);
+      mockS3Delete.mockResolvedValue(undefined);
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE image 1
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE image 2
+      mockQuery.mockResolvedValueOnce({ rows: [] }); // DELETE user
+
+      await fastify.user.delete("550e8400-e29b-41d4-a716-446655440000");
+
+      expect(mockImageGetOrphanedByCollection).toHaveBeenCalledWith("collection-1");
+      expect(mockS3Delete).toHaveBeenCalledWith("original-key-1");
+      expect(mockS3Delete).toHaveBeenCalledWith("thumb-key-1");
+      expect(mockS3Delete).toHaveBeenCalledWith("original-key-2");
+      expect(mockS3Delete).toHaveBeenCalledWith("thumb-key-2");
+      expect(mockQuery).toHaveBeenCalledWith("DELETE FROM images WHERE id = $1", ["image-1"]);
+      expect(mockQuery).toHaveBeenCalledWith("DELETE FROM images WHERE id = $1", ["image-2"]);
+      expect(mockQuery).toHaveBeenCalledWith("DELETE FROM users WHERE id = $1", ["550e8400-e29b-41d4-a716-446655440000"]);
     });
   });
 
@@ -623,7 +789,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -673,7 +839,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -793,7 +959,7 @@ describe("User Plugin", () => {
     });
   });
 
-  describe("addToFamily", () => {
+  describe("addToCollection", () => {
     const mockUser: UserPublic = {
       id: "550e8400-e29b-41d4-a716-446655440000",
       email: "test@example.com",
@@ -801,25 +967,25 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: ["550e8400-e29b-41d4-a716-446655440001"],
+      collections: ["550e8400-e29b-41d4-a716-446655440001"],
       profile_picture_key: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    it("should add user to family successfully", async () => {
+    it("should add user to collection successfully", async () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
       mockQuery.mockResolvedValueOnce({ rows: [] }); // UPDATE
 
-      await fastify.user.addToFamily(
+      await fastify.user.addToCollection(
         "550e8400-e29b-41d4-a716-446655440000",
         "550e8400-e29b-41d4-a716-446655440002"
       );
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE users SET families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        "UPDATE users SET collections = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
         [
           [
             "550e8400-e29b-41d4-a716-446655440001",
@@ -830,17 +996,17 @@ describe("User Plugin", () => {
       );
     });
 
-    it("should not add user if already in family", async () => {
+    it("should not add user if already in collection", async () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
 
-      await fastify.user.addToFamily(
+      await fastify.user.addToCollection(
         "550e8400-e29b-41d4-a716-446655440000",
         "550e8400-e29b-41d4-a716-446655440001"
       );
 
-      // Should not call update query since user is already in family
+      // Should not call update query since user is already in collection
       expect(mockQuery).toHaveBeenCalledTimes(1);
     });
 
@@ -848,7 +1014,7 @@ describe("User Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [] }); // getById
 
       await expect(
-        fastify.user.addToFamily(
+        fastify.user.addToCollection(
           "550e8400-e29b-41d4-a716-446655440999",
           "550e8400-e29b-41d4-a716-446655440001"
         )
@@ -862,7 +1028,7 @@ describe("User Plugin", () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error")); // UPDATE
 
       await expect(
-        fastify.user.addToFamily(
+        fastify.user.addToCollection(
           "550e8400-e29b-41d4-a716-446655440000",
           "550e8400-e29b-41d4-a716-446655440002"
         )
@@ -870,7 +1036,7 @@ describe("User Plugin", () => {
     });
   });
 
-  describe("removeFromFamily", () => {
+  describe("removeFromCollection", () => {
     const mockUser: UserPublic = {
       id: "550e8400-e29b-41d4-a716-446655440000",
       email: "test@example.com",
@@ -878,7 +1044,7 @@ describe("User Plugin", () => {
       middle_name: null,
       last_name: "Doe",
       birthday: "1990-01-01",
-      families: [
+      collections: [
         "550e8400-e29b-41d4-a716-446655440001",
         "550e8400-e29b-41d4-a716-446655440002",
       ],
@@ -887,19 +1053,19 @@ describe("User Plugin", () => {
       updated_at: new Date().toISOString(),
     };
 
-    it("should remove user from family successfully", async () => {
+    it("should remove user from collection successfully", async () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
       mockQuery.mockResolvedValueOnce({ rows: [] }); // UPDATE
 
-      await fastify.user.removeFromFamily(
+      await fastify.user.removeFromCollection(
         "550e8400-e29b-41d4-a716-446655440000",
         "550e8400-e29b-41d4-a716-446655440001"
       );
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE users SET families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        "UPDATE users SET collections = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
         [
           ["550e8400-e29b-41d4-a716-446655440002"],
           "550e8400-e29b-41d4-a716-446655440000",
@@ -907,19 +1073,19 @@ describe("User Plugin", () => {
       );
     });
 
-    it("should handle removing non-existent family gracefully", async () => {
+    it("should handle removing non-existent collection gracefully", async () => {
       mockQuery.mockResolvedValueOnce({
         rows: [{ ...mockUser, password_hash: "hash" }],
       }); // getById
       mockQuery.mockResolvedValueOnce({ rows: [] }); // UPDATE
 
-      await fastify.user.removeFromFamily(
+      await fastify.user.removeFromCollection(
         "550e8400-e29b-41d4-a716-446655440000",
         "550e8400-e29b-41d4-a716-446655440003"
       );
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE users SET families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        "UPDATE users SET collections = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
         [
           [
             "550e8400-e29b-41d4-a716-446655440001",
@@ -934,7 +1100,7 @@ describe("User Plugin", () => {
       mockQuery.mockResolvedValueOnce({ rows: [] }); // getById
 
       await expect(
-        fastify.user.removeFromFamily(
+        fastify.user.removeFromCollection(
           "550e8400-e29b-41d4-a716-446655440999",
           "550e8400-e29b-41d4-a716-446655440001"
         )
@@ -948,7 +1114,7 @@ describe("User Plugin", () => {
       mockQuery.mockRejectedValueOnce(new Error("Database error")); // UPDATE
 
       await expect(
-        fastify.user.removeFromFamily(
+        fastify.user.removeFromCollection(
           "550e8400-e29b-41d4-a716-446655440000",
           "550e8400-e29b-41d4-a716-446655440001"
         )

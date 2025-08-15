@@ -44,7 +44,7 @@ describe("Tag Plugin", () => {
       expect(fastify.tag).toBeDefined();
       expect(typeof fastify.tag.create).toBe("function");
       expect(typeof fastify.tag.get).toBe("function");
-      expect(typeof fastify.tag.getByFamily).toBe("function");
+      expect(typeof fastify.tag.getByCollection).toBe("function");
       expect(typeof fastify.tag.getById).toBe("function");
       expect(typeof fastify.tag.update).toBe("function");
       expect(typeof fastify.tag.delete).toBe("function");
@@ -56,14 +56,14 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Person",
         name: "John Doe",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
         id: TEST_UUIDS.TAG_1,
         type: "Person",
         name: "John Doe",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -74,8 +74,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.create(tagInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Person", "John Doe", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
+        "INSERT INTO tags (type, name, collection_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
+        ["Person", "John Doe", TEST_UUIDS.COLLECTION_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -84,14 +84,14 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Location",
         name: "New York City",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
         id: TEST_UUIDS.TAG_2,
         type: "Location",
         name: "New York City",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -102,8 +102,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.create(tagInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Location", "New York City", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
+        "INSERT INTO tags (type, name, collection_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
+        ["Location", "New York City", TEST_UUIDS.COLLECTION_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -112,14 +112,14 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Event",
         name: "Wedding",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
         id: TEST_UUIDS.TAG_1,
         type: "Event",
         name: "Wedding",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -130,8 +130,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.create(tagInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Event", "Wedding", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
+        "INSERT INTO tags (type, name, collection_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
+        ["Event", "Wedding", TEST_UUIDS.COLLECTION_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -140,14 +140,14 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Time",
         name: "Summer 1985",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
       const mockTag: TagWithMetadata = {
         id: TEST_UUIDS.TAG_2,
         type: "Time",
         name: "Summer 1985",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -158,8 +158,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.create(tagInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO tags (type, name, family_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
-        ["Time", "Summer 1985", TEST_UUIDS.FAMILY_1, TEST_UUIDS.USER_1]
+        "INSERT INTO tags (type, name, collection_id, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
+        ["Time", "Summer 1985", TEST_UUIDS.COLLECTION_1, TEST_UUIDS.USER_1]
       );
       expect(result).toEqual(mockTag);
     });
@@ -168,7 +168,7 @@ describe("Tag Plugin", () => {
       const tagInput: TagInput = {
         type: "Person",
         name: "John Doe",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
       };
 
@@ -187,7 +187,7 @@ describe("Tag Plugin", () => {
           id: TEST_UUIDS.TAG_1,
           type: "Person",
           name: "John Doe",
-          family_id: TEST_UUIDS.FAMILY_1,
+          collection_id: TEST_UUIDS.COLLECTION_1,
           created_by: TEST_UUIDS.USER_1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -196,7 +196,7 @@ describe("Tag Plugin", () => {
           id: TEST_UUIDS.TAG_2,
           type: "Location",
           name: "Paris",
-          family_id: TEST_UUIDS.FAMILY_2,
+          collection_id: TEST_UUIDS.COLLECTION_2,
           created_by: TEST_UUIDS.USER_2,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -229,15 +229,15 @@ describe("Tag Plugin", () => {
     });
   });
 
-  describe("getByFamily", () => {
-    it("should return tags for a specific family", async () => {
-      const familyId = TEST_UUIDS.FAMILY_1;
+  describe("getByCollection", () => {
+    it("should return tags for a specific collection", async () => {
+      const collectionId = TEST_UUIDS.COLLECTION_1;
       const mockTags: TagWithMetadata[] = [
         {
           id: TEST_UUIDS.TAG_1,
           type: "Person",
           name: "John Doe",
-          family_id: familyId,
+          collection_id: collectionId,
           created_by: TEST_UUIDS.USER_1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -246,7 +246,7 @@ describe("Tag Plugin", () => {
           id: TEST_UUIDS.TAG_2,
           type: "Event",
           name: "Birthday",
-          family_id: familyId,
+          collection_id: collectionId,
           created_by: TEST_UUIDS.USER_1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -255,36 +255,36 @@ describe("Tag Plugin", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: mockTags });
 
-      const result = await fastify.tag.getByFamily(familyId);
+      const result = await fastify.tag.getByCollection(collectionId);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "SELECT * FROM tags WHERE family_id = $1",
-        [familyId]
+        "SELECT * FROM tags WHERE collection_id = $1",
+        [collectionId]
       );
       expect(result).toHaveLength(2);
-      expect(result[0].family_id).toBe(familyId);
-      expect(result[1].family_id).toBe(familyId);
+      expect(result[0].collection_id).toBe(collectionId);
+      expect(result[1].collection_id).toBe(collectionId);
     });
 
-    it("should return empty array when no tags exist for family", async () => {
-      const familyId = "550e8400-e29b-41d4-a716-446655440099" as UUID;
+    it("should return empty array when no tags exist for collection", async () => {
+      const collectionId = "550e8400-e29b-41d4-a716-446655440099" as UUID;
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      const result = await fastify.tag.getByFamily(familyId);
+      const result = await fastify.tag.getByCollection(collectionId);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "SELECT * FROM tags WHERE family_id = $1",
-        [familyId]
+        "SELECT * FROM tags WHERE collection_id = $1",
+        [collectionId]
       );
       expect(result).toHaveLength(0);
     });
 
     it("should throw error when database fails", async () => {
-      const familyId = TEST_UUIDS.FAMILY_1;
+      const collectionId = TEST_UUIDS.COLLECTION_1;
       mockQuery.mockRejectedValueOnce(new Error("Database error"));
 
-      await expect(fastify.tag.getByFamily(familyId)).rejects.toThrow(
-        "Failed to fetch tags by family"
+      await expect(fastify.tag.getByCollection(collectionId)).rejects.toThrow(
+        "Failed to fetch tags by collection"
       );
     });
   });
@@ -296,7 +296,7 @@ describe("Tag Plugin", () => {
         id: tagId,
         type: "Person",
         name: "John Doe",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -342,13 +342,13 @@ describe("Tag Plugin", () => {
       const updateInput: TagUpdateInput = {
         type: "Person",
         name: "Jane Doe",
-        family_id: TEST_UUIDS.FAMILY_2,
+        collection_id: TEST_UUIDS.COLLECTION_2,
       };
       const mockUpdatedTag: TagWithMetadata = {
         id: tagId,
         type: "Person",
         name: "Jane Doe",
-        family_id: TEST_UUIDS.FAMILY_2,
+        collection_id: TEST_UUIDS.COLLECTION_2,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -359,8 +359,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.update(tagId, updateInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Person", "Jane Doe", TEST_UUIDS.FAMILY_2, tagId]
+        "UPDATE tags SET type = $1, name = $2, collection_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
+        ["Person", "Jane Doe", TEST_UUIDS.COLLECTION_2, tagId]
       );
       expect(result).toEqual(mockUpdatedTag);
     });
@@ -370,13 +370,13 @@ describe("Tag Plugin", () => {
       const updateInput: TagUpdateInput = {
         type: "Location",
         name: "Updated Location",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
       };
       const mockUpdatedTag: TagWithMetadata = {
         id: tagId,
         type: "Location",
         name: "Updated Location",
-        family_id: TEST_UUIDS.FAMILY_1,
+        collection_id: TEST_UUIDS.COLLECTION_1,
         created_by: TEST_UUIDS.USER_1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -387,8 +387,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.update(tagId, updateInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Location", "Updated Location", TEST_UUIDS.FAMILY_1, tagId]
+        "UPDATE tags SET type = $1, name = $2, collection_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
+        ["Location", "Updated Location", TEST_UUIDS.COLLECTION_1, tagId]
       );
       expect(result).toEqual(mockUpdatedTag);
     });
@@ -398,7 +398,7 @@ describe("Tag Plugin", () => {
       const updateInput: TagUpdateInput = {
         type: "Person",
         name: "Jane Doe",
-        family_id: TEST_UUIDS.FAMILY_2,
+        collection_id: TEST_UUIDS.COLLECTION_2,
       };
 
       mockQuery.mockResolvedValueOnce({ rows: [] });
@@ -406,8 +406,8 @@ describe("Tag Plugin", () => {
       const result = await fastify.tag.update(tagId, updateInput);
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "UPDATE tags SET type = $1, name = $2, family_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
-        ["Person", "Jane Doe", TEST_UUIDS.FAMILY_2, tagId]
+        "UPDATE tags SET type = $1, name = $2, collection_id = $3, updated_at = NOW() WHERE id = $4 RETURNING *",
+        ["Person", "Jane Doe", TEST_UUIDS.COLLECTION_2, tagId]
       );
       expect(result).toBeNull();
     });
@@ -417,7 +417,7 @@ describe("Tag Plugin", () => {
       const updateInput: TagUpdateInput = {
         type: "Person",
         name: "Jane Doe",
-        family_id: TEST_UUIDS.FAMILY_2,
+        collection_id: TEST_UUIDS.COLLECTION_2,
       };
 
       mockQuery.mockRejectedValueOnce(new Error("Database error"));

@@ -22,9 +22,9 @@ interface UserQueryParams {
   email?: string;
 }
 
-interface FamilyParams {
+interface CollectionParams {
   userId: UUID;
-  familyId: UUID;
+  collectionId: UUID;
 }
 
 // Helper function to add profile picture URLs to user objects
@@ -304,73 +304,73 @@ export default async function userRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Add user to family
-  fastify.post<{ Params: FamilyParams }>(
-    "/:userId/family/:familyId",
+  // Add user to collection
+  fastify.post<{ Params: CollectionParams }>(
+    "/:userId/collection/:collectionId",
     { preHandler: requireAuth },
     async (
-      request: FastifyRequest<{ Params: FamilyParams }>,
+      request: FastifyRequest<{ Params: CollectionParams }>,
       reply: FastifyReply
     ) => {
       try {
-        const { userId, familyId } = request.params;
+        const { userId, collectionId } = request.params;
 
-        await fastify.user.addToFamily(userId, familyId);
+        await fastify.user.addToCollection(userId, collectionId);
 
         return reply
           .status(201)
-          .send({ message: "User added to family successfully" });
+          .send({ message: "User added to collection successfully" });
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("not found")) {
           if (error.message.includes("User")) {
             return reply.status(404).send({
-              error: USER_ERRORS.ADD_TO_FAMILY_USER_NOT_FOUND,
+              error: USER_ERRORS.ADD_TO_COLLECTION_USER_NOT_FOUND,
             });
           } else {
             return reply.status(404).send({
-              error: USER_ERRORS.ADD_TO_FAMILY_FAMILY_NOT_FOUND,
+              error: USER_ERRORS.ADD_TO_COLLECTION_COLLECTION_NOT_FOUND,
             });
           }
         }
         return reply.status(500).send({
-          error: USER_ERRORS.ADD_TO_FAMILY_FAILED,
+          error: USER_ERRORS.ADD_TO_COLLECTION_FAILED,
         });
       }
     }
   );
 
-  // Remove user from family
-  fastify.delete<{ Params: FamilyParams }>(
-    "/:userId/family/:familyId",
+  // Remove user from collection
+  fastify.delete<{ Params: CollectionParams }>(
+    "/:userId/collection/:collectionId",
     { preHandler: requireAuth },
     async (
-      request: FastifyRequest<{ Params: FamilyParams }>,
+      request: FastifyRequest<{ Params: CollectionParams }>,
       reply: FastifyReply
     ) => {
       try {
-        const { userId, familyId } = request.params;
+        const { userId, collectionId } = request.params;
 
-        await fastify.user.removeFromFamily(userId, familyId);
+        await fastify.user.removeFromCollection(userId, collectionId);
 
         return reply
           .status(200)
-          .send({ message: "User removed from family successfully" });
+          .send({ message: "User removed from collection successfully" });
       } catch (error) {
         fastify.log.error(error);
         if (error instanceof Error && error.message.includes("not found")) {
           if (error.message.includes("User")) {
             return reply.status(404).send({
-              error: USER_ERRORS.REMOVE_FROM_FAMILY_USER_NOT_FOUND,
+              error: USER_ERRORS.REMOVE_FROM_COLLECTION_USER_NOT_FOUND,
             });
           } else {
             return reply.status(404).send({
-              error: USER_ERRORS.REMOVE_FROM_FAMILY_FAMILY_NOT_FOUND,
+              error: USER_ERRORS.REMOVE_FROM_COLLECTION_COLLECTION_NOT_FOUND,
             });
           }
         }
         return reply.status(500).send({
-          error: USER_ERRORS.REMOVE_FROM_FAMILY_FAILED,
+          error: USER_ERRORS.REMOVE_FROM_COLLECTION_FAILED,
         });
       }
     }

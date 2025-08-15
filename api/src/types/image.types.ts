@@ -6,7 +6,7 @@ export interface ImageInput {
   title?: string;
   filename?: string;
   tags?: UUID[];
-  family_ids?: UUID[];
+  collection_ids?: UUID[];
   original_key?: S3Key;
   thumbnail_key?: S3Key;
 }
@@ -18,7 +18,7 @@ export interface Image {
   created_at: string;
   updated_at: string;
   tags?: UUID[];
-  family_ids?: UUID[];
+  collection_ids?: UUID[];
   original_key?: S3Key;
   thumbnail_key?: S3Key;
 }
@@ -30,7 +30,7 @@ export interface ImagePublic {
   created_at: string;
   updated_at: string;
   tags?: UUID[];
-  family_ids?: UUID[];
+  collection_ids?: UUID[];
   original_url: string | null;
   thumbnail_url: string | null;
 }

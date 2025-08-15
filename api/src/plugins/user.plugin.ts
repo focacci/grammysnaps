@@ -25,8 +25,8 @@ declare module "fastify" {
       ) => Promise<UserPublic | null>;
       delete: (id: UUID) => Promise<void>;
       validatePassword: (user: User, password: string) => Promise<boolean>;
-      addToFamily: (userId: UUID, familyId: UUID) => Promise<void>;
-      removeFromFamily: (userId: UUID, familyId: UUID) => Promise<void>;
+      addToCollection: (userId: UUID, collectionId: UUID) => Promise<void>;
+      removeFromCollection: (userId: UUID, collectionId: UUID) => Promise<void>;
     };
   }
 }
@@ -51,14 +51,14 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     return publicUser;
   };
 
-  const filterValidFamilies = async (families: UUID[]): Promise<UUID[]> => {
-    const validFamilies: UUID[] = [];
-    for (const familyId of families) {
-      if (await fastify.family.exists(familyId)) {
-        validFamilies.push(familyId);
+  const filterValidCollections = async (collections: UUID[]): Promise<UUID[]> => {
+    const validCollections: UUID[] = [];
+    for (const collectionId of collections) {
+      if (await fastify.collection.exists(collectionId)) {
+        validCollections.push(collectionId);
       }
     }
-    return validFamilies;
+    return validCollections;
   };
 
   fastify.decorate("user", {
@@ -70,7 +70,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         middle_name,
         last_name,
         birthday,
-        families,
+        collections,
       } = input;
 
       try {
@@ -89,13 +89,13 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const sanitizedBirthday = birthday
           ? ValidationUtils.sanitizeDate(birthday)
           : null;
-        const sanitizedFamilies = ValidationUtils.sanitizeFamilyIds(
-          families || []
+        const sanitizedCollections = ValidationUtils.sanitizeCollectionIds(
+          collections || []
         );
 
-        // Validate family IDs
-        const sanitizedAndValidFamilies = sanitizedFamilies.length
-          ? await filterValidFamilies(sanitizedFamilies)
+        // Validate collection IDs
+        const sanitizedAndValidCollections = sanitizedCollections.length
+          ? await filterValidCollections(sanitizedCollections)
           : [];
 
         // Check if email already exists
@@ -112,7 +112,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [user],
         } = await fastify.pg.query<User>(
-          "INSERT INTO users (email, password_hash, first_name, middle_name, last_name, birthday, families) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+          "INSERT INTO users (email, password_hash, first_name, middle_name, last_name, birthday, collections) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
           [
             sanitizedEmail,
             password_hash,
@@ -120,9 +120,27 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             sanitizedMiddleName,
             sanitizedLastName,
             sanitizedBirthday,
-            sanitizedAndValidFamilies,
+            sanitizedAndValidCollections,
           ]
         );
+
+        // Create "My Collection" collection for the new user
+        try {
+          const myCollection = await fastify.collection.create(
+            { name: "My Collection" },
+            user.id
+          );
+          
+          fastify.log.info(
+            `Created "My Collection" collection for user: ${user.email} (Collection ID: ${myCollection.id})`
+          );
+        } catch (collectionError) {
+          // Log the error but don't fail user creation
+          fastify.log.error(
+            `Failed to create "My Collection" collection for user ${user.id}:`,
+            collectionError
+          );
+        }
 
         // Format birthday for consistent frontend display
         if (user.birthday) {
@@ -187,7 +205,7 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         middle_name,
         last_name,
         birthday,
-        families,
+        collections,
         profile_picture_key,
         profile_picture_thumbnail_key,
       } = input;
@@ -219,16 +237,16 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const sanitizedBirthday = birthday?.trim().split("T")[0]
           ? ValidationUtils.sanitizeDate(birthday?.trim().split("T")[0])
           : null;
-        const sanitizedFamilies = families
-          ? ValidationUtils.sanitizeFamilyIds(families)
+        const sanitizedCollections = collections
+          ? ValidationUtils.sanitizeCollectionIds(collections)
           : null;
         const sanitizedProfilePictureKey = profile_picture_key ?? null;
         const sanitizedProfilePictureThumbnailKey =
           profile_picture_thumbnail_key ?? null;
 
-        // Validate family IDs
-        const sanitizedAndValidFamilies = sanitizedFamilies?.length
-          ? await filterValidFamilies(sanitizedFamilies)
+        // Validate collection IDs
+        const sanitizedAndValidCollections = sanitizedCollections?.length
+          ? await filterValidCollections(sanitizedCollections)
           : [];
 
         // Check for conflicts with other users if updating email
@@ -260,9 +278,9 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         values.push(sanitizedBirthday);
         paramCount++;
 
-        if (sanitizedAndValidFamilies) {
-          updateFields.push(`families = $${paramCount}`);
-          values.push(sanitizedAndValidFamilies);
+        if (sanitizedAndValidCollections) {
+          updateFields.push(`collections = $${paramCount}`);
+          values.push(sanitizedAndValidCollections);
           paramCount++;
         }
 
@@ -310,8 +328,54 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           throw new Error("User not found");
         }
 
+        // Get all collections owned by this user before deletion
+        const { rows: ownedCollections } = await fastify.pg.query<{ id: UUID; name: string }>(
+          "SELECT id, name FROM collections WHERE owner_id = $1",
+          [id]
+        );
+
+        // For each owned collection, clean up orphaned images before the collection gets cascade deleted
+        for (const collection of ownedCollections) {
+          try {
+            // Find images that only belong to this collection and delete them
+            const orphanedImages = await fastify.image.getOrphanedByCollection(collection.id);
+
+            // Delete orphaned images from S3 and database
+            for (const image of orphanedImages) {
+              try {
+                // Delete from S3 if original_key exists
+                if (image.original_key) {
+                  await fastify.s3.delete(image.original_key);
+                }
+
+                // Delete thumbnail from S3 if thumbnail_key exists
+                if (image.thumbnail_key) {
+                  await fastify.s3.delete(image.thumbnail_key);
+                }
+
+                // Delete from database (will cascade delete image_tags and image_collections)
+                await fastify.pg.query("DELETE FROM images WHERE id = $1", [
+                  image.id,
+                ]);
+                fastify.log.info(`Deleted orphaned image: ${image.id} from collection: ${collection.name}`);
+              } catch (imageErr) {
+                fastify.log.error(`Failed to delete image ${image.id}:`, imageErr);
+                // Continue with other images even if one fails
+              }
+            }
+
+            fastify.log.info(
+              `Deleted ${orphanedImages.length} orphaned images for collection: ${collection.name} (owner: ${user.email})`
+            );
+          } catch (collectionErr) {
+            fastify.log.error(`Failed to clean up images for collection ${collection.id}:`, collectionErr);
+            // Continue with other collections even if one fails
+          }
+        }
+
+        // Delete user (collections owned by this user will be cascade deleted by the database)
         await fastify.pg.query("DELETE FROM users WHERE id = $1", [id]);
-        fastify.log.info(`Deleted user: ${user.email}`);
+        fastify.log.info(`Deleted user: ${user.email} and ${ownedCollections.length} owned collections`);
       } catch (err) {
         fastify.log.error(err);
         if (err instanceof Error) {
@@ -421,62 +485,59 @@ const userPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async addToFamily(userId: UUID, familyId: UUID): Promise<void> {
+    async addToCollection(userId: UUID, collectionId: UUID): Promise<void> {
       try {
         const user = await fastify.user.getById(userId);
         if (!user) {
           throw new Error("User not found");
         }
 
-        // Check if user is already in the family
-        if (user.families.includes(familyId)) {
-          return; // Already in family, no need to add
+        // Check if user is already in the collection
+        if (user.collections.includes(collectionId)) {
+          return; // Already in collection, no need to add
         }
 
-        const updatedFamilies = [...user.families, familyId];
+        const updatedCollections = [...user.collections, collectionId];
 
         await fastify.pg.query(
-          "UPDATE users SET families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-          [updatedFamilies, userId]
+          "UPDATE users SET collections = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+          [updatedCollections, userId]
         );
 
-        fastify.log.info(`Added user ${userId} to family ${familyId}`);
+        fastify.log.info(`Added user ${userId} to collection ${collectionId}`);
       } catch (err) {
         fastify.log.error(err);
         if (err instanceof Error) {
           throw err;
         }
-        throw new Error("Failed to add user to family");
+        throw new Error("Failed to add user to collection");
       }
     },
 
-    async removeFromFamily(userId: UUID, familyId: UUID): Promise<void> {
+    async removeFromCollection(userId: UUID, collectionId: UUID): Promise<void> {
       try {
         const user = await fastify.user.getById(userId);
         if (!user) {
           throw new Error("User not found");
         }
 
-        const updatedFamilies = user.families.filter((id) => id !== familyId);
+        const updatedCollections = user.collections.filter((id) => id !== collectionId);
 
         await fastify.pg.query(
-          "UPDATE users SET families = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-          [updatedFamilies, userId]
+          "UPDATE users SET collections = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+          [updatedCollections, userId]
         );
 
-        fastify.log.info(`Removed user ${userId} from family ${familyId}`);
+        fastify.log.info(`Removed user ${userId} from collection ${collectionId}`);
       } catch (err) {
         fastify.log.error(err);
         if (err instanceof Error) {
           throw err;
         }
-        throw new Error("Failed to remove user from family");
+        throw new Error("Failed to remove user from collection");
       }
     },
   });
 };
 
-export default fp(userPlugin, {
-  name: "user",
-  // dependencies: ["@fastify/postgres"], // commented out for testing
-});
+export default fp(userPlugin, { name: "user" });

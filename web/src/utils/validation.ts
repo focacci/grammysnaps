@@ -187,34 +187,34 @@ export class ClientValidationUtils {
   }
 
   /**
-   * Validate family ID on the client side
+   * Validate collection ID on the client side
    */
-  static validateFamilyId(familyId: string): {
+  static validateCollectionId(collectionId: string): {
     sanitized: string;
     error: string | null;
   } {
-    if (!familyId || typeof familyId !== "string") {
-      return { sanitized: "", error: "Family ID cannot be empty" };
+    if (!collectionId || typeof collectionId !== "string") {
+      return { sanitized: "", error: "Collection ID cannot be empty" };
     }
 
-    const trimmed = familyId.trim();
+    const trimmed = collectionId.trim();
     if (!trimmed) {
-      return { sanitized: "", error: "Family ID cannot be empty" };
+      return { sanitized: "", error: "Collection ID cannot be empty" };
     }
 
-    // Validate family ID format (alphanumeric with hyphens and underscores)
+    // Validate collection ID format (alphanumeric with hyphens and underscores)
     if (!/^[a-zA-Z0-9\-_]+$/.test(trimmed)) {
       return {
         sanitized: trimmed,
         error:
-          "Family ID can only contain letters, numbers, hyphens, and underscores",
+          "Collection ID can only contain letters, numbers, hyphens, and underscores",
       };
     }
 
     if (trimmed.length > 50) {
       return {
         sanitized: trimmed,
-        error: "Family ID is too long (max 50 characters)",
+        error: "Collection ID is too long (max 50 characters)",
       };
     }
 

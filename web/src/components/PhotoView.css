@@ -323,7 +323,7 @@ body.modal-open {
   transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
-/* Family-level headers (top level) styling */
+/* Colection-level headers (top level) styling */
 .filter-section > .section-header {
   font-size: 0.85rem; /* Smaller font for top-level headers */
   font-weight: 700; /* Bold for hierarchy emphasis */
@@ -333,7 +333,7 @@ body.modal-open {
   border-bottom: 1px solid rgba(255, 152, 0, 0.1); /* Subtle orange border */
 }
 
-/* Family-level header hover effect */
+/* Collection-level header hover effect */
 .filter-section > .section-header:hover {
   background-color: rgba(255, 152, 0, 0.1); /* Slightly more orange on hover */
 }
@@ -362,9 +362,9 @@ body.modal-open {
   color: var(--primary-orange); /* Orange color for visibility */
 }
 
-/* Family-level carets (top-level sections) */
+/* Collection-level carets (top-level sections) */
 .filter-section > .section-header .section-caret {
-  color: var(--primary-orange); /* Orange color for family-level carets */
+  color: var(--primary-orange); /* Orange color for collection-level carets */
   font-weight: bold; /* Bold weight for emphasis */
 }
 
@@ -620,9 +620,9 @@ body.modal-open {
     text-align: center; /* Center-align text */
   }
 
-  .family-filter {
-    width: 100%; /* Full width family filter */
-    order: 1; /* Put family filter last in vertical stack */
+  .collection-filter {
+    width: 100%; /* Full width collection filter */
+    order: 1; /* Put collection filter last in vertical stack */
   }
 }
 
@@ -643,28 +643,28 @@ body.modal-open {
     min-width: 140px; /* Reduced minimum width for medium mobile */
   }
 
-  .family-filter {
-    width: 100%; /* Full width family filter */
-    order: 1; /* Put family filter on new line below buttons */
+  .collection-filter {
+    width: 100%; /* Full width collection filter */
+    order: 1; /* Put collection filter on new line below buttons */
   }
 }
 
-/* Family Filter container */
-.family-filter {
+/* Collection Filter container */
+.collection-filter {
   display: flex; /* Flexbox for horizontal layout */
   align-items: center; /* Vertically center label and dropdown */
   gap: 0.5rem; /* Space between label and dropdown */
 }
 
-/* Family filter label styling */
-.family-filter label {
+/* Collection filter label styling */
+.collection-filter label {
   font-weight: 500; /* Medium weight for emphasis */
   color: var(--text-primary); /* Theme text color */
   font-size: 1rem; /* Standard font size */
 }
 
-/* Family dropdown select styling */
-.family-dropdown {
+/* Collection dropdown select styling */
+.collection-dropdown {
   padding: 8px 12px; /* Comfortable padding for dropdown */
   border: 2px solid var(--border-medium); /* Medium border for definition */
   border-radius: 6px; /* Rounded corners for modern look */
@@ -678,31 +678,31 @@ body.modal-open {
   min-height: 44px; /* iOS recommended touch target size */
 }
 
-/* Family dropdown focus state */
-.family-dropdown:focus {
+/* Collection dropdown focus state */
+.collection-dropdown:focus {
   outline: none; /* Remove default focus outline */
   border-color: var(--primary-orange); /* Orange border when focused */
   box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.1); /* Orange focus ring */
 }
 
-/* Family dropdown hover effect */
-.family-dropdown:hover {
+/* Collection dropdown hover effect */
+.collection-dropdown:hover {
   border-color: var(--border-dark); /* Darker border on hover */
 }
 
-/* Mobile family filter responsive adjustments */
+/* Mobile collection filter responsive adjustments */
 @media (max-width: 768px) {
-  .family-filter {
+  .collection-filter {
     justify-content: space-between; /* Space between label and dropdown */
     width: 100%; /* Full width on mobile */
   }
 
-  .family-filter label {
+  .collection-filter label {
     font-size: 1rem; /* Consistent font size on mobile */
     flex-shrink: 0; /* Prevent label from shrinking */
   }
 
-  .family-dropdown {
+  .collection-dropdown {
     flex: 1; /* Take remaining space after label */
     min-width: auto; /* Remove minimum width constraint */
     font-size: 1rem; /* Larger font size for mobile readability */
@@ -1154,20 +1154,20 @@ body.modal-open {
   }
 }
 
-/* Family selection grid layout */
-.family-selection {
-  display: grid; /* CSS Grid for family selection layout */
+/* Collection selection grid layout */
+.collection-selection {
+  display: grid; /* CSS Grid for collection selection layout */
   grid-template-columns: repeat(
     auto-fill,
     minmax(180px, 1fr)
   ); /* Responsive columns */
-  gap: 8px; /* Space between family items */
-  margin-top: 8px; /* Space above family selection */
+  gap: 8px; /* Space between collection items */
+  margin-top: 8px; /* Space above collection selection */
 }
 
-/* Mobile family selection responsive optimizations */
+/* Mobile collection selection responsive optimizations */
 @media (max-width: 768px) {
-  .family-selection {
+  .collection-selection {
     grid-template-columns: repeat(
       auto-fill,
       minmax(140px, 1fr)
@@ -1177,24 +1177,24 @@ body.modal-open {
   }
 }
 
-/* Small mobile family selection adjustments */
+/* Small mobile collection selection adjustments */
 @media (max-width: 480px) {
-  .family-selection {
+  .collection-selection {
     grid-template-columns: 1fr 1fr; /* Fixed two-column layout for small mobile */
     gap: 8px; /* Consistent gap for small mobile */
   }
 }
 
-/* Very small mobile family selection adjustments */
+/* Very small mobile collection selection adjustments */
 @media (max-width: 360px) {
-  .family-selection {
+  .collection-selection {
     grid-template-columns: 1fr; /* Single column for very small screens */
     gap: 6px; /* Minimal gap for very small screens */
   }
 }
 
-/* Individual family checkbox styling */
-.family-checkbox {
+/* Individual collection checkbox styling */
+.collection-checkbox {
   display: flex; /* Flexbox for content centering */
   align-items: center; /* Vertically center content */
   justify-content: center; /* Horizontally center content */
@@ -1210,29 +1210,29 @@ body.modal-open {
   min-height: 44px; /* iOS recommended touch target size */
 }
 
-/* Family checkbox hover effect */
-.family-checkbox:hover {
+/* Collection checkbox hover effect */
+.collection-checkbox:hover {
   background-color: var(--bg-secondary); /* Secondary background on hover */
   border-color: var(--border-medium); /* Medium border on hover */
 }
 
-/* Selected family checkbox styling */
-.family-checkbox.selected {
+/* Selected collection checkbox styling */
+.collection-checkbox.selected {
   background-color: #ff8c00; /* Orange background when selected */
   color: white; /* White text for contrast */
   border-color: #e67e00; /* Darker orange border when selected */
   box-shadow: var(--shadow-sm); /* Subtle shadow for elevation */
 }
 
-/* Selected family checkbox hover effect */
-.family-checkbox.selected:hover {
+/* Selected collection checkbox hover effect */
+.collection-checkbox.selected:hover {
   background-color: #e67e00; /* Darker orange on hover when selected */
   border-color: #cc7000; /* Even darker orange border on hover */
 }
 
-/* Mobile family checkbox responsive optimizations */
+/* Mobile collection checkbox responsive optimizations */
 @media (max-width: 768px) {
-  .family-checkbox {
+  .collection-checkbox {
     padding: 12px 8px; /* Adjusted padding for mobile */
     font-size: 15px; /* Slightly larger font for mobile readability */
     min-height: 48px; /* Larger touch target for mobile */
@@ -1241,17 +1241,17 @@ body.modal-open {
   }
 }
 
-/* Small mobile family checkbox adjustments */
+/* Small mobile collection checkbox adjustments */
 @media (max-width: 480px) {
-  .family-checkbox {
+  .collection-checkbox {
     padding: 14px 8px; /* Increased padding for better touch targets */
     font-size: 16px; /* Larger font size for small mobile readability */
     min-height: 50px; /* Larger touch target for small mobile */
   }
 }
 
-/* Empty families message when no families are available */
-.empty-families-message {
+/* Empty collections message when no collections are available */
+.empty-collections-message {
   width: 100%; /* Full width message */
   padding: 16px; /* Comfortable padding around message */
   background-color: var(
