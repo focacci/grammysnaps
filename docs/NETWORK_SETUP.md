@@ -127,4 +127,4 @@ sudo nmcli con up "Your WiFi Name"
 - ✅ This setup is for local network use only
 - ✅ Don't expose these ports to the internet without proper security
 - ✅ All data is stored locally on your computer
-- ✅ Users can create accounts and join family groups safely on your network
+- ✅ Users can create accounts and join collections safely on your network

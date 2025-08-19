@@ -1,151 +1,151 @@
 import { FastifyPluginAsync } from "fastify";
-import { FamilyInput, FamilyUpdate } from "../types/family.types";
-import { FAMILY_ERRORS } from "../types/errors";
+import { CollectionInput, CollectionUpdate } from "../types/collection.types";
+import { COLLECTION_ERRORS } from "../types/errors";
 import { requireAuth } from "../middleware/auth.middleware";
 import { UUID } from "crypto";
 
-const familyRoutes: FastifyPluginAsync = async (fastify) => {
-  // Add auth middleware to all family routes
+const collectionRoutes: FastifyPluginAsync = async (fastify) => {
+  // Add auth middleware to all collection routes
   fastify.addHook("preHandler", requireAuth);
-  // Get all families (admin only)
+  // Get all collections (admin only)
   fastify.get("/", async (request, reply) => {
     try {
-      const families = await fastify.family.get();
-      return families;
+      const collections = await fastify.collection.get();
+      return collections;
     } catch {
       reply.code(500).send({
-        error: FAMILY_ERRORS.RETRIEVE_FAILED,
+        error: COLLECTION_ERRORS.RETRIEVE_FAILED,
       });
     }
   });
 
-  // Get families for a specific user
+  // Get collections for a specific user
   fastify.get("/user/:userId", async (request, reply) => {
     try {
       const { userId } = request.params as { userId: UUID };
-      const families = await fastify.family.getUserFamilies(userId);
-      return families;
+      const collections = await fastify.collection.getUserCollections(userId);
+      return collections;
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: FAMILY_ERRORS.RETRIEVE_USER_FAMILIES_FAILED,
+        error: COLLECTION_ERRORS.RETRIEVE_USER_COLLECTIONS_FAILED,
       });
     }
   });
 
-  // Get family by ID
+  // Get collection by ID
   fastify.get("/:id", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
-      const family = await fastify.family.getById(id);
+      const collection = await fastify.collection.getById(id);
 
-      if (!family) {
+      if (!collection) {
         return reply.code(404).send({
-          error: FAMILY_ERRORS.NOT_FOUND,
+          error: COLLECTION_ERRORS.NOT_FOUND,
         });
       }
 
-      return family;
+      return collection;
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: FAMILY_ERRORS.GET_BY_ID_FAILED,
+        error: COLLECTION_ERRORS.GET_BY_ID_FAILED,
       });
     }
   });
 
-  // Get family members
+  // Get collection members
   fastify.get("/:id/members", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
-      const members = await fastify.family.getMembers(id);
+      const members = await fastify.collection.getMembers(id);
       return members;
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: FAMILY_ERRORS.GET_MEMBERS_FAILED,
+        error: COLLECTION_ERRORS.GET_MEMBERS_FAILED,
       });
     }
   });
 
-  // Create a new family
+  // Create a new collection
   fastify.post("/", async (request, reply) => {
     try {
-      const familyData = request.body as FamilyInput & { owner_id: UUID };
-      const { owner_id, ...familyInput } = familyData;
+      const collectionData = request.body as CollectionInput & { owner_id: UUID };
+      const { owner_id, ...collectionInput } = collectionData;
 
       if (!owner_id) {
         return reply.code(400).send({
-          error: FAMILY_ERRORS.OWNER_ID_REQUIRED,
+          error: COLLECTION_ERRORS.OWNER_ID_REQUIRED,
         });
       }
 
-      if (!familyInput.name || familyInput.name.trim().length === 0) {
-        return reply.code(400).send({ error: FAMILY_ERRORS.NAME_REQUIRED });
+      if (!collectionInput.name || collectionInput.name.trim().length === 0) {
+        return reply.code(400).send({ error: COLLECTION_ERRORS.NAME_REQUIRED });
       }
 
-      const family = await fastify.family.create(familyInput, owner_id);
-      reply.code(201).send(family);
+      const collection = await fastify.collection.create(collectionInput, owner_id);
+      reply.code(201).send(collection);
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : FAMILY_ERRORS.CREATE_FAILED,
+          error instanceof Error ? error.message : COLLECTION_ERRORS.CREATE_FAILED,
       });
     }
   });
 
-  // Update family
+  // Update collection
   fastify.put("/:id", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
-      const updateData = request.body as FamilyUpdate;
+      const updateData = request.body as CollectionUpdate;
 
-      const family = await fastify.family.update(id, updateData);
+      const collection = await fastify.collection.update(id, updateData);
 
-      if (!family) {
+      if (!collection) {
         return reply.code(404).send({
-          error: FAMILY_ERRORS.UPDATE_NOT_FOUND,
+          error: COLLECTION_ERRORS.UPDATE_NOT_FOUND,
         });
       }
 
-      return family;
+      return collection;
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : FAMILY_ERRORS.UPDATE_FAILED,
+          error instanceof Error ? error.message : COLLECTION_ERRORS.UPDATE_FAILED,
       });
     }
   });
 
-  // Delete family
+  // Delete collection
   fastify.delete("/:id", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
 
-      await fastify.family.delete(id);
+      await fastify.collection.delete(id);
       reply.code(204).send();
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
         error:
-          error instanceof Error ? error.message : FAMILY_ERRORS.DELETE_FAILED,
+          error instanceof Error ? error.message : COLLECTION_ERRORS.DELETE_FAILED,
       });
     }
   });
 
-  // Add member to family
+  // Add member to collection
   fastify.post("/:id/members", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
       const { user_id } = request.body as { user_id: UUID };
 
       if (!user_id) {
-        return reply.code(400).send({ error: FAMILY_ERRORS.USER_ID_REQUIRED });
+        return reply.code(400).send({ error: COLLECTION_ERRORS.USER_ID_REQUIRED });
       }
 
-      await fastify.family.addMember(id, user_id);
+      await fastify.collection.addMember(id, user_id);
       reply.code(200).send({ message: "Member added successfully" });
     } catch (error) {
       fastify.log.error(error);
@@ -153,17 +153,17 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         error:
           error instanceof Error
             ? error.message
-            : FAMILY_ERRORS.ADD_MEMBER_FAILED,
+            : COLLECTION_ERRORS.ADD_MEMBER_FAILED,
       });
     }
   });
 
-  // Remove member from family
+  // Remove member from collection
   fastify.delete("/:id/members/:userId", async (request, reply) => {
     try {
       const { id, userId } = request.params as { id: UUID; userId: UUID };
 
-      await fastify.family.removeMember(id, userId);
+      await fastify.collection.removeMember(id, userId);
       reply.code(200).send({ message: "Member removed successfully" });
     } catch (error) {
       fastify.log.error(error);
@@ -171,51 +171,51 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         error:
           error instanceof Error
             ? error.message
-            : FAMILY_ERRORS.REMOVE_MEMBER_FAILED,
+            : COLLECTION_ERRORS.REMOVE_MEMBER_FAILED,
       });
     }
   });
 
-  // Get related families
+  // Get related collections
   fastify.get("/:id/related", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
-      const relatedFamilies = await fastify.family.getRelatedFamilies(id);
-      return relatedFamilies;
+      const relatedCollections = await fastify.collection.getRelatedCollections(id);
+      return relatedCollections;
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
-        error: FAMILY_ERRORS.GET_RELATED_FAILED,
+        error: COLLECTION_ERRORS.GET_RELATED_FAILED,
       });
     }
   });
 
-  // Add related family
+  // Add related collection
   fastify.post("/:id/related", async (request, reply) => {
     try {
       const { id } = request.params as { id: UUID };
-      const { family_id } = request.body as { family_id: UUID };
+      const { collection_id } = request.body as { collection_id: UUID };
 
-      if (!family_id) {
+      if (!collection_id) {
         return reply
           .code(400)
-          .send({ error: FAMILY_ERRORS.FAMILY_ID_REQUIRED });
+          .send({ error: COLLECTION_ERRORS.COLLECTION_ID_REQUIRED });
       }
 
-      await fastify.family.addRelatedFamily(id, family_id);
-      reply.code(201).send({ message: "Related family added successfully" });
+      await fastify.collection.addRelatedCollection(id, collection_id);
+      reply.code(201).send({ message: "Related collection added successfully" });
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
         error:
           error instanceof Error
             ? error.message
-            : FAMILY_ERRORS.ADD_RELATED_FAILED,
+            : COLLECTION_ERRORS.ADD_RELATED_FAILED,
       });
     }
   });
 
-  // Remove related family
+  // Remove related collection
   fastify.delete("/:id/related/:relatedId", async (request, reply) => {
     try {
       const { id, relatedId } = request.params as {
@@ -223,18 +223,18 @@ const familyRoutes: FastifyPluginAsync = async (fastify) => {
         relatedId: UUID;
       };
 
-      await fastify.family.removeRelatedFamily(id, relatedId);
-      reply.code(200).send({ message: "Related family removed successfully" });
+      await fastify.collection.removeRelatedCollection(id, relatedId);
+      reply.code(200).send({ message: "Related collection removed successfully" });
     } catch (error) {
       fastify.log.error(error);
       reply.code(500).send({
         error:
           error instanceof Error
             ? error.message
-            : FAMILY_ERRORS.REMOVE_RELATED_FAILED,
+            : COLLECTION_ERRORS.REMOVE_RELATED_FAILED,
       });
     }
   });
 };
 
-export default familyRoutes;
+export default collectionRoutes;

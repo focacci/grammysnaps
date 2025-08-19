@@ -11,11 +11,11 @@ declare module "fastify" {
       update: (id: string, input: ImageInput) => Promise<Image | null>;
       delete: (id: string) => Promise<void>;
       applyTags: (imageId: string, tags: string[]) => Promise<void>;
-      applyFamilies: (imageId: string, familyIds: string[]) => Promise<void>;
+      applyCollections: (imageId: string, collectionIds: string[]) => Promise<void>;
       getAllWithTag: (tagId: string) => Promise<Image[]>;
-      getByFamily: (familyId: string) => Promise<Image[]>;
-      getByFamilies: (familyIds: string[]) => Promise<Image[]>;
-      getOrphanedByFamily: (familyId: string) => Promise<Image[]>;
+      getByCollection: (collectionId: string) => Promise<Image[]>;
+      getByCollections: (collectionIds: string[]) => Promise<Image[]>;
+      getOrphanedByCollection: (collectionId: string) => Promise<Image[]>;
       getForUser: (
         userId: string,
         tags: string[],
@@ -34,12 +34,12 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   fastify.decorate("image", {
     async create(input: ImageInput): Promise<Image> {
-      const { title, filename, tags, family_ids, original_key, thumbnail_key } =
+      const { title, filename, tags, collection_ids, original_key, thumbnail_key } =
         input;
 
-      if (!family_ids || family_ids.length === 0) {
+      if (!collection_ids || collection_ids.length === 0) {
         throw new Error(
-          "At least one family must be associated with the image"
+          "At least one collection must be associated with the image"
         );
       }
 
@@ -47,12 +47,12 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const {
           rows: [image],
         } = await fastify.pg.query<Image>(
-          "INSERT INTO images (title, filename, tags, family_ids, original_key, thumbnail_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          "INSERT INTO images (title, filename, tags, collection_ids, original_key, thumbnail_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
           [
             title ?? null,
             filename,
             tags ?? [],
-            family_ids,
+            collection_ids,
             original_key ?? null,
             thumbnail_key ?? null,
           ]
@@ -63,8 +63,8 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           await fastify.image.applyTags(image.id, tags);
         }
 
-        // Apply family relations
-        await fastify.image.applyFamilies(image.id, family_ids);
+        // Apply collection relations
+        await fastify.image.applyCollections(image.id, collection_ids);
 
         return image;
       } catch (err) {
@@ -99,22 +99,22 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     },
 
     async update(id: string, input: ImageInput): Promise<Image | null> {
-      const { title, tags, family_ids, original_key, thumbnail_key } = input;
+      const { title, tags, collection_ids, original_key, thumbnail_key } = input;
 
-      // Validate family_ids if provided
-      if (family_ids !== undefined && family_ids.length === 0) {
-        throw new Error("Image must belong to at least one family");
+      // Validate collection_ids if provided
+      if (collection_ids !== undefined && collection_ids.length === 0) {
+        throw new Error("Image must belong to at least one collection");
       }
 
       try {
         const {
           rows: [image],
         } = await fastify.pg.query<Image>(
-          "UPDATE images SET title = $1, tags = $2, family_ids = $3, original_key = $4, thumbnail_key = $5, updated_at = NOW() WHERE id = $6 RETURNING *",
+          "UPDATE images SET title = $1, tags = $2, collection_ids = $3, original_key = $4, thumbnail_key = $5, updated_at = NOW() WHERE id = $6 RETURNING *",
           [
             title ?? null,
             tags ?? [],
-            family_ids ?? [],
+            collection_ids ?? [],
             original_key ?? null,
             thumbnail_key ?? null,
             id,
@@ -131,9 +131,9 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           }
         }
 
-        // Update family relations
-        if (family_ids) {
-          await fastify.image.applyFamilies(id, family_ids);
+        // Update collection relations
+        if (collection_ids) {
+          await fastify.image.applyCollections(id, collection_ids);
         }
 
         return image;
@@ -168,25 +168,25 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async applyFamilies(imageId: string, familyIds: string[]): Promise<void> {
+    async applyCollections(imageId: string, collectionIds: string[]): Promise<void> {
       try {
-        // First, remove existing family associations
+        // First, remove existing collection associations
         await fastify.pg.query(
-          "DELETE FROM image_families WHERE image_id = $1",
+          "DELETE FROM image_collections WHERE image_id = $1",
           [imageId]
         );
 
-        // Then add new family associations
-        if (familyIds.length > 0) {
-          const values = familyIds
+        // Then add new collection associations
+        if (collectionIds.length > 0) {
+          const values = collectionIds
             .map((_, index) => `($1, $${index + 2})`)
             .join(", ");
-          const query = `INSERT INTO image_families (image_id, family_id) VALUES ${values}`;
-          await fastify.pg.query(query, [imageId, ...familyIds]);
+          const query = `INSERT INTO image_collections (image_id, collection_id) VALUES ${values}`;
+          await fastify.pg.query(query, [imageId, ...collectionIds]);
         }
       } catch (err) {
         fastify.log.error(err);
-        throw new Error("Failed to apply family associations");
+        throw new Error("Failed to apply collection associations");
       }
     },
 
@@ -203,63 +203,63 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     },
 
-    async getByFamily(familyId: string): Promise<Image[]> {
+    async getByCollection(collectionId: string): Promise<Image[]> {
       try {
         const { rows } = await fastify.pg.query<Image>(
-          `SELECT i.* FROM images i 
-           JOIN image_families if ON i.id = if.image_id 
-           WHERE if.family_id = $1`,
-          [familyId]
+          `SELECT i.* FROM images i
+           JOIN image_collections ic ON i.id = ic.image_id
+           WHERE ic.collection_id = $1`,
+          [collectionId]
         );
         return rows;
       } catch (err) {
         fastify.log.error(err);
-        throw new Error("Failed to get images by family");
+        throw new Error("Failed to get images by collection");
       }
     },
 
-    async getByFamilies(familyIds: string[]): Promise<Image[]> {
+    async getByCollections(collectionIds: string[]): Promise<Image[]> {
       try {
-        if (familyIds.length === 0) {
+        if (collectionIds.length === 0) {
           return [];
         }
 
         // Create placeholders for the IN clause
-        const placeholders = familyIds
+        const placeholders = collectionIds
           .map((_, index) => `$${index + 1}`)
           .join(", ");
 
         const { rows } = await fastify.pg.query<Image>(
           `SELECT DISTINCT i.* FROM images i 
-           JOIN image_families if ON i.id = if.image_id 
-           WHERE if.family_id IN (${placeholders})
+           JOIN image_collections ic ON i.id = ic.image_id 
+           WHERE ic.collection_id IN (${placeholders})
            ORDER BY i.created_at DESC`,
-          familyIds
+          collectionIds
         );
         return rows;
       } catch (err) {
         fastify.log.error(err);
-        throw new Error("Failed to get images by families");
+        throw new Error("Failed to get images by collections");
       }
     },
 
-    async getOrphanedByFamily(familyId: string): Promise<Image[]> {
+    async getOrphanedByCollection(collectionId: string): Promise<Image[]> {
       try {
         const { rows } = await fastify.pg.query<Image>(
           `SELECT i.* FROM images i 
-           JOIN image_families if ON i.id = if.image_id 
-           WHERE if.family_id = $1 
+           JOIN image_collections ic ON i.id = ic.image_id 
+           WHERE ic.collection_id = $1 
            AND i.id NOT IN (
-             SELECT DISTINCT if2.image_id 
-             FROM image_families if2 
-             WHERE if2.family_id != $1
+             SELECT DISTINCT ic2.image_id 
+             FROM image_collections ic2 
+             WHERE ic2.collection_id != $1
            )`,
-          [familyId]
+          [collectionId]
         );
         return rows;
       } catch (err) {
         fastify.log.error(err);
-        throw new Error("Failed to get orphaned images by family");
+        throw new Error("Failed to get orphaned images by collection");
       }
     },
 
@@ -274,9 +274,9 @@ const imagePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         // Build the query dynamically based on whether tags are provided
         let query = `
           SELECT DISTINCT i.* FROM images i 
-          JOIN image_families if ON i.id = if.image_id 
-          JOIN family_members fm ON if.family_id = fm.family_id 
-          WHERE fm.user_id = $1
+          JOIN image_collections ic ON i.id = ic.image_id 
+          JOIN collection_members cm ON ic.collection_id = cm.collection_id 
+          WHERE cm.user_id = $1
         `;
 
         const params: (string | number)[] = [userId];

@@ -599,20 +599,20 @@
 
 /* Delete button - red */
 .delete-btn,
-.delete-family-btn {
+.delete-collection-btn {
   background: #ef4444; /* Red background for destructive action */
   color: white; /* White text for high contrast */
   border: 2px solid #ef4444; /* Matching border color */
 }
 
 .delete-btn:hover,
-.delete-family-btn:hover {
+.delete-collection-btn:hover {
   background: #dc2626; /* Darker red on hover for feedback */
   border-color: #dc2626; /* Matching darker border on hover */
 }
 
 .delete-btn:disabled,
-.delete-family-btn:disabled {
+.delete-collection-btn:disabled {
   background: #f87171; /* Lighter red when disabled */
   border-color: #f87171; /* Matching lighter border when disabled */
   cursor: not-allowed; /* Show not-allowed cursor when disabled */
@@ -703,8 +703,8 @@
   color: var(--text-primary); /* Primary text color on hover */
 }
 
-/* Family modal specific styles */
-.family-manage-content {
+/* Collection modal specific styles */
+.collection-manage-content {
   display: flex; /* Flexbox layout */
   flex-direction: column; /* Stack sections vertically */
   gap: 2rem; /* Space between sections */
@@ -875,7 +875,7 @@
   background: #dc2626; /* Darker red on hover */
 }
 
-.family-preview {
+.collection-preview {
   margin-top: 1rem; /* Top margin */
   padding: 1rem; /* Padding around preview */
   border: 1px solid var(--border-light); /* Light border */
@@ -883,12 +883,12 @@
   background: var(--bg-secondary); /* Secondary background */
 }
 
-.family-preview h3 {
+.collection-preview h3 {
   margin: 0 0 1rem 0; /* Bottom margin only */
   color: var(--text-primary); /* Primary text color */
 }
 
-.family-group-card {
+.collection-group-card {
   background: var(--bg-primary); /* Primary background */
   border: 1px solid var(--border-light); /* Light border */
   border-radius: 8px; /* Rounded corners */
@@ -896,27 +896,27 @@
   margin-bottom: 1rem; /* Bottom margin */
 }
 
-.family-group-header {
+.collection-group-header {
   margin-bottom: 0.5rem; /* Bottom margin */
 }
 
-.family-group-name {
+.collection-group-name {
   margin: 0; /* No margin */
   color: var(--text-primary); /* Primary text color */
   font-size: 1.1rem; /* Larger font size */
   font-weight: 600; /* Bold text */
 }
 
-.family-group-details {
+.collection-group-details {
   color: var(--text-secondary); /* Secondary text color */
   font-size: 14px; /* Smaller font size */
 }
 
-.family-id-container {
+.collection-id-container {
   display: inline-block; /* Inline block for styling */
 }
 
-.family-id-display {
+.collection-id-display {
   font-family: monospace; /* Monospace font for ID */
   background: rgba(59, 130, 246, 0.1); /* Light blue background */
   padding: 0.25rem 0.5rem; /* Small padding */

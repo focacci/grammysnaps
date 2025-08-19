@@ -1,20 +1,20 @@
-export interface FamilyGroup {
+export interface CollectionGroup {
   id: string;
   name: string;
   member_count: number;
   owner_id: string;
   user_role: "owner" | "member";
-  related_families: string[];
+  related_collections: string[];
   created_at: string;
   updated_at: string;
 }
 
-export interface FamilyInput {
+export interface CollectionInput {
   name: string;
   description?: string;
 }
 
-export interface FamilyMember {
+export interface CollectionMember {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -24,7 +24,7 @@ export interface FamilyMember {
   joined_at: string;
 }
 
-export interface RelatedFamily {
+export interface RelatedCollection {
   id: string;
   name: string;
   member_count: number;

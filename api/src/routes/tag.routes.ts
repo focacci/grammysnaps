@@ -6,11 +6,11 @@ import { UUID } from "crypto";
 
 const createTagRequestBodySchema = {
   type: "object",
-  required: ["type", "name", "family_id", "created_by"],
+  required: ["type", "name", "collection_id", "created_by"],
   properties: {
     type: { type: "string", minLength: 1 },
     name: { type: "string", minLength: 1 },
-    family_id: { type: "string", format: "uuid" },
+    collection_id: { type: "string", format: "uuid" },
     created_by: { type: "string", format: "uuid" },
   },
   additionalProperties: false, // Prevents extra fields in the body
@@ -18,11 +18,11 @@ const createTagRequestBodySchema = {
 
 const updateTagRequestBodySchema = {
   type: "object",
-  required: ["type", "name", "family_id"],
+  required: ["type", "name", "collection_id"],
   properties: {
     type: { type: "string", minLength: 1 },
     name: { type: "string", minLength: 1 },
-    family_id: { type: "string", format: "uuid" },
+    collection_id: { type: "string", format: "uuid" },
   },
   additionalProperties: false, // Prevents extra fields in the body
 };
@@ -60,23 +60,23 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.status(200).send({ tags });
   });
 
-  // New route for getting tags by family
+  // New route for getting tags by collection
   fastify.get(
-    "/family/:familyId",
+    "/collection/:collectionId",
     {
       schema: {
         params: {
           type: "object",
-          required: ["familyId"],
+          required: ["collectionId"],
           properties: {
-            familyId: { type: "string", format: "uuid" },
+            collectionId: { type: "string", format: "uuid" },
           },
         },
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { familyId } = request.params as { familyId: UUID };
-      const tags = await fastify.tag.getByFamily(familyId);
+      const { collectionId } = request.params as { collectionId: UUID };
+      const tags = await fastify.tag.getByCollection(collectionId);
       return reply.status(200).send({ tags });
     }
   );
@@ -100,12 +100,12 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
     "/",
     { schema: { body: createTagRequestBodySchema } },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { type, name, family_id, created_by } = request.body as TagInput;
-      request.log.info("Creating tag:", { type, name, family_id, created_by });
+      const { type, name, collection_id, created_by } = request.body as TagInput;
+      request.log.info("Creating tag:", { type, name, collection_id, created_by });
       const tag = await fastify.tag.create({
         type,
         name,
-        family_id,
+        collection_id,
         created_by,
       });
       return reply.status(200).send({ tag });
@@ -122,11 +122,11 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { tagId } = request.params as UpdateTagParams;
-      const { type, name, family_id } = request.body as TagUpdateInput;
+      const { type, name, collection_id } = request.body as TagUpdateInput;
       const updatedTag = await fastify.tag.update(tagId, {
         type,
         name,
-        family_id,
+        collection_id,
       });
       if (!updatedTag) {
         return reply.status(404).send({ message: TAG_ERRORS.NOT_FOUND });

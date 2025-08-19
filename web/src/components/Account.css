@@ -202,7 +202,7 @@
   gap: 0; /* No gap between immediate children (empty state and footer) */
 }
 
-/* Family Groups */
+/* Collections */
 .empty-state {
   text-align: center; /* Center-align empty state content */
   padding: 2rem; /* Generous padding for comfortable empty state */
@@ -212,7 +212,7 @@
   ); /* Tertiary background for visual distinction */
   border-radius: 8px; /* Rounded corners for modern appearance */
   border: 1px dashed var(--border-light); /* Dashed border to indicate empty/placeholder state */
-  width: 100%; /* Ensure full width to match family cards container */
+  width: 100%; /* Ensure full width to match collection cards container */
   min-height: 120px; /* Minimum height to maintain consistent visual weight */
   display: flex; /* Use flexbox for content centering */
   flex-direction: column; /* Stack content vertically */
@@ -236,7 +236,7 @@
   font-size: 1.1rem; /* Slightly larger font for empty state message */
 }
 
-.create-family-btn {
+.create-collection-btn {
   background: #3b82f6; /* Blue background for primary action */
   color: white; /* White text for high contrast */
   border: none; /* Remove default button border */
@@ -248,42 +248,44 @@
   box-shadow: var(--shadow-sm); /* Small shadow for depth */
 }
 
-.create-family-btn:hover {
+.create-collection-btn:hover {
   background: #2563eb; /* Darker blue on hover for feedback */
   box-shadow: var(--shadow-md); /* Larger shadow on hover for lift effect */
 }
 
-.family-groups-list {
-  display: flex; /* Use flexbox for family groups layout */
-  flex-direction: column; /* Stack family group cards vertically */
-  gap: 1rem; /* Add consistent spacing between family cards */
+.collections-list {
+  display: flex; /* Use flexbox for collections layout */
+  flex-direction: column; /* Stack collection cards vertically */
+  gap: 1rem; /* Add consistent spacing between collection cards */
   width: 100%; /* Ensure full width to maintain consistent layout */
   box-sizing: border-box; /* Include any padding in width calculation */
 }
 
-.family-group-card {
-  background: var(--bg-primary); /* Primary background for family cards */
+.collection-card {
+  background: var(--bg-primary); /* Primary background for collection cards */
   border: 1px solid var(--border-light); /* Subtle border for card definition */
   border-radius: 8px; /* Rounded corners for modern card appearance */
   padding: 1.25rem; /* Comfortable padding around card content */
   transition: all 0.2s ease; /* Smooth transition for hover effects */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
 }
 
-.family-group-card:hover {
+.collection-card:hover {
   border-color: var(--border-medium); /* Darker border on hover */
-  box-shadow: var(--shadow-sm); /* Add shadow on hover for depth */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow on hover for depth */
+  transform: translateY(-1px); /* Slight lift effect on hover */
 }
 
-.family-group-header {
+.collection-header {
   display: flex; /* Use flexbox for header layout */
   align-items: center; /* Vertically center header elements */
   justify-content: space-between; /* Spread name and role badge to opposite ends */
   margin-bottom: 1rem; /* Add space below header */
 }
 
-.family-group-name {
+.collection-name {
   margin: 0; /* Remove default heading margins */
-  font-size: 1.2rem; /* Medium-large font size for family name */
+  font-size: 1.2rem; /* Medium-large font size for collection name */
   font-weight: 600; /* Semi-bold weight for emphasis */
   color: var(--text-primary); /* Theme-aware primary text color */
 }
@@ -298,6 +300,11 @@
   gap: 0.25rem; /* Small gap between badge icon and text */
 }
 
+.role-badge.owner {
+  background-color: var(--primary-orange); /* Orange background for owner role */
+  color: var(--text-inverse); /* High contrast text color */
+}
+
 .role-badge.admin {
   background-color: var(
     --primary-orange
@@ -310,7 +317,24 @@
   color: var(--text-inverse); /* High contrast text color */
 }
 
-.family-group-details {
+/* Collection Group specific styles */
+.collection-header {
+  display: flex; /* Use flexbox for header layout */
+  align-items: center; /* Vertically center header elements */
+  justify-content: space-between; /* Spread name and role badge to opposite ends */
+  margin-bottom: 1rem; /* Add space below header */
+}
+
+.collection-name {
+  margin: 0; /* Remove default heading margins */
+  font-size: 1.2rem; /* Medium-large font size for collection name */
+  font-weight: 600; /* Semi-bold weight for emphasis */
+  color: var(--text-primary); /* Theme-aware primary text color */
+  flex: 1; /* Take available space */
+  margin-right: 0.75rem; /* Add space before role badge */
+}
+
+.collection-details {
   display: flex; /* Use flexbox for details layout */
   justify-content: space-between; /* Spread info and actions to opposite ends */
   align-items: flex-end; /* Align items to bottom baseline */
@@ -318,7 +342,43 @@
   gap: 1rem; /* Add space between wrapped elements */
 }
 
-.family-group-info {
+.collection-info {
+  display: flex; /* Use flexbox for info layout */
+  flex-direction: column; /* Stack info elements vertically */
+  gap: 0.5rem; /* Add consistent spacing between info items */
+  flex: 1; /* Take available space */
+}
+
+.collection-info .collection-id-container {
+  display: flex; /* Use flexbox for ID container layout */
+  align-items: center; /* Vertically center ID content */
+  gap: 0.5rem; /* Space between ID button and member count */
+}
+
+.collection-info .member-count {
+  font-size: 0.9rem; /* Smaller font for metadata */
+  color: var(--text-secondary); /* Secondary color for less emphasis */
+  display: flex; /* Use flexbox for icon and text alignment */
+  align-items: center; /* Center icon with text vertically */
+  gap: 0.25rem; /* Space between icon and text */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.collection-actions {
+  display: flex; /* Use flexbox for action buttons layout */
+  gap: 0.75rem; /* Add consistent spacing between action buttons */
+  flex-shrink: 0; /* Prevent shrinking of action buttons */
+}
+
+.collection-details {
+  display: flex; /* Use flexbox for details layout */
+  justify-content: space-between; /* Spread info and actions to opposite ends */
+  align-items: flex-end; /* Align items to bottom baseline */
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  gap: 1rem; /* Add space between wrapped elements */
+}
+
+.collection-info {
   display: flex; /* Use flexbox for info layout */
   flex-direction: row; /* Stack info elements vertically */
   gap: 0.5rem; /* Add consistent spacing between info items */
@@ -326,7 +386,7 @@
 
 .member-count,
 .created-date,
-.family-id-container {
+.collection-id-container {
   font-size: 0.9rem; /* Smaller font for metadata */
   color: var(--text-secondary); /* Secondary color for less emphasis */
   display: flex; /* Use flexbox for icon and text alignment */
@@ -442,7 +502,7 @@
   color: #ffffff; /* White arrow color in dark mode */
 }
 
-.family-group-actions {
+.collection-actions {
   display: flex; /* Use flexbox for action buttons layout */
   gap: 0.75rem; /* Add consistent spacing between action buttons */
 }
@@ -502,7 +562,7 @@
   box-sizing: border-box; /* Include padding in width calculation */
 }
 
-.join-family-btn {
+.join-collection-btn {
   background: none; /* Transparent background for outline button */
   border: 2px solid #28a745; /* Green border for join action */
   color: #28a745; /* Green text color matching border */
@@ -513,7 +573,7 @@
   transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
 
-.join-family-btn:hover {
+.join-collection-btn:hover {
   border-color: #1e7e34; /* Darker green border on hover */
   color: #1e7e34; /* Darker green text on hover */
   background-color: rgba(
@@ -524,7 +584,7 @@
   ); /* Light green background on hover */
 }
 
-.create-family-btn-footer {
+.create-collection-btn-footer {
   background: #3b82f6; /* Blue background for create action */
   border: 2px solid #3b82f6; /* Matching blue border */
   color: white; /* White text for high contrast */
@@ -535,20 +595,20 @@
   transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
 
-.create-family-btn-footer:hover {
+.create-collection-btn-footer:hover {
   background: #2563eb; /* Darker blue background on hover */
   border-color: #2563eb; /* Matching darker blue border on hover */
 }
 
-/* Family Management Modal */
-.family-manage-modal {
+/* Collection Management Modal */
+.collection-manage-modal {
   width: 90% !important; /* Set modal width to 90% of viewport */
   max-width: 800px !important; /* Limit maximum width for large screens */
   max-height: 80vh; /* Limit height to 80% of viewport height */
   overflow-y: auto; /* Allow vertical scrolling when content exceeds height */
 }
 
-.family-manage-content {
+.collection-manage-content {
   padding: 0; /* Remove default padding to allow custom section padding */
 }
 
@@ -832,17 +892,17 @@
   color: #66bb6a; /* Lighter green text for dark theme */
 }
 
-/* Override auth-header for family manage modal */
-.family-manage-modal .auth-header {
+/* Override auth-header for collection manage modal */
+.collection-manage-modal .auth-header {
   justify-content: space-between; /* Spread title and actions to opposite ends */
 }
 
-.family-manage-modal .auth-header h2 {
+.collection-manage-modal .auth-header h2 {
   flex: 1; /* Allow title to take available space */
 }
 
-/* Delete Family Button */
-.delete-family-btn {
+/* Delete Collection Button */
+.delete-collection-btn {
   background: #dc3545; /* Red background for destructive action */
   color: white; /* White text for high contrast */
   border: none; /* Remove default button border */
@@ -857,22 +917,22 @@
   gap: 6px; /* Small gap between icon and text */
 }
 
-.delete-family-btn:hover:not(:disabled) {
+.delete-collection-btn:hover:not(:disabled) {
   background: #c82333; /* Darker red on hover when not disabled */
 }
 
-.delete-family-btn:disabled {
+.delete-collection-btn:disabled {
   background: #6c757d; /* Grey background when disabled */
   cursor: not-allowed; /* Show not-allowed cursor when disabled */
   transform: none; /* Remove transform effects when disabled */
 }
 
-.delete-family-btn:active {
+.delete-collection-btn:active {
   transform: translateY(0); /* Remove active transform for header button */
 }
 
-/* Join Family Modal Styles */
-.join-family-modal {
+/* Join Collection Modal Styles */
+.join-collection-modal {
   width: 95% !important; /* Set modal width to 95% of viewport */
   max-width: 800px !important; /* Limit maximum width for large screens */
   max-height: 90vh; /* Limit height to 90% of viewport height */
@@ -933,8 +993,8 @@
   color: #f87171; /* Lighter red text for dark theme */
 }
 
-.family-preview {
-  margin-top: 1.5rem; /* Space above family preview section */
+.collection-preview {
+  margin-top: 1.5rem; /* Space above collection preview section */
   padding: 1.5rem; /* Generous padding around preview content */
   background: var(
     --bg-tertiary
@@ -943,18 +1003,18 @@
   border: 1px solid var(--border-light); /* Light border for definition */
 }
 
-.family-preview h3 {
+.collection-preview h3 {
   margin: 0 0 1rem 0; /* Remove top margin, add bottom spacing */
   color: var(--text-primary); /* Theme-aware primary text color */
   font-size: 1.1rem; /* Medium font size for preview heading */
 }
 
-.family-preview .family-group-card {
+.collection-preview .collection-card {
   margin-bottom: 1.5rem; /* Space below preview card */
   background: var(--bg-primary); /* Primary background for preview card */
 }
 
-.family-preview .member-count {
+.collection-preview .member-count {
   font-size: 0.9rem; /* Medium font size for member count */
   color: var(--text-secondary); /* Secondary text color for metadata */
   display: flex; /* Use flexbox for icon and text alignment */
@@ -962,7 +1022,7 @@
   gap: 0.5rem; /* Space between icon and text */
 }
 
-.family-id-display {
+.collection-id-display {
   font-family: "Courier New", Monaco, monospace; /* Monospace font for ID display */
   font-size: 0.85rem; /* Smaller font for ID text */
   color: var(--text-secondary); /* Secondary text color for ID */
@@ -1028,14 +1088,14 @@
   }
 
   .empty-state,
-  .family-groups-list,
+  .collections-list,
   .section-footer {
     width: 100%; /* Ensure all content areas maintain full width */
   }
 
-  /* Maintain consistent family card width */
-  .family-group-card {
-    width: 100%; /* Full width for family cards on desktop */
+  /* Maintain consistent collection card width */
+  .collection-card {
+    width: 100%; /* Full width for collection cards on desktop */
     box-sizing: border-box; /* Include padding and border in width */
   }
 }
@@ -1091,14 +1151,16 @@
     font-size: 0.9rem; /* Smaller birthday font size on mobile */
   }
 
-  /* Family group layout */
-  .family-group-details {
+  /* Collection layout */
+  .collection-details,
+  .collection-details {
     flex-direction: column; /* Stack details vertically on mobile */
     align-items: flex-start; /* Left-align stacked details */
     gap: 0.5rem; /* Reduced gap between info and actions on mobile */
   }
 
-  .family-group-actions {
+  .collection-actions,
+  .collection-actions {
     width: 100%; /* Full width for action buttons on mobile */
     justify-content: flex-end; /* Right-align action buttons */
     /* Reverse button order on mobile - View Members will appear on the right */
@@ -1106,12 +1168,15 @@
   }
 
   /* Remove hover effects on mobile */
-  .family-group-card:hover {
+  .collection-card:hover,
+  .collection-card:hover {
     border-color: var(--border-light); /* Reset border color on mobile */
-    box-shadow: none; /* Remove hover shadow on mobile */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Reset to default shadow on mobile */
+    transform: none; /* Remove transform effects on mobile */
   }
 
-  .family-group-header {
+  .collection-header,
+  .collection-header {
     margin-bottom: 0.5rem; /* Reduced bottom margin for header on mobile */
   }
 
@@ -1131,8 +1196,20 @@
     padding: 0.5rem; /* Reduced content padding on mobile */
   }
 
-  .family-group-card {
-    padding: 0.5rem; /* Reduced card padding on mobile */
+  .collection-card,
+  .collection-card {
+    padding: 1rem; /* Slightly reduced card padding on mobile */
+  }
+
+  /* Collection group info adjustments for mobile */
+  .collection-info .collection-id-container {
+    flex-direction: column; /* Stack ID and member count vertically on mobile */
+    align-items: flex-start; /* Left-align content on mobile */
+    gap: 0.25rem; /* Reduce gap on mobile */
+  }
+
+  .collection-info .member-count {
+    align-self: flex-start; /* Left-align member count on mobile */
   }
 
   /* Mobile touch improvements - Standard buttons */
@@ -1147,9 +1224,9 @@
     width: 30%; /* Allow buttons to size based on content */
   }
 
-  .join-family-btn,
-  .create-family-btn,
-  .create-family-btn-footer {
+  .join-collection-btn,
+  .create-collection-btn,
+  .create-collection-btn-footer {
     min-height: 44px; /* Minimum height for proper touch targets */
     padding: 12px 16px; /* Larger padding for better touch interaction */
     font-size: 16px; /* Standard font size for mobile accessibility */
@@ -1293,7 +1370,7 @@
     font-size: 18px; /* Larger font size for better readability on small screens */
   }
 
-  .delete-family-btn {
+  .delete-collection-btn {
     font-size: 0.8rem; /* Smaller font for delete button on small screens */
     padding: 6px 12px; /* Reduced padding for small screens */
   }

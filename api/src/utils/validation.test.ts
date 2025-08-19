@@ -351,35 +351,35 @@ describe("ValidationUtils", () => {
     });
   });
 
-  describe("sanitizeFamilyIds", () => {
+  describe("sanitizeCollectionIds", () => {
     const validUUID = "550e8400-e29b-41d4-a716-446655440000";
     const validUUID2 = "550e8400-e29b-41d4-a716-446655440001";
 
-    it("should sanitize valid family IDs", () => {
-      const result = ValidationUtils.sanitizeFamilyIds([validUUID, validUUID2]);
+    it("should sanitize valid collection IDs", () => {
+      const result = ValidationUtils.sanitizeCollectionIds([validUUID, validUUID2]);
       expect(result).toEqual([validUUID, validUUID2]);
     });
 
     it("should handle empty array", () => {
-      const result = ValidationUtils.sanitizeFamilyIds([]);
+      const result = ValidationUtils.sanitizeCollectionIds([]);
       expect(result).toEqual([]);
     });
 
     it("should return empty array for non-array input", () => {
-      expect(ValidationUtils.sanitizeFamilyIds(null as any)).toEqual([]);
-      expect(ValidationUtils.sanitizeFamilyIds(undefined as any)).toEqual([]);
-      expect(ValidationUtils.sanitizeFamilyIds("string" as any)).toEqual([]);
-      expect(ValidationUtils.sanitizeFamilyIds(123 as any)).toEqual([]);
+      expect(ValidationUtils.sanitizeCollectionIds(null as any)).toEqual([]);
+      expect(ValidationUtils.sanitizeCollectionIds(undefined as any)).toEqual([]);
+      expect(ValidationUtils.sanitizeCollectionIds("string" as any)).toEqual([]);
+      expect(ValidationUtils.sanitizeCollectionIds(123 as any)).toEqual([]);
     });
 
     it("should filter out non-string values", () => {
       const mixed = [validUUID, 123, null, validUUID2, undefined] as any[];
-      const result = ValidationUtils.sanitizeFamilyIds(mixed);
+      const result = ValidationUtils.sanitizeCollectionIds(mixed);
       expect(result).toEqual([validUUID, validUUID2]);
     });
 
-    it("should trim whitespace from family IDs", () => {
-      const result = ValidationUtils.sanitizeFamilyIds([
+    it("should trim whitespace from collection IDs", () => {
+      const result = ValidationUtils.sanitizeCollectionIds([
         `  ${validUUID}  `,
         validUUID2,
       ]);
@@ -387,7 +387,7 @@ describe("ValidationUtils", () => {
     });
 
     it("should filter out empty strings", () => {
-      const result = ValidationUtils.sanitizeFamilyIds([
+      const result = ValidationUtils.sanitizeCollectionIds([
         validUUID,
         "" as UUID,
         "   " as UUID,
@@ -397,16 +397,16 @@ describe("ValidationUtils", () => {
     });
 
     it("should throw error for invalid UUID format", () => {
-      expect(() => ValidationUtils.sanitizeFamilyIds(["invalid-uuid" as UUID])).toThrow(
-        "Family ID must be a valid UUID"
+      expect(() => ValidationUtils.sanitizeCollectionIds(["invalid-uuid" as UUID])).toThrow(
+        "Collection ID must be a valid UUID"
       );
       expect(() =>
-        ValidationUtils.sanitizeFamilyIds([validUUID, "not-a-uuid" as UUID])
-      ).toThrow("Family ID must be a valid UUID");
+        ValidationUtils.sanitizeCollectionIds([validUUID, "not-a-uuid" as UUID])
+      ).toThrow("Collection ID must be a valid UUID");
     });
 
     it("should remove duplicate UUIDs", () => {
-      const result = ValidationUtils.sanitizeFamilyIds([
+      const result = ValidationUtils.sanitizeCollectionIds([
         validUUID,
         validUUID2,
         validUUID,
@@ -415,7 +415,7 @@ describe("ValidationUtils", () => {
     });
 
     it("should handle array with only invalid values", () => {
-      const result = ValidationUtils.sanitizeFamilyIds([
+      const result = ValidationUtils.sanitizeCollectionIds([
         null,
         undefined,
         "",
@@ -426,8 +426,8 @@ describe("ValidationUtils", () => {
 
     it("should handle mixed valid/invalid UUIDs", () => {
       expect(() =>
-        ValidationUtils.sanitizeFamilyIds([validUUID, "invalid" as UUID, validUUID2])
-      ).toThrow("Family ID must be a valid UUID");
+        ValidationUtils.sanitizeCollectionIds([validUUID, "invalid" as UUID, validUUID2])
+      ).toThrow("Collection ID must be a valid UUID");
     });
   });
 
@@ -473,8 +473,8 @@ describe("ValidationUtils", () => {
         ValidationUtils.sanitizeUUID("invalid-uuid" as UUID, "User ID")
       ).toThrow("Invalid User ID format");
       expect(() =>
-        ValidationUtils.sanitizeUUID("123-456-789" as UUID, "Family ID")
-      ).toThrow("Invalid Family ID format");
+        ValidationUtils.sanitizeUUID("123-456-789" as UUID, "Collection ID")
+      ).toThrow("Invalid Collection ID format");
     });
 
     it("should handle different UUID versions", () => {

@@ -33,8 +33,8 @@ const mockUserUpdate = jest.fn();
 const mockUserUpdateSecurity = jest.fn();
 const mockUserDelete = jest.fn();
 const mockUserValidatePassword = jest.fn();
-const mockUserAddToFamily = jest.fn();
-const mockUserRemoveFromFamily = jest.fn();
+const mockUserAddToCollection = jest.fn();
+const mockUserRemoveFromCollection = jest.fn();
 
 // Auth plugin mocks
 const mockGenerateTokens = jest.fn();
@@ -53,7 +53,7 @@ describe("Auth Routes", () => {
     middle_name: null,
     last_name: "Doe",
     birthday: null,
-    families: [TEST_UUIDS.FAMILY_1],
+    collections: [TEST_UUIDS.COLLECTION_1],
     profile_picture_key: null,
     profile_picture_thumbnail_key: null,
     profile_picture_url: null,
@@ -81,8 +81,8 @@ describe("Auth Routes", () => {
       updateSecurity: mockUserUpdateSecurity,
       delete: mockUserDelete,
       validatePassword: mockUserValidatePassword,
-      addToFamily: mockUserAddToFamily,
-      removeFromFamily: mockUserRemoveFromFamily,
+      addToCollection: mockUserAddToCollection,
+      removeFromCollection: mockUserRemoveFromCollection,
     } as any);
 
     fastify.decorate("auth", {
